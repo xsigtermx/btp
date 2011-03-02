@@ -1,0 +1,8486 @@
+-- 
+-- This file is part of BTP.
+-- 
+-- BTP is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+-- 
+-- BTP is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+-- 
+-- You should have received a copy of the GNU General Public License
+-- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
+-- 
+--
+-- You should not need to change anything below this line.
+--
+
+POTION_COOLDOWN    = 121;
+DEF_TRINK_SLOT     = 13;
+PRIMARY_TRINK_SLOT = 14;
+
+--
+-- Globals
+--
+MAX_BEG_INDEX    = 23;
+MAX_EMOTE_INDEX  = 114;
+MAX_CHATTER      = 11967;
+MAX_ANOY_MESSAGE = 5;
+PRIORITY_ONLY    = false;
+
+
+-- used for mage waterbot
+WATERBREAK_USER = "";
+mageisDrinking = false;
+
+--
+-- Ints and Floats
+--
+lastExcludeBroadcast= 0;
+lastShadowProtect   = 0;
+lastFireProtect     = 0;
+lastHolyProtect     = 0;
+lastNatureProtect   = 0;
+lastArcaneProtect   = 0;
+lastPhysicalProtect = 0;
+lastMagicProtect    = 0;
+lastFreeAction      = 0;
+lastInvulnerability = 0;
+lastStealthDetect   = 0;
+lastPoisonProtect   = 0;
+lastFrostProtect    = 0;
+lastHearth          = 0;
+lastSummon          = 0;
+lastInviteRequest   = 0;
+lastSelfHeal        = 0;
+lastBG              = 0;
+lastInParty         = 0;
+lastDice            = 0;
+lastBeg             = 0;
+lastBuff            = 0;
+lastRelease         = 0;
+lastQuestTrade      = 0;
+lastMountCheck      = 0;
+lastMountTry        = 0;
+lastBotWater        = 0;
+lastBooze           = 0;
+lastChatter         = 0;
+lastBinding         = 0;
+lastDecurse         = 0;
+lastBandage         = 0;
+lastBackup          = 0;
+lastCoordCheck      = 0;
+lastNodeScan        = 0;
+lastX               = 0;
+lastY               = 0;
+herbX               = 0;
+herbY               = 0;
+envRes              = 0;
+duration            = 0;
+start               = 0;
+pcount              = 0;
+fecount             = 0;
+targetCount         = 0;
+chatterCount        = 0;
+herbTimer           = 0;
+lastStopMoving      = 0;
+lastBreakCC         = 0;
+
+--
+-- Strings
+--
+manualFollowName  = "no one";
+whisperPlayer     = "no one";
+chatterPlayer     = "no one";
+bootyName         = "no one";
+chatterMessage    = "none";
+doAssistUnit      = "target";
+DPS_ASSIST_TARGET = "party1target";
+doAssistUnitFor   = "";
+bandageTarget     = "target";
+current_cb_target = "target";
+lootMode          = "pass";
+btnCC             = nil;
+equipItem         = nil;
+freeBag           = nil;
+freeSlot          = nil;
+tradeName         = nil;
+lastZone          = nil;
+
+--
+-- Bools
+--
+manualFollow      = false;
+pvpBot            = false;
+reloadUI          = false;
+dontHearth        = false;
+dontRelease       = false;
+dontPop           = false;
+addonCmd          = false;
+doWarstomp        = false;
+doEntangleRoot    = false;
+doTreeForm        = false;
+doHibernate       = false;
+doFaerieFire      = false;
+doCyclone         = false;
+doShackle         = false;
+doPsychicScream   = false;
+doShadowWordPain  = false;
+doShadowfiend     = false;
+doLightwell       = false;
+doCC              = false;
+forceDrink        = false;
+blockOnDecurse    = false;
+stopMoving        = false;
+okayClick         = false;
+bootyCall         = false;
+newChatter        = false;
+doTrade           = false;
+dontCheckDist     = false;
+btpRaidHeal       = false;
+earthShieldManual = false;
+btpFollow         = true;
+botOff            = true;
+dontBeg           = true;
+funTrink          = false;
+botSelfHeal       = true;
+okayDrink         = false;
+okayMount = false;
+
+--
+-- Function Pointers
+--
+local btp_player_model         = nil;
+local btp_player_model_facing  = nil;
+current_cb                     = nil;
+
+--
+-- Hashes
+--
+bgStats         = { };
+cb_array        = { };
+party_status    = { };
+fuckBlizMapping = { };
+keyToColor      = { };
+targetToColor   = { };
+anoyMessage     = { "Hey can you leave me alone?  I am busy.",
+                    "Look, I don't feel like talking right now.",
+                    "Enough, I just want to play.",
+                    "Blah, please stop.  I am busy.",
+                    "Well it's been fun, but I want to get back to the game." };
+beg             = { "Got a Gold?",
+                    "Can someone spare some change for a veteran of the " ..
+                    "Third Great War?",
+                    "Buffs for some change?  I need change!",
+                    "Spare some change or a few greens, I have kids to feed?!?",
+                    "Please help me!  I need some change to buy a meal!",
+                    "FREE BUFFS! If you can make a donation, I need money " ..
+                    "for a shelter tonight.",
+                    "Can anyone spare some change for a poor vagabond?",
+                    "Did I ever tell you the one about the alliance hooker " ..
+                    "with the dysentery ...",  
+                    "A ghost mushroom walks into an inn, and the innkeeper " ..
+                    "says, 'We don't serve your kind here!'  The ghost " ..
+                    "mushroom says, 'Why not?!? I'm a fun guy!'",
+                    "My partner died and my dog left me, got some spare " ..
+                    "change for someone down on their luck?",
+                    "I'll let you touch me for some change.",
+                    "I will dance for tips.",
+                    "Spare some change?  I have to feed my pet!",
+                    "I can cure ugly for a gold.",
+                    "why lie?  I need money for a Jug of Bourbon.",
+                    "Spare some change for a flight?  I am broke.",
+                    "I see change in your financial future, give me a gold " ..
+                    "and I will tell you more.",
+                    "Buy me a drink?",
+                    "I've got a bad case of flesh rot!  Can you spare " ..
+                    "some change so I can see a witchdoctor?",
+                    "Got some change so I can buy booze?",
+                    "Spare some change for a good cause?",
+                    "Hey!  You got some change?  My eye fell out and I " ..
+                    "need to get it replaced.",
+                    "BOO! haha, did that scare you.  How about a tip?" };
+emote           = { "ANGRY", "BARK", "BASHFUL", "BEG", "BURP", "BITE",
+                    "BLINK", "KISS", "BLUSH", "BONK", "BORED", "BOUNCE",
+                    "BOW", "CACKLE", "CHUCKLE", "COLD", "COMFORT", "COMMEND",
+                    "CONFUSED", "COUGH", "CRY", "CUDDLE", "CURTSEY", "DANCE",
+                    "BONK", "THREATEN", "DRINK", "DROOL", "TALKEX", "FART",
+                    "FIDGET", "FLIRT", "GAZE", "GIGGLE", "HAPPY", "GRIN",
+                    "GROAN", "GROWL", "GUFFAW", "HAIL", "HAPPY", "HELLO",
+                    "HUG", "INSULT", "INTRODUCE", "KISS", "LAUGH", "LICK",
+                    "LOVE", "MASSAGE", "MOAN", "MOCK", "MOO", "MOON",
+                    "NOSEPICK", "PAT", "PEER", "POKE", "POUNCE", "PRAISE",
+                    "PRAY", "PURR", "PUZZLE", "RASP", "ROAR", "ROFL",
+                    "RUDE", "SALUTE", "SEXY", "SHAKE", "SHIMMY", "DRINK",
+                    "SHIVER", "SHY", "JOKE", "SLAP", "STINK", "SMILE",
+                    "SMIRK", "SNICKER", "SNIFF", "SNUB", "CRY", "CUDDLE",
+                    "TAP", "TEASE", "THANK", "THIRSTY", "TICKLE", "TRAIN",
+                    "VIOLIN", "WAVE", "CRY", "WHINE", "WHISTLE", "WINK",
+                    "YAWN", "DRINK", "DRINK", "DRINK", "KISS", "KISS",
+                    "KISS", "KISS", "DANCE", "DANCE", "DANCE", "DANCE",
+                    "DANCE", "BEG", "BEG", "BEG", "BEG", "BEG", "COWER" };
+
+function btp_general_initialize()
+    i       = 1;
+    r       = 1;
+    g       = 1;
+    b       = 2;
+    key     = "CTRL-";
+    hex     = { "00","11","22","33","44","55","66","77","88","99","AA","BB",
+                "CC","DD", "EE","FF" };
+    letters = { "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O",
+                "P","Q","R","S","T","U","V","W","X","Y","Z","`","-","=","[",
+                "]",";","'",",",".","/","1","2","3","4","5","6","7","8",
+                "9" };
+
+    SlashCmdList["BTPCC"] = btp_cc;
+    SLASH_BTPCC1 = "/btpcc";
+    SlashCmdList["FREEA"] = btp_free_action;
+    SLASH_FREEA1 = "/fa";
+    SlashCmdList["GENB"] = PrintBuffs;
+    SLASH_GENB1 = "/printbuffs";
+    SlashCmdList["BOT"] = btp_bot;
+    SLASH_BOT1 = "/btpbot";
+    SlashCmdList["BTPSTOP"] = BTP_Stop;
+    SLASH_BTPSTOP1 = "/btpstop";
+    SlashCmdList["BTPSTART"] = BTP_Start;
+    SLASH_BTPSTART1 = "/btpstart";
+    SlashCmdList["BTPFOL"] = BTP_Follow;
+    SLASH_BTPFOL1 = "/btpfollow";
+    SlashCmdList["BTPINV"] = BTP_Innervate;
+    SLASH_BTPINV1 = "/btpinnervate";
+    SlashCmdList["BTPPVP"] = BTP_Pvp;
+    SLASH_BTPPVP1 = "/btppvp";
+    SlashCmdList["FUNTRNK"] = FunTrink;
+    SLASH_FUNTRNK1 = "/funtrink";
+    SlashCmdList["DONTBEG"] = DontBeg;
+    SLASH_DONTBEG1 = "/btpbeg";
+    SlashCmdList["DONTHRTH"] = DontHearth;
+    SLASH_DONTHRTH1 = "/btphearth";
+    SlashCmdList["RELEASE"] = DontRelease;
+    SLASH_RELEASE1 = "/btprelease";
+    SlashCmdList["POP"] = DontPop;
+    SLASH_POP1 = "/btppop";
+    SlashCmdList["DECURSE"] = DecurseToggle;
+    SLASH_DECURSE1 = "/btpdecurse";
+    SlashCmdList["RAIDHEAL"] = RaidHeal;
+    SLASH_RAIDHEAL1 = "/btpraidheal";
+    SlashCmdList["BTPINV"] = btp_invite;
+    SLASH_BTPINV1 = "/btpinvite";
+    SlashCmdList["CLEANFRM"] = CleanFrame;
+    SLASH_CLEANFRM1 = "/cleanframe";
+    SlashCmdList["HEALPRIORITYDEL"] = btp_heal_priority_del;
+    SLASH_HEALPRIORITYDEL1 = "/btphpdel";
+    SlashCmdList["HEALPRIORITYLIST"] = btp_heal_priority_list;
+    SLASH_HEALPRIORITYLIST1 = "/btphplist";
+    SlashCmdList["FEDEL"] = btp_follow_exclusion_del;
+    SLASH_FEDEL1 = "/btpfedel";
+    SlashCmdList["FELIST"] = btp_follow_exclusion_list;
+    SLASH_FELIST1 = "/btpfelist";
+
+    SlashCmdList["HEALPRIORITYADD"] = function(pname)
+        btp_heal_priority_add(pname)
+    end;
+    SLASH_HEALPRIORITYADD1 = "/btphpadd";
+
+    SlashCmdList["FEADD"] = function(pname)
+        btp_follow_exclusion_add(pname)
+    end;
+    SLASH_FEADD1 = "/btpfeadd";
+
+    SlashCmdList["BTPLOOT"] = function(mode)
+        btp_loot(mode)
+    end;
+    SLASH_BTPLOOT1 = "/btploot";
+
+    --
+    -- This is a bind for the pet attack which does not 
+    -- get bound normaly.  These are also the bot bindings.
+    --
+    keyToColor[key .. i] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    i = i + 1;
+    keyToColor[key .. letters[i]] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    i = i + 1;
+    keyToColor[key .. letters[i]] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    i = i + 1;
+    keyToColor[key .. letters[i]] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    i = i + 1;
+    keyToColor[key .. letters[i]] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    i = i + 1;
+    keyToColor[key .. letters[i]] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    i = i + 1;
+
+    --
+    -- Bind the rest.
+    --
+    while true do
+       keyToColor[key .. letters[i]] = hex[r] .. hex[g] .. hex[b];
+       i = i + 1;
+
+       if (i > 45 or (i > 36 and key == "CTRL-")) then
+           if (key == "CTRL-") then
+               key = "CTRL-SHIFT-";
+           elseif (key == "CTRL-SHIFT-") then
+               key = "ALT-";
+           elseif (key == "ALT-") then
+               key = "ALT-SHIFT-";
+           elseif (key == "ALT-SHIFT-") then
+               key = "ALT-CTRL-";
+           elseif (key == "ALT-CTRL-") then
+               key = "ALT-CTRL-SHIFT-";
+           elseif (key == "ALT-CTRL-SHIFT-") then
+               break;
+           end
+
+           i = 1;
+       end
+
+       r, g, b = RollRGB(r, g, b);
+    end
+
+    i = 1;
+
+    --
+    -- For player and pet targeting
+    --
+    targetToColor["player"] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    targetToColor["playertarget"] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    targetToColor["pet"] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    targetToColor["pettarget"] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    targetToColor["targetfriend"] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    targetToColor["targetenemy"] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+    targetToColor["targettarget"] = hex[r] .. hex[g] .. hex[b];
+    r, g, b = RollRGB(r, g, b);
+
+    for i=1,40 do
+        targetToColor["raid" .. i] = hex[r] .. hex[g] .. hex[b];
+        r, g, b = RollRGB(r, g, b);
+        targetToColor["raid" .. i .. "target"] = hex[r] .. hex[g] .. hex[b];
+        r, g, b = RollRGB(r, g, b);
+        targetToColor["raidpet" .. i] = hex[r] .. hex[g] .. hex[b];
+        r, g, b = RollRGB(r, g, b);
+        targetToColor["raidpet" .. i .. "target"] = hex[r] .. hex[g] .. hex[b];
+        r, g, b = RollRGB(r, g, b);
+
+        if (i < 5) then
+            targetToColor["party" .. i] = hex[r] .. hex[g] .. hex[b];
+            r, g, b = RollRGB(r, g, b);
+            targetToColor["party" .. i .. "target"] = hex[r] .. hex[g] ..
+                                                      hex[b];
+            r, g, b = RollRGB(r, g, b);
+            targetToColor["partypet" .. i] = hex[r] .. hex[g] .. hex[b];
+            r, g, b = RollRGB(r, g, b);
+            targetToColor["partypet" .. i .. "target"] = hex[r] .. hex[g] ..
+                                                         hex[b];
+            r, g, b = RollRGB(r, g, b);
+        end
+    end
+
+    -- Create a table of all the Minimap's children objectSimpleCompass_Saved.
+    local children = {Minimap:GetChildren()};
+
+    for i=getn(children), 1, -1 do
+        -- Iterate over them all, starting from the end of the list to
+        -- see if the object reference is a model.
+        -- If it is, and it has no name (in case some addon attached a
+        -- model to it), it's probably the right one.
+        if (children[i]:IsObjectType("Model") and
+            not children[i]:GetName()) then
+            -- Found, setting as the addon's local to keep the reference.
+            btp_player_model = children[i];
+            btp_player_model_facing = btp_player_model.GetFacing;
+            return;
+        end
+    end
+end
+
+--
+-- Complex type builder
+--
+local new, del;
+do
+    local list = setmetatable({}, {__mode='k'});
+    function new(...)
+        local t = next(list);
+        if t then
+            list[t] = nil;
+            for i = 1, select('#', ...) do
+                t[i] = select(i, ...);
+            end
+            return t;
+        else
+            return { ... };
+        end
+    end
+    function del(t)
+        for k in pairs(t) do
+            t[k] = nil;
+        end
+        list[t] = true;
+        return nil;
+    end
+end
+
+local function btp_get_facing()
+        return btp_player_model_facing(btp_player_model);
+end
+
+
+function btp_init_spells()
+    local i = 1;
+
+    -- btp_frame_debug("init spells");
+
+    repeat
+        spell, rank = GetSpellName(i, BOOKTYPE_SPELL)
+        if(spell ~= nil and rank ~= nil) then
+            if(CONFIG_SPELLS[spell] == nil) then
+                CONFIG_SPELLS[spell] = true;
+            end
+        end
+        i = i + 1;
+    until (not spell)
+
+    i = 1;
+    repeat
+        spell, rank = GetSpellName(i, BOOKTYPE_PET)
+        if(spell ~= nil and rank ~= nil) then
+            if(CONFIG_SPELLS[spell] == nil) then
+                CONFIG_SPELLS[spell] = true;
+            end
+        end
+        i = i + 1;
+    until (not spell)
+end
+
+function FuckBlizzardTargetUnit(unit_id)
+    if (fuckBlizMapping[unit_id]) then
+        if (unit_id == "playertarget") then
+           btp_frame_set_color_hex("PPT", keyToColor[fuckBlizMapping[unit_id]]);
+        else
+           btp_frame_set_color_hex("PT", keyToColor[fuckBlizMapping[unit_id]]);
+        end
+    else
+        if (unit_id == "playertarget") then
+            btp_frame_set_color_hex("PPT", targetToColor[unit_id]);
+        else
+            btp_frame_set_color_hex("PT", targetToColor[unit_id]);
+        end
+    end
+
+    btp_frame_set_color_hex("IT", "FFFFFF");
+end
+
+function FuckBlizzardTargetUnitAlt(unit_id)
+    if (fuckBlizMapping[unit_id]) then
+        if (unit_id == "playertarget") then
+           btp_frame_set_color_hex("APT", keyToColor[fuckBlizMapping[unit_id]]);
+        else
+           btp_frame_set_color_hex("AT", keyToColor[fuckBlizMapping[unit_id]]);
+        end
+    else
+        if (unit_id == "playertarget") then
+            btp_frame_set_color_hex("APT", targetToColor[unit_id]);
+        else
+            btp_frame_set_color_hex("AT", targetToColor[unit_id]);
+        end
+    end
+
+    btp_frame_set_color_hex("IT", "FFFFFF");
+end
+
+function FuckBlizzardTargetUnitContainer(unit_id)
+    if (fuckBlizMapping[unit_id]) then
+        if (unit_id == "playertarget") then
+           btp_frame_set_color_hex("CPT", keyToColor[fuckBlizMapping[unit_id]]);
+        else
+           btp_frame_set_color_hex("CT", keyToColor[fuckBlizMapping[unit_id]]);
+        end
+    else
+        if (unit_id == "playertarget") then
+            btp_frame_set_color_hex("CPT", targetToColor[unit_id]);
+        else
+            btp_frame_set_color_hex("CT", targetToColor[unit_id]);
+        end
+    end
+
+    btp_frame_set_color_hex("IT", "FFFFFF");
+end
+
+--
+-- As of right now this function is not used in the code.  There is
+-- a hack in place that uses this frame to key events like pause and
+-- exit.  This is also the frame that tells the macro program there
+-- is an action to perform.  IF we ever need this frame in the future
+-- we will have to code the hack the right way.  The IPT frame is also
+-- used in the FuckBlizzardByNameStrange() function.  This frame is almost
+-- never used, and so we can use it for strange things.  Again, if inventory
+-- items should ever target, we will need to add more frames.  NOTE: there
+-- are certainly reasons to use trinkets on other players, but for now we
+-- do not do this anywhere.
+--
+function FuckBlizzardTargetUnitItem(unit_id)
+    if (fuckBlizMapping[unit_id]) then
+        if (unit_id == "playertarget") then
+           btp_frame_set_color_hex("IPT", keyToColor[fuckBlizMapping[unit_id]]);
+        else
+           btp_frame_set_color_hex("IT", keyToColor[fuckBlizMapping[unit_id]]);
+        end
+    else
+        if (unit_id == "playertarget") then
+            btp_frame_set_color_hex("IPT", targetToColor[unit_id]);
+        else
+            btp_frame_set_color_hex("IT", targetToColor[unit_id]);
+        end
+    end
+
+    btp_frame_set_color_hex("IT", "FFFFFF");
+end
+
+function FuckBlizzardByName(cmd)
+    if (fuckBlizMapping[cmd]) then
+        btp_frame_set_color_hex("PA", keyToColor[fuckBlizMapping[cmd]]);
+    end
+
+    btp_frame_set_color_hex("IT", "FFFFFF");
+end
+
+function FuckBlizzardByNameAlt(cmd)
+    if (fuckBlizMapping[cmd]) then
+        btp_frame_set_color_hex("AA", keyToColor[fuckBlizMapping[cmd]]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    end
+end
+
+function FuckBlizzardByNameStrange(cmd)
+    if (fuckBlizMapping[cmd]) then
+        btp_frame_set_color_hex("IPT", keyToColor[fuckBlizMapping[cmd]]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    end
+end
+
+function FuckBlizzardAttackTarget()
+    if (fuckBlizMapping["Attack"]) then
+        btp_frame_set_color_hex("MA", keyToColor[fuckBlizMapping["Attack"]]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    end
+end
+
+function FuckBlizzardPetAttack()
+    btp_frame_set_color_hex("MP", keyToColor["CTRL-1"]);
+    btp_frame_set_color_hex("IT", "FFFFFF");
+end
+
+function FuckBlizUseInventoryItem(itemID)
+    if (GetInventoryItemLink("player", itemID)) then
+        itemName = string.gsub(GetInventoryItemLink("player", itemID),
+                               "^.-%[(.*)%].*", "%1");
+        btp_frame_set_color_hex("IA", keyToColor[fuckBlizMapping[itemName]]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    end
+end
+
+function FuckBlizUseContainerItem(bag, slot)
+    if (GetContainerItemLink(bag, slot)) then
+        itemName = string.gsub(GetContainerItemLink(bag, slot),
+                               "^.-%[(.*)%].*", "%1");
+        btp_frame_set_color_hex("CA", keyToColor[fuckBlizMapping[itemName]]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    end
+end
+
+function FuckBlizzardMove(action)
+    if (action == "MOVEFORWARD") then
+        btp_frame_set_color_hex("IA", keyToColor["CTRL-B"]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    elseif (action == "MOVEBACKWARD") then
+        btp_frame_set_color_hex("IA", keyToColor["CTRL-C"]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    elseif (action == "TURNLEFT") then
+        btp_frame_set_color_hex("IA", keyToColor["CTRL-D"]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    elseif (action == "TURNRIGHT") then
+        btp_frame_set_color_hex("IA", keyToColor["CTRL-E"]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    elseif (action == "JUMP") then
+        btp_frame_set_color_hex("IA", keyToColor["CTRL-F"]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    elseif (action == "DOWN") then
+        btp_frame_set_color_hex("IA", keyToColor["CTRL-G"]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    elseif (action == "CLICK") then
+        btp_frame_set_color_hex("IA", keyToColor["CTRL-H"]);
+        btp_frame_set_color_hex("IT", "FFFFFF");
+    end
+end
+
+local function btp_get_XY(id)
+    return 100 * ((id % 10001) / 10000), 100 * (math.floor(id / 10001) / 10000);
+end
+
+function btp_collect_herbs(clear_me)
+    hasFlightFrom = false;
+    hasSwiftFlightFrom = false;
+
+    ProphetKeyBindings();
+    Minimap:SetBlipTexture("Interface\\AddOns\\btp\\ObjectIcons");
+
+    if (clear_me) then
+        btp_find_herb(true);
+        herbTimer = GetTime();
+        lastZone, herbX, herbY = btp_find_herb(false);
+        return true;
+    end
+
+    --
+    -- StarFall Debuff
+    --
+    hasStarFall, myStarFall,
+    numStarFall = btp_check_debuff("StarFall", "target");
+
+    local i = 1
+    while true do
+       local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+       if not spellName then
+          do break end
+       end
+
+       if (strfind(spellName, "Swift Flight Form")) then
+           hasSwiftFlightFrom = true;
+       end
+
+       if (strfind(spellName, "Flight Form")) then
+           hasFlightFrom = true;
+       end
+
+       i = i + 1
+    end
+
+    --
+    -- Find the closest unvisited herb
+    --
+    if (not lastZone) then
+        lastZone, herbX, herbY = btp_find_herb(false);
+    end
+
+    --
+    -- Debug
+    -- btp_frame_debug(lastZone .. " x = " .. herbX .. ", y = " .. herbY);
+    --
+
+    --
+    -- Kill shit around me
+    --
+    if (UnitAffectingCombat("player") and UnitExists("target") and
+        not UnitIsPlayer("target") and not IsFlying() and
+        UnitClassification("target") == "normal") then
+        if (not myStarFall and UnitMana("player") > 500) then
+            --
+            --  Backup
+            --
+            btp_frame_set_color_hex("IA", "202020");
+            btp_frame_set_color_hex("IT", "FFFFFF");
+        else
+            --
+            --  Clear all movement and do nothing
+            --
+            btp_frame_set_color_hex("IA", "909090");
+            btp_frame_set_color_hex("IT", "FFFFFF");
+        end
+
+        if (UnitClass("player") == "Druid" and druid_buff()) then
+            return true;
+        elseif (UnitClass("player") == "Druid" and druid_dps()) then
+            return true;
+        else
+            return true;
+        end
+    elseif (UnitAffectingCombat("player") and UnitExists("target") and
+            not btp_druid_isbird() and not IsFlying()) then
+        if (not myStarFall and UnitMana("player") > 500) then
+            --
+            --  Backup
+            --
+            btp_frame_set_color_hex("IA", "202020");
+            btp_frame_set_color_hex("IT", "FFFFFF");
+        else
+            --
+            --  Clear all movement and do nothing
+            --
+            btp_frame_set_color_hex("IA", "909090");
+            btp_frame_set_color_hex("IT", "FFFFFF");
+        end
+
+        if (UnitClass("player") == "Druid" and druid_buff()) then
+            return true;
+        elseif (UnitClass("player") == "Druid" and druid_dps()) then
+            return true;
+        else
+            return true;
+        end
+    elseif (not UnitAffectingCombat("player") and not IsFlying() and
+            UnitClass("player") == "Druid" and not btp_druid_isbird()) then
+        if (hasSwiftFlightFrom) then
+            FuckBlizzardByName("Swift Flight Form");
+        elseif (hasFlightFrom) then
+            FuckBlizzardByName("Flight Form");
+        end
+    end
+
+    --
+    -- Move to and pick that herb
+    --
+    btp_move_to_location(lastZone, herbX, herbY);
+
+    if ((GetTime() - herbTimer) >= 300) then
+        --
+        -- Mark closest herb as visited
+        --
+        btp_find_herb(true);
+        herbTimer = GetTime();
+        lastZone, herbX, herbY = btp_find_herb(false);
+        return true;
+    end
+
+    return false;
+end
+
+function btp_find_herb(markVisited)
+    myZone = GetZoneText();
+    px, py = GetPlayerMapPosition("player");
+    px, py = px * 100, py * 100;
+    shortest = 1000000;
+    foundOne = false;
+    zone = nil;
+    id = 0;
+    x = 0;
+    y = 0;
+
+    --
+    -- Find nearest herb in list.  If all herbs in the list are visited
+    -- move on to a new zone.  If all herbs in all zones are visited then
+    -- clear everything.
+    --
+    for z, t in pairs(BtpHerbalism) do
+        if (type(t) == "table" and z == myZone) then
+            for position, visited in pairs(t) do
+                if (visited == 0) then
+                    tx, ty = btp_get_XY(position);
+
+                    if (math.sqrt(math.pow(tx - px, 2) +
+                                  math.pow(ty - py, 2)) < shortest) then
+                        shortest = math.sqrt(math.pow(tx - px, 2) +
+                                             math.pow(ty - py, 2));
+                        foundOne = true;
+                        zone = z;
+                        id = position;
+                        x = tx;
+                        y = ty;
+                    end
+                end
+            end    
+        end
+    end
+
+    shortest = 1000000;
+
+    if (not foundOne) then
+        for z, t in pairs(BtpHerbalism) do
+            if (type(t) == "table") then
+                for position, visited in pairs(t) do
+                    if (visited == 0) then
+                        tx, ty = btp_get_XY(position);
+
+                        if (math.sqrt(math.pow(tx - px, 2) +
+                                      math.pow(ty - py, 2)) < shortest) then
+                            shortest = math.sqrt(math.pow(tx - px, 2) +
+                                                 math.pow(ty - py, 2));
+                            foundOne = true;
+                            zone = z;
+                            id = position;
+                            x = tx;
+                            y = ty;
+                            break;
+                        end
+                    end
+                end    
+            end
+        end
+    end
+
+    if (markVisited) then
+        BtpHerbalism[zone][id] = 1;
+        return zone, x, y;
+    end
+
+    if (not foundOne) then
+        for z, t in pairs(BtpHerbalism) do
+            if type(t) == "table" then
+                for position, visited in pairs(t) do
+                    t[position] = 0;
+                end    
+            end
+        end
+
+        zone = "Terokkar Forest";
+        x = 0;
+        y = 0;
+    end
+
+    --
+    -- return zone, x, and y
+    --
+    return zone, x, y;
+end
+
+function btp_move_to_location(zone, x, y)
+    myZone = GetZoneText();
+
+    if (zone and myZone and myZone ~= zone) then
+        if (myZone == "Shattrath City" and zone == "Terokkar Forest") then
+            SetMapZoom(3,7);
+        else
+            SetMapZoom(GetCurrentMapContinent());
+        end
+
+        if (zone == "Shadowmoon Valley") then
+            x = 59.3;
+            y = 80.0;
+        elseif (zone == "Hellfire Peninsula") then
+            x = 48.3;
+            y = 51.8;
+        elseif (zone == "Terokkar Forest") then
+            x = 51.2;
+            y = 69.7;
+        elseif (zone == "Nagrand") then
+            x = 34.9;
+            y = 66.5;
+        elseif (zone == "Zangarmarsh") then
+            x = 38.5;
+            y = 52.9;
+        elseif (zone == "Blade's Edge Mountains") then
+            x = 39.2;
+            y = 34.3;
+        elseif (zone == "Netherstorm") then
+            x = 50.1;
+            y = 26.3;
+        end
+    end
+
+    px, py = GetPlayerMapPosition("player");
+    px, py = px * 100, py * 100;
+    current_direction = math.deg(btp_get_facing()) + 90;
+
+    if (current_direction > 360) then
+        current_direction = current_direction - 360;
+    end
+
+    if (y <= py) then
+        target_direction = math.deg(math.abs(math.atan2(y - py, x - px)));
+    else
+        target_direction = 180 + math.deg(math.abs(math.atan2(py - y, px - x)));
+    end
+
+
+    if (((GetTime() - lastBackup) % 30) == 0) then
+        lastX = math.ceil(px);
+        lastY = math.ceil(py);
+    end
+  
+    if ((math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) > 0.5 and
+        not IsFlying()) or InCombatLockdown() or UnitHealth("player") <= 25 or
+        UnitMana("player")/UnitManaMax("player") <= .5 or 
+       ((GetTime() - lastBackup) >= 5 and (GetTime() - lastBackup) < 15)) then
+        --
+        --  Fly
+        --
+        btp_frame_set_color_hex("IA", "505050");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) > 0.5 and
+            IsFlying() and ((GetTime() - lastBackup) < 10 or
+           ((GetTime() - lastCoordCheck) > 30 and
+            lastX == math.ceil(px) and lastY == math.ceil(py)))) then
+        --
+        --  Backup
+        --
+        btp_frame_set_color_hex("IA", "202020");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        lastCoordCheck = GetTime();
+
+        if ((GetTime() - lastBackup) >= 10) then
+            lastBackup = GetTime();
+        end
+
+        return true;
+    elseif (current_direction > target_direction and
+            current_direction - target_direction <=
+           (360 - current_direction) + target_direction and
+           (current_direction - target_direction) >= 10) then
+        --
+        --  Turn Right
+        --
+        btp_frame_set_color_hex("IA", "404040");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (current_direction > target_direction and
+            current_direction - target_direction >=
+           (360 - current_direction) + target_direction and
+           ((360 - current_direction) + target_direction) >= 10) then
+        --
+        --  Turn Left
+        --
+        btp_frame_set_color_hex("IA", "303030");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (target_direction > current_direction and
+            target_direction - current_direction <=
+           (360 - target_direction) + current_direction and
+           (target_direction - current_direction) >= 10) then
+        --
+        --  Turn Left
+        --
+        btp_frame_set_color_hex("IA", "303030");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (target_direction > current_direction and
+            target_direction - current_direction >=
+           (360 - target_direction) + current_direction and
+           ((360 - target_direction) + current_direction) >= 10) then
+        --
+        --  Turn Right
+        --
+        btp_frame_set_color_hex("IA", "404040");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) > 0.5) then
+        --
+        --  Move Forward
+        --
+        btp_frame_set_color_hex("IA", "101010");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) <= 0.5 and
+            IsFlying() and not InCombatLockdown()) then
+        --
+        --  Swim/Fly Down
+        --
+        btp_frame_set_color_hex("IA", "606060");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) > 0.03 and
+            not IsFlying() and not InCombatLockdown() and
+           (GetTime() - lastNodeScan) > 5) then
+        --
+        --  Make sure the node is there.
+        --
+        btp_frame_set_color_hex("IA", "A0A0A0");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        lastNodeScan = GetTime();
+        return true;
+    elseif (math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) > 0.03 and
+            not IsFlying() and not InCombatLockdown()) then
+        --
+        --  Slow walk to the exact place.
+        --
+        btp_frame_set_color_hex("IA", "101010");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    elseif (okayClick) then
+        --              
+        --  Click on loot
+        --                
+        btp_frame_set_color_hex("IA", "707070");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        okayClick = false;
+        return true;
+    elseif (math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) <= 0.03 and
+            not IsFlying() and not InCombatLockdown() and
+           (GetTime() - lastNodeScan) > 5) then
+        --
+        --  Make sure the node is there.
+        --
+        btp_frame_set_color_hex("IA", "A0A0A0");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        lastNodeScan = GetTime();
+        return true;
+    elseif (math.sqrt(math.pow(x - px, 2) + math.pow(y - py, 2)) <= 0.03 and
+            not InCombatLockdown() and not IsFlying()) then
+        --
+        --  Scan for Loot
+        --
+        btp_frame_set_color_hex("IA", "808080");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        scanForLoot = true;
+        return true;
+    else
+        --
+        --  Clear all movement and do nothing
+        --
+        btp_frame_set_color_hex("IA", "909090");
+        btp_frame_set_color_hex("IT", "FFFFFF");
+        return true;
+    end
+end
+
+function SetEquipItem(itemName)
+    equipItem = itemName;
+end
+
+function btp_check_dist(target, dist)
+    if(target == nil or dist == nil) then return false; end
+    -- btp_frame_debug("dist: " .. dist .. " target: " .. target);
+    if (dontCheckDist) then
+        return true;
+    else
+	if(target ~= nil) then
+        return CheckInteractDistance(target, dist);
+	else
+		return false;
+	end
+    end
+end
+
+function BTP_Decursive()
+    hasMagicDebuff = false;
+    hasDiseaseDebuff = false;
+    hasCurseDebuff = false;
+    hasPoisonDebuff = false;
+    debuffPlayer = "player";
+
+    for i = 1, GetNumRaidMembers() do
+        nextPlayer = "raid" .. i;
+
+        if (btp_check_dist(nextPlayer, 1)) then
+            if (UnitExists("raidpet" .. i) and
+                btp_check_dist("raidpet" .. i, 1)) then
+
+                debuffTexture = "foo";
+                j = 1;
+
+                while (debuffTexture) do
+                    debuffName, debuffRank, debuffTexture, debuffApplications,
+                    debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+                    debuffStealable = UnitDebuff("raidpet" .. i, j);
+
+                    if (debuffTexture and
+                        not strfind(debuffTexture, "Cripple") and
+                        debuffType and strfind(debuffType, "Magic") and
+                        not (UnitClass("player") == "Druid" or 
+                        UnitClass("player") == "Mage" or
+                        UnitClass("player") == "Shaman")) then
+                        hasMagicDebuff = true;
+                        debuffPlayer = "raidpet" .. i;
+                    end
+
+                    if (debuffTexture and debuffType and
+                        strfind(debuffType, "Disease") and
+                        not (UnitClass("player") == "Druid" or
+                        UnitClass("player") == "Mage")) then
+                        hasDiseaseDebuff = true;
+                        debuffPlayer = "raidpet" .. i;
+
+                        --
+                        -- NullifyDisease check
+                        --
+                        hasNullifyDisease, myNullifyDisease,
+                        numNullifyDisease = btp_check_buff("NullifyDisease",
+                                                           debuffPlayer);
+
+                        if (hasNullifyDisease) then
+                            hasDiseaseDebuff = false;
+                        end
+                    end
+
+                    if (debuffTexture and debuffType and
+                        strfind(debuffType, "Curse") and
+                        not (UnitClass("player") == "Priest" or
+                        UnitClass("player") == "Paladin" or
+                        UnitClass("player") == "Shaman")) then
+                        hasCurseDebuff = true;
+                        debuffPlayer = "raidpet" .. i;
+                    end
+
+                    if (debuffTexture and debuffType and
+                        strfind(debuffType, "Poison") and
+                        not (UnitClass("player") == "Priest" or
+                        UnitClass("player") == "Mage")) then
+                        hasPoisonDebuff = true;
+                        debuffPlayer = "raidpet" .. i;
+
+                        --
+                        -- NullifyPoison check
+                        --
+                        hasNullifyPoison, myNullifyPoison,
+                        numNullifyPoison = btp_check_buff("NullifyPoison",
+                                                          debuffPlayer);
+
+                        if (hasNullifyPoison) then
+                            hasPoisonDebuff = false;
+                        end
+                    end
+
+                    j = j + 1;
+                end
+            end
+
+            debuffTexture = "foo";
+            j = 1;
+
+            while (debuffTexture) do
+                --
+                -- Players are more important
+                --
+                debuffName, debuffRank, debuffTexture, debuffApplications,
+                debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+                debuffStealable = UnitDebuff(nextPlayer, j);
+
+                if (debuffTexture and not strfind(debuffTexture, "Cripple") and
+                    debuffType and strfind(debuffType, "Magic") and
+                    not (UnitClass("player") == "Druid" or 
+                    UnitClass("player") == "Mage" or
+                    UnitClass("player") == "Shaman")) then
+                    hasMagicDebuff = true;
+                    debuffPlayer = nextPlayer;
+                    break;
+                end
+
+                if (debuffTexture and debuffType and
+                    strfind(debuffType, "Disease") and
+                    not (UnitClass("player") == "Druid" or
+                    UnitClass("player") == "Mage")) then
+                    hasDiseaseDebuff = true;
+                    debuffPlayer = nextPlayer;
+
+                    --
+                    -- NullifyDisease check
+                    --
+                    hasNullifyDisease, myNullifyDisease,
+                    numNullifyDisease = btp_check_buff("NullifyDisease",
+                                                       debuffPlayer);
+
+                    if (hasNullifyDisease) then
+                        hasDiseaseDebuff = false;
+                    end
+
+                    if (hasDiseaseDebuff) then
+                        break;
+                    end
+                end
+
+                if (debuffTexture and debuffType and
+                    strfind(debuffType, "Curse") and
+                    not (UnitClass("player") == "Priest" or
+                    UnitClass("player") == "Paladin" or
+                    UnitClass("player") == "Shaman")) then
+                    hasCurseDebuff = true;
+                    debuffPlayer = nextPlayer;
+                    break;
+                end
+
+                if (debuffTexture and debuffType and
+                    strfind(debuffType, "Poison") and
+                    not (UnitClass("player") == "Priest" or
+                    UnitClass("player") == "Mage")) then
+                    hasPoisonDebuff = true;
+                    debuffPlayer = nextPlayer;
+
+                    --
+                    -- NullifyPoison check
+                    --
+                    hasNullifyPoison, myNullifyPoison,
+                    numNullifyPoison = btp_check_buff("NullifyPoison",
+                                                      debuffPlayer);
+
+                    if (hasNullifyPoison) then
+                        hasPoisonDebuff = false;
+                    end
+
+                    if (hasPoisonDebuff) then
+                        break;
+                    end
+                end
+
+                j = j + 1;
+            end
+        end
+    end
+
+    if (GetNumRaidMembers() <= 0) then
+        for i = 1, GetNumPartyMembers() do
+            nextPlayer = "party" .. i;
+
+            if (btp_check_dist(nextPlayer, 1)) then
+                if (UnitExists("partypet" .. i) and
+                    btp_check_dist("partypet" .. i, 1)) then
+
+                    debuffTexture = "foo";
+                    j = 1;
+
+                    while (debuffTexture) do
+                        debuffName, debuffRank, debuffTexture,
+                        debuffApplications, debuffType, debuffDuration,
+                        debuffTimeLeft, debuffMine,
+                        debuffStealable = UnitDebuff("partypet" .. i, j);
+
+                        if (debuffTexture and
+                            not strfind(debuffTexture, "Cripple") and
+                            debuffType and strfind(debuffType, "Magic") and
+                            not (UnitClass("player") == "Druid" or 
+                            UnitClass("player") == "Mage" or 
+                            UnitClass("player") == "Shaman")) then
+                            hasMagicDebuff = true;
+                            debuffPlayer = "partypet" .. i;
+                        end
+
+                        if (debuffTexture and debuffType and
+                            strfind(debuffType, "Disease") and
+                            not (UnitClass("player") == "Druid" or
+                            UnitClass("player") == "Mage")) then
+                            hasDiseaseDebuff = true;
+                            debuffPlayer = "partypet" .. i;
+
+                            --
+                            -- NullifyDisease check
+                            --
+                            hasNullifyDisease, myNullifyDisease,
+                            numNullifyDisease = btp_check_buff("NullifyDisease",
+                                                               debuffPlayer);
+
+                            if (hasNullifyDisease) then
+                                hasDiseaseDebuff = false;
+                            end
+                        end
+
+                        if (debuffTexture and debuffType and
+                            strfind(debuffType, "Curse") and
+                            not (UnitClass("player") == "Priest" or
+                            UnitClass("player") == "Paladin" or
+                            UnitClass("player") == "Shaman")) then
+                            hasCurseDebuff = true;
+                            debuffPlayer = "partypet" .. i;
+                        end
+
+                        if (debuffTexture and debuffType and
+                            strfind(debuffType, "Poison") and
+                            not (UnitClass("player") == "Priest" or
+                            UnitClass("player") == "Mage")) then
+                            hasPoisonDebuff = true;
+                            debuffPlayer = "partypet" .. i;
+
+                            --
+                            -- NullifyPoison check
+                            --
+                            hasNullifyPoison, myNullifyPoison,
+                            numNullifyPoison = btp_check_buff("NullifyPoison",
+                                                              debuffPlayer);
+
+                            if (hasNullifyPoison) then
+                                hasPoisonDebuff = false;
+                            end
+                        end
+
+                        j = j + 1;
+                    end
+                end
+
+                debuffTexture = "foo";
+                j = 1;
+
+                while (debuffTexture) do
+                    --
+                    -- Players are more important
+                    --
+                    debuffName, debuffRank, debuffTexture, debuffApplications,
+                    debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+                    debuffStealable = UnitDebuff(nextPlayer, j);
+
+                    if (debuffTexture and
+                        not strfind(debuffTexture, "Cripple") and
+                        debuffType and strfind(debuffType, "Magic") and
+                        not (UnitClass("player") == "Druid" or 
+                        UnitClass("player") == "Mage" or
+                        UnitClass("player") == "Shaman")) then
+                        hasMagicDebuff = true;
+                        debuffPlayer = nextPlayer;
+                        break;
+                    end
+
+                    if (debuffTexture and debuffType and
+                        strfind(debuffType, "Disease") and
+                        not (UnitClass("player") == "Druid" or
+                        UnitClass("player") == "Mage")) then
+                        hasDiseaseDebuff = true;
+                        debuffPlayer = nextPlayer;
+
+                        --
+                        -- NullifyDisease check
+                        --
+                        hasNullifyDisease, myNullifyDisease,
+                        numNullifyDisease = btp_check_buff("NullifyDisease",
+                                                           debuffPlayer);
+
+                        if (hasNullifyDisease) then
+                            hasDiseaseDebuff = false;
+                        end
+
+                        if (hasDiseaseDebuff) then
+                            break;
+                        end
+                    end
+
+                    if (debuffTexture and debuffType and
+                        strfind(debuffType, "Curse") and
+                        not (UnitClass("player") == "Priest" or
+                        UnitClass("player") == "Paladin" or
+                        UnitClass("player") == "Shaman")) then
+                        hasCurseDebuff = true;
+                        debuffPlayer = nextPlayer;
+                        break;
+                    end
+
+                    if (debuffTexture and debuffType and
+                        strfind(debuffType, "Poison") and
+                        not (UnitClass("player") == "Priest" or
+                        UnitClass("player") == "Mage")) then
+                        hasPoisonDebuff = true;
+                        debuffPlayer = nextPlayer;
+
+                        --
+                        -- NullifyPoison check
+                        --
+                        hasNullifyPoison, myNullifyPoison,
+                        numNullifyPoison = btp_check_buff("NullifyPoison",
+                                                          debuffPlayer);
+
+                        if (hasNullifyPoison) then
+                            hasPoisonDebuff = false;
+                        end
+
+                        if (hasPoisonDebuff) then
+                            break;
+                        end
+                    end
+
+                    j = j + 1;
+                end
+            end
+        end
+    end
+
+    debuffTexture = "foo";
+    i = 1;
+
+    while (debuffTexture) do
+        --
+        -- our pet
+        --
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff("pet", i);
+
+        if (debuffTexture and not strfind(debuffTexture, "Cripple") and
+            debuffType and strfind(debuffType, "Magic") and
+            not (UnitClass("player") == "Druid" or 
+            UnitClass("player") == "Mage" or
+            UnitClass("player") == "Shaman")) then
+            hasMagicDebuff = true;
+            debuffPlayer = "pet";
+            break;
+        end
+
+        if (debuffTexture and debuffType and
+            strfind(debuffType, "Disease") and
+            not (UnitClass("player") == "Druid" or
+            UnitClass("player") == "Mage")) then
+            hasDiseaseDebuff = true;
+            debuffPlayer = "pet";
+
+            --
+            -- NullifyDisease check
+            --
+            hasNullifyDisease, myNullifyDisease,
+            numNullifyDisease = btp_check_buff("NullifyDisease",
+                                               debuffPlayer);
+
+            if (hasNullifyDisease) then
+                hasDiseaseDebuff = false;
+            end
+
+            if (hasDiseaseDebuff) then
+                break;
+            end
+        end
+
+        if (debuffTexture and debuffType and
+            strfind(debuffType, "Curse") and
+            not (UnitClass("player") == "Priest" or
+            UnitClass("player") == "Paladin" or
+            UnitClass("player") == "Shaman")) then
+            hasCurseDebuff = true;
+            debuffPlayer = "pet";
+            break;
+        end
+
+        if (debuffTexture and debuffType and
+            strfind(debuffType, "Poison") and
+            not (UnitClass("player") == "Priest" or
+            UnitClass("player") == "Mage")) then
+            hasPoisonDebuff = true;
+            debuffPlayer = "pet";
+
+            --
+            -- NullifyPoison check
+            --
+            hasNullifyPoison, myNullifyPoison,
+            numNullifyPoison = btp_check_buff("NullifyPoison", debuffPlayer);
+
+            if (hasNullifyPoison) then
+                hasPoisonDebuff = false;
+            end
+
+            if (hasPoisonDebuff) then
+                break;
+            end
+        end
+
+        i = i + 1;
+    end
+
+    debuffTexture = "foo";
+    i = 1;
+
+    while (debuffTexture) do
+        --
+        -- I am more important
+        --
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff("player", i);
+
+        if (debuffTexture and not strfind(debuffTexture, "Cripple") and
+            debuffType and strfind(debuffType, "Magic") and
+            not (UnitClass("player") == "Druid" or 
+            UnitClass("player") == "Mage" or
+            UnitClass("player") == "Shaman")) then
+            hasMagicDebuff = true;
+            debuffPlayer = "player";
+            break;
+        end
+
+        if (debuffTexture and debuffType and
+            strfind(debuffType, "Disease") and
+            not (UnitClass("player") == "Druid" or
+            UnitClass("player") == "Mage")) then
+            hasDiseaseDebuff = true;
+            debuffPlayer = "player";
+
+            --
+            -- NullifyDisease check
+            --
+            hasNullifyDisease, myNullifyDisease,
+            numNullifyDisease = btp_check_buff("NullifyDisease", debuffPlayer);
+
+            if (hasNullifyDisease) then
+                hasDiseaseDebuff = false;
+            end
+
+            if (hasDiseaseDebuff) then
+                break;
+            end
+        end
+
+        if (debuffTexture and debuffType and
+            strfind(debuffType, "Curse") and
+            not (UnitClass("player") == "Priest" or
+            UnitClass("player") == "Paladin" or
+            UnitClass("player") == "Shaman")) then
+            hasCurseDebuff = true;
+            debuffPlayer = "player";
+            break;
+        end
+
+        if (debuffTexture and debuffType and
+            strfind(debuffType, "Poison") and
+            not (UnitClass("player") == "Priest" or
+            UnitClass("player") == "Mage")) then
+            hasPoisonDebuff = true;
+            debuffPlayer = "player";
+
+            --
+            -- NullifyPoison check
+            --
+            hasNullifyPoison, myNullifyPoison,
+            numNullifyPoison = btp_check_buff("NullifyPoison", debuffPlayer);
+
+            if (hasNullifyPoison) then
+                hasPoisonDebuff = false;
+            end
+
+            if (hasPoisonDebuff) then
+                break;
+            end
+        end
+
+        i = i + 1;
+    end
+
+    if (UnitClass("player") == "Druid") then
+        if (hasCurseDebuff and
+            btp_cast_spell_on_target("Remove Curse", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (hasPoisonDebuff and
+                btp_cast_spell_on_target("Abolish Poison", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (hasPoisonDebuff and
+                btp_cast_spell_on_target("Cure Poison", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        end
+    elseif (UnitClass("player") == "Priest") then
+        if (hasMagicDebuff and
+            btp_cast_spell_on_target("Dispel Magic", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (hasDiseaseDebuff and
+                btp_cast_spell_on_target("Abolish Disease", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (hasDiseaseDebuff and
+                btp_cast_spell_on_target("Cure Disease", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        end
+    elseif (UnitClass("player") == "Shaman") then
+        haveTotem, totemName, startTime, duration = GetTotemInfo(3);
+
+        if (hasDiseaseDebuff and
+            totemName ~= "Mana Tide Totem" and
+            totemName ~= "Poison Cleansing Totem" and
+            totemName ~= "Disease Cleansing Totem" and
+            btp_cast_spell("Disease Cleansing Totem")) then
+            return true;
+        elseif (hasPoisonDebuff and
+                totemName ~= "Mana Tide Totem" and
+                totemName ~= "Disease Cleansing Totem" and
+                totemName ~= "Poison Cleansing Totem" and
+                btp_cast_spell("Poison Cleansing Totem")) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif ((hasDiseaseDebuff or hasPoisonDebuff) and
+                btp_cast_spell_on_target("Cleanse Spirit", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (hasPoisonDebuff and
+                btp_cast_spell_on_target("Cure Poison", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (hasDiseaseDebuff and
+                btp_cast_spell_on_target("Cure Disease", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        end
+    elseif (UnitClass("player") == "Mage") then
+        if (hasCurseDebuff and
+            btp_cast_spell_on_target("Remove Lesser Curse", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        end
+    elseif (UnitClass("player") == "Paladin") then
+        if ((hasMagicDebuff or hasDiseaseDebuff or hasPoisonDebuff) and
+            btp_cast_spell_on_target("Cleanse", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif ((hasDiseaseDebuff or hasPoisonDebuff) and
+                btp_cast_spell_on_target("Purge", debuffPlayer)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        end
+    end
+end
+
+function RollRGB(r, g, b)
+        b = b + 1;
+
+        if (b > 16) then
+            b = 1;   
+            g = g + 1;
+                           
+            if (g > 16) then
+                g = 1;   
+                r = r + 1;
+                              
+                if (r > 16) then
+                    btp_frame_debug("btp: No more RGB values.");
+                end
+            end
+        end
+
+        return r, g, b;
+end
+
+function CleanFrame()
+    --
+    -- This is hear because it is run last.  This means after we start
+    -- casting a spell we can flip an item on that helps that spell.
+    -- Look to the warlock code for details.
+    --
+    if (equipItem) then
+        EquipItemByName(equipItem);
+        equipItem = nil;
+    end
+
+    -- Set frames back to black
+    -- James' frame color function here.
+    btp_frame_set_color_hex("IT", "000000");
+    btp_frame_set_color_hex("IA", "000000");
+    btp_frame_set_color_hex("IPT", "000000");
+
+    btp_frame_set_color_hex("CT", "000000");
+    btp_frame_set_color_hex("CA", "000000");
+    btp_frame_set_color_hex("CPT", "000000");
+
+    btp_frame_set_color_hex("AT", "000000");
+    btp_frame_set_color_hex("AA", "000000");
+    btp_frame_set_color_hex("APT", "000000");
+
+    btp_frame_set_color_hex("PT", "000000");
+    btp_frame_set_color_hex("MA", "000000");
+    btp_frame_set_color_hex("PA", "000000");
+    btp_frame_set_color_hex("MP", "000000");
+    btp_frame_set_color_hex("PPT", "000000");
+end
+
+function ProphetKeyBindings()
+    key = "CTRL-";
+    letters = { "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O",
+                "P","Q","R","S","T","U","V","W","X","Y","Z","`","-","=","[",
+                "]",";","'",",",".","/","1","2","3","4","5","6","7","8",
+                "9" };
+    i = 1;
+    j = 1;
+               
+    if (not InCombatLockdown() and not btp_is_mounted("player")) then
+        if (not fuckBlizMapping or (GetTime() - lastBinding) >= 120) then
+            lastBinding = GetTime();
+            fuckBlizMapping = { };
+
+            --
+            -- Tuck this away here so it happens once.
+            --
+            btp_init_spells();
+
+            --
+            -- You know for robots
+            --
+            SetBinding(key .. "1", "PetAttack");
+            fuckBlizMapping[key] = key .. "1";
+            j = j + 1;
+            SetBinding(key .. letters[j], "MOVEFORWARD");
+            fuckBlizMapping[key] = "MOVEFORWARD";
+            j = j + 1;
+            SetBinding(key .. letters[j], "MOVEBACKWARD");
+            fuckBlizMapping[key .. letters[j]] = "MOVEBACKWARD";
+            j = j + 1;
+            SetBinding(key .. letters[j], "TURNLEFT");
+            fuckBlizMapping[key .. letters[j]] = "TURNLEFT";
+            j = j + 1;
+            SetBinding(key .. letters[j], "TURNRIGHT");
+            fuckBlizMapping[key .. letters[j]] = "TURNRIGHT";
+            j = j + 1;
+            SetBinding(key .. letters[j], "JUMP");
+            fuckBlizMapping[key .. letters[j]] = "JUMP";
+            j = j + 1;
+            SetBinding(key .. letters[j], "DOWN");
+            fuckBlizMapping[key .. letters[j]] = "DOWN";
+            j = j + 1;
+            SetBinding(key .. letters[j], "CLICK");
+            fuckBlizMapping[key .. letters[j]] = "CLICK";
+            j = j + 1;
+
+            --
+            -- One key press target
+            --
+            k = 1;
+            btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                              "SecureActionButtonTemplate");
+            btn:RegisterForClicks("AnyUp");
+            btn:SetAttribute("type", "macro");
+            btn:SetAttribute("macrotext", "/focus target\n/target player");
+
+            SetBindingClick(key .. letters[j], "BtpButton" .. k);
+            fuckBlizMapping["player"] = key .. letters[j];
+            j = j + 1;
+            k = k + 1;
+            local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                    "SecureActionButtonTemplate");
+            btn:RegisterForClicks("AnyUp");
+            btn:SetAttribute("type", "macro");
+            btn:SetAttribute("macrotext", "/target focus");
+            SetBindingClick(key .. letters[j], "BtpButton" .. k);
+            fuckBlizMapping["playertarget"] = key .. letters[j];
+            j = j + 1;
+            k = k + 1;
+            local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                    "SecureActionButtonTemplate");
+            btn:RegisterForClicks("AnyUp");
+            btn:SetAttribute("type", "macro");
+            btn:SetAttribute("macrotext", "/focus target\n/target pet");
+            SetBindingClick(key .. letters[j], "BtpButton" .. k);
+            fuckBlizMapping["pet"] = key .. letters[j];
+            j = j + 1;
+            k = k + 1;
+            local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                    "SecureActionButtonTemplate");
+            btn:RegisterForClicks("AnyUp");
+            btn:SetAttribute("type", "macro");
+            btn:SetAttribute("macrotext", "/focus target\n/target pettarget");
+            SetBindingClick(key .. letters[j], "BtpButton" .. k);
+            fuckBlizMapping["pettarget"] = key .. letters[j];
+            j = j + 1;
+            k = k + 1;
+            local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                    "SecureActionButtonTemplate");
+            btn:RegisterForClicks("AnyUp");
+            btn:SetAttribute("type", "macro");
+            btn:SetAttribute("macrotext",
+                             "/focus target\n/targetfriend");
+            SetBindingClick(key .. letters[j], "BtpButton" .. k);
+            fuckBlizMapping["targetfriend"] = key .. letters[j];
+            j = j + 1;
+            k = k + 1;
+            local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                    "SecureActionButtonTemplate");
+            btn:RegisterForClicks("AnyUp");
+            btn:SetAttribute("type", "macro");
+            btn:SetAttribute("macrotext", "/focus target\n/targetenemy");
+            SetBindingClick(key .. letters[j], "BtpButton" .. k);
+            fuckBlizMapping["targetenemy"] = key .. letters[j];
+            j = j + 1;
+            k = k + 1;
+            local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                    "SecureActionButtonTemplate");
+            btn:RegisterForClicks("AnyUp");
+            btn:SetAttribute("type", "macro");
+            btn:SetAttribute("macrotext",
+                             "/focus target\n/target targettarget");
+            SetBindingClick(key .. letters[j], "BtpButton" .. k);
+            fuckBlizMapping["targettarget"] = key .. letters[j];
+            j = j + 1;
+            k = k + 1;
+
+            --
+            -- I am looking at the code way after the fact, but I think
+            -- it means that we can use ALT-CTRL-SHIFT-[0-9] for stuff.
+            -- The crowd control code is bound to 9, and the stopcasting
+            -- code is bound to 8 for now.
+            --
+            if (UnitClass("player") == "Druid") then
+                fuckBlizMapping["druidcc"] = "ALT-CTRL-SHIFT-9";
+            elseif (UnitClass("player") == "Priest") then
+                fuckBlizMapping["priestcc"] = "ALT-CTRL-SHIFT-9";
+            elseif (UnitClass("player") == "Warlock") then
+                fuckBlizMapping["warlockcc"] = "ALT-CTRL-SHIFT-9";
+            elseif (UnitClass("player") == "Mage") then
+                fuckBlizMapping["magecc"] = "ALT-CTRL-SHIFT-9";
+            elseif (UnitClass("player") == "Rogue") then
+                fuckBlizMapping["roguecc"] = "ALT-CTRL-SHIFT-9";
+            end
+
+            btp_set_macro("btp_stopcasting", "/stopcasting", 8)
+            fuckBlizMapping["stopcasting"] = "ALT-CTRL-SHIFT-8";
+
+            while true do
+               local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+               if not spellName then
+                  do break end      
+               end
+
+               if (fuckBlizMapping[spellName] == nil) then
+		   if(key=="CTRL-" and letters[j] == ",") then
+                       j = j + 1;
+                   end
+                   fuckBlizMapping[spellName] = key .. letters[j];
+                   -- btp_frame_debug("key: " .. key .. letters[j] ..
+                   --                 " spell: " .. spellName);
+                   SetBindingSpell(key .. letters[j], spellName);
+                   j = j + 1;
+               end
+                          
+               if (j > 45 or (j > 36 and (key == "CTRL-" or
+                   key == "ALT-CTRL-SHIFT-"))) then
+                   if (key == "CTRL-") then
+                       key = "CTRL-SHIFT-";
+                   elseif (key == "CTRL-SHIFT-") then
+                       key = "ALT-";
+                   elseif (key == "ALT-") then
+                       key = "ALT-SHIFT-";
+                   elseif (key == "ALT-SHIFT-") then
+                       key = "ALT-CTRL-";
+                   elseif (key == "ALT-CTRL-") then
+                       key = "ALT-CTRL-SHIFT-";
+                   elseif (key == "ALT-CTRL-SHIFT-") then
+                       -- btp_frame_debug("No more keys to bind at: " ..
+                       --                       spellName);
+                       return true;
+                   end
+    
+                   j = 1;
+               end
+
+               i = i + 1;
+            end
+
+            i = 1;
+            while true do
+               local spellName, spellRank = GetSpellName(i, BOOKTYPE_PET);
+               if not spellName then
+                  do break end      
+               end
+
+               if (fuckBlizMapping[spellName] == nil) then
+                   fuckBlizMapping[spellName] = key .. letters[j];
+                   SetBindingSpell(key .. letters[j], spellName);
+                   j = j + 1;
+               end
+                          
+               if (j > 45 or (j > 36 and (key == "CTRL-" or
+                   key == "ALT-CTRL-SHIFT-"))) then
+                   if (key == "CTRL-") then
+                       key = "CTRL-SHIFT-";
+                   elseif (key == "CTRL-SHIFT-") then
+                       key = "ALT-";
+                   elseif (key == "ALT-") then
+                       key = "ALT-SHIFT-";
+                   elseif (key == "ALT-SHIFT-") then
+                       key = "ALT-CTRL-";
+                   elseif (key == "ALT-CTRL-") then
+                       key = "ALT-CTRL-SHIFT-";
+                   elseif (key == "ALT-CTRL-SHIFT-") then
+                       -- btp_frame_debug("No more keys to bind at: " ..
+                       --                       spellName);
+                       return true;
+                   end
+
+                   j = 1;
+               end
+
+               i = i + 1;
+            end
+
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                   itemName, itemLink, itemRarity, itemLevel, itemMinLevel,
+                   itemType, itemSubType, itemStackCount, itemEquipLoc,
+                   invTexture = GetItemInfo(GetContainerItemLink(bag,slot));
+
+                   if ((itemType == "Consumable" or
+                       (itemType == "Trade Goods" and
+                        itemSubType == "Devices") or
+                       (itemType == "Trade Goods" and
+                        itemSubType == "Explosives") or
+                       (itemType == "Armor" and
+                        itemSubType == "Miscellaneous") or
+                       (itemType == "Miscellaneous" and
+                        itemSubType == "Mount") or
+                       (itemType == "Miscellaneous" and
+                        itemSubType == "Junk")) and
+                       fuckBlizMapping[itemName] == nil) then
+                       fuckBlizMapping[itemName] = key .. letters[j];
+                       SetBindingItem(key .. letters[j], itemName);
+                       j = j + 1;
+                   end
+
+                   if (j > 45 or (j > 36 and (key == "CTRL-" or
+                       key == "ALT-CTRL-SHIFT-"))) then
+                       if (key == "CTRL-") then
+                           key = "CTRL-SHIFT-";
+                       elseif (key == "CTRL-SHIFT-") then
+                           key = "ALT-";
+                       elseif (key == "ALT-") then
+                           key = "ALT-SHIFT-";
+                       elseif (key == "ALT-SHIFT-") then
+                           key = "ALT-CTRL-";
+                       elseif (key == "ALT-CTRL-") then
+                           key = "ALT-CTRL-SHIFT-";
+                       elseif (key == "ALT-CTRL-SHIFT-") then
+                           -- btp_frame_debug("No more keys to bind at: " ..
+                           --                       itemName);
+                           return true;
+                       end
+
+                       j = 1;
+                   end
+                end
+              end
+            end
+
+            for slot=0,23 do
+                if (GetInventoryItemLink("player", slot)) then
+                  itemName, itemLink, itemRarity, itemLevel, itemMinLevel,
+                  itemType, itemSubType, itemStackCount, itemEquipLoc,
+                  invTexture = GetItemInfo(GetInventoryItemLink("player",slot));
+
+                   if (fuckBlizMapping[itemName] == nil) then
+                       fuckBlizMapping[itemName] = key .. letters[j];
+                       SetBindingItem(key .. letters[j], itemName);
+                       j = j + 1;
+                   end
+
+                   if (j > 45 or (j > 36 and (key == "CTRL-" or
+                       key == "ALT-CTRL-SHIFT-"))) then
+                       if (key == "CTRL-") then
+                           key = "CTRL-SHIFT-";
+                       elseif (key == "CTRL-SHIFT-") then
+                           key = "ALT-";
+                       elseif (key == "ALT-") then
+                           key = "ALT-SHIFT-";
+                       elseif (key == "ALT-SHIFT-") then
+                           key = "ALT-CTRL-";
+                       elseif (key == "ALT-CTRL-") then
+                           key = "ALT-CTRL-SHIFT-";
+                       elseif (key == "ALT-CTRL-SHIFT-") then
+                           -- btp_frame_debug("No more keys to bind at: " ..
+                           --                       itemName);
+                           return true;
+                       end
+
+                       j = 1;
+                   end
+                end
+            end
+
+            i = 1;
+            for i=1,5 do
+                if (fuckBlizMapping["party" .. i] == nil) then
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");  
+                    btn:SetAttribute("type", "macro");
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target party" .. i);
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);
+                    fuckBlizMapping["party" .. i] = key .. letters[j];
+                    k = k + 1;
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "party" .. i);
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            i = 1;
+            for i=1,40 do
+                if (fuckBlizMapping["raid" .. i] == nil) then
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");
+                    btn:SetAttribute("type", "macro");
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target raid" .. i);
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);
+                    fuckBlizMapping["raid" .. i] = key .. letters[j];
+                    k = k + 1;
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "raid" .. i);
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            i = 1;
+            for i=1,5 do
+                if (fuckBlizMapping["partypet" .. i] == nil) then
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");
+                    btn:SetAttribute("type", "macro");
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target partypet" .. i);
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);
+                    fuckBlizMapping["partypet" .. i] = key .. letters[j];
+                    k = k + 1;
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "partypet" .. i);
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            i = 1;
+            for i=1,40 do
+                if (fuckBlizMapping["raidpet" .. i] == nil) then
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");
+                    btn:SetAttribute("type", "macro");
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target raidpet" .. i);
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);
+                    fuckBlizMapping["raidpet" .. i] = key .. letters[j];
+                    k = k + 1;
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "raidpet" .. i);
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            i = 1;
+            for i=1,5 do
+                if (fuckBlizMapping["party" .. i .. "target"] == nil) then
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");  
+                    btn:SetAttribute("type", "macro"); 
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target party" .. i ..
+                                     "target");
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);
+                    fuckBlizMapping["party" .. i .. "target"] = key ..
+                                    letters[j];
+                    k = k + 1;
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "party" .. i .. "target");
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            i = 1;
+            for i=1,40 do
+                if (fuckBlizMapping["raid" .. i .. "target"] == nil) then
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");
+                    btn:SetAttribute("type", "macro");
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target raid" .. i ..
+                                     "target");                          
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);      
+                    fuckBlizMapping["raid" .. i .. "target"] = key ..
+                                    letters[j];                       
+                    k = k + 1;                                                  
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "raid" .. i .. "target");
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            i = 1;
+            for i=1,5 do
+                if (fuckBlizMapping["partypet" .. i .. "target"] == nil) then
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");
+                    btn:SetAttribute("type", "macro");
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target partypet" .. i ..
+                                     "target");                          
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);      
+                    fuckBlizMapping["partypet" .. i .. "target"] = key ..
+                                    letters[j];                       
+                    k = k + 1;                                                  
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "partypet" .. i .. "target");
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            i = 1;
+            for i=1,40 do
+                if (fuckBlizMapping["raidpet" .. i .. "target"] == nil) then
+
+
+                    local btn = CreateFrame("Button", "BtpButton" .. k, nil,
+                                            "SecureActionButtonTemplate");
+                    btn:RegisterForClicks("AnyUp");
+                    btn:SetAttribute("type", "macro");
+                    btn:SetAttribute("macrotext",
+                                     "/focus target\n/target raidpet" .. i ..
+                                     "target");                   
+                    SetBindingClick(key .. letters[j], "BtpButton" .. k);
+                    fuckBlizMapping["raidpet" .. i .. "target"] = key ..
+                                    letters[j];
+                    k = k + 1;                                         
+                    j = j + 1;
+                end
+
+                if (j > 45 or (j > 36 and (key == "CTRL-" or
+                    key == "ALT-CTRL-SHIFT-"))) then
+                    if (key == "CTRL-") then
+                        key = "CTRL-SHIFT-";
+                    elseif (key == "CTRL-SHIFT-") then
+                        key = "ALT-";
+                    elseif (key == "ALT-") then
+                        key = "ALT-SHIFT-";
+                    elseif (key == "ALT-SHIFT-") then
+                        key = "ALT-CTRL-";
+                    elseif (key == "ALT-CTRL-") then
+                        key = "ALT-CTRL-SHIFT-";
+                    elseif (key == "ALT-CTRL-SHIFT-") then
+                        -- btp_frame_debug("No more keys to bind at: " ..
+                        --                       "raidpet" .. i .. "target");
+                        return true;
+                    end
+
+                    j = 1;
+                end
+            end
+
+            return true;
+        end
+    end
+
+    return false;
+end
+
+function btp_general_resurrect_request()
+    if (not botOff and event == "RESURRECT_REQUEST") then
+        AcceptResurrect();
+    end
+end
+
+function btp_general_cursor_update()
+    if (scanForLoot) then
+        okayClick = true;
+        scanForLoot = false;
+    end
+end
+
+function btp_general_msg_addon()
+	if (event == "CHAT_MSG_ADDON") then
+		addon = arg1;
+		addon_txt = arg2;
+		channel = arg3;
+		pname = arg4;
+
+		-- first make sure the event is for BTP
+		if(addon ~= "BTP") then
+			return false;
+		end
+
+		-- Don't follow exclusion request
+		btp_follow_exclusion_request(addon_txt, pname);
+
+		-- check if the request is from a guild member
+		if(not btp_is_guildmate(pname)) then
+			return false;
+		end
+
+		-- So if we got here then the msg is for btp
+		-- sent buy a guild mate and a party/raid member
+
+		-- resolve any target info here
+		assist_id = btp_unitid_by_name(pname);
+		if(assist_id == nil) then
+			return false;
+		end
+
+        doAssistUnit = assist_id;
+		doAssistUnitFor = pname;
+        -- btp_frame_debug("doAssistUnit: " .. doAssistUnit ..
+        --                 " doAssistUnitFor:" .. doAssistUnitFor);
+
+		-- run the old command interface first
+        btp_general_msg_addon_old(addon_txt, channel, pname);
+
+        -- the return the new
+		return btp_cmd(addon_txt);
+
+	end
+end
+
+function btp_follow_exclusion_request(addon_txt, pname)
+    if (addon_txt == "btpexclude") then
+        btp_follow_exclusion_add(pname);
+    end
+end
+
+function btp_unitid_by_name(pname)
+	-- first check the party
+	for j = 1, GetNumPartyMembers() do
+		nextPlayer = "party" .. j;
+		name, realm = UnitName(nextPlayer);
+		if(name == pname) then
+			return nextPlayer
+		end
+	end
+
+	-- not in party check the raid
+	for j = 1, GetNumRaidMembers() do
+		nextPlayer = "raid" .. j;
+		name, realm = UnitName(nextPlayer);
+		if(name == pname) then
+			return nextPlayer
+		end
+	end
+
+	return nil;
+end
+
+
+
+function btp_general_msg_addon_old(arg2, arg3, arg4)
+    if (not botOff) then
+            if (arg2 == "warstomp") then
+                doWarstomp = true;
+                addonCmd = true;
+            elseif (arg2 == "entangleroot") then
+                doEntangleRoot = true;
+                addonCmd = true;
+            elseif (arg2 == "treeform") then
+                doTreeForm = true;
+                addonCmd = true;
+            elseif (arg2 == "hibernate") then
+                doHibernate = true;
+                addonCmd = true;
+            elseif (arg2 == "faeriefire") then
+                doFaerieFire = true;
+                addonCmd = true;
+            elseif (arg2 == "cyclone") then
+                doCyclone = true;
+                addonCmd = true;
+            elseif (arg2 == "shackle") then
+                doShackle = true;
+                addonCmd = true;
+            elseif (arg2 == "psychicscream") then
+                doPsychicScream = true;
+                addonCmd = true;
+            elseif (arg2 == "shadowwordpain") then
+                doShadowWordPain = true;
+                addonCmd = true;
+            elseif (arg2 == "shadowfiend") then
+                doShadowfiend = true;
+                addonCmd = true;
+            elseif (arg2 == "lightwell") then
+                doLightwell = true;
+                addonCmd = true;
+            elseif(arg2 == "dpsmode") then
+			    if(DPS_MODE_ON == true) then
+			    	DPS_MODE_ON = false;
+			    	btp_frame_debug("DPSMode -- Off");
+			    else
+			    	DPS_MODE_ON = true;
+			    	DPS_ASSIST_TARGET = doAssistUnit .. "target";
+			    	btp_frame_debug("dpsmode unit: " .. DPS_ASSIST_TARGET ..
+                                    " status: on");
+			    end
+            elseif (string.sub(arg2, 0, 9) == "btpaddcc ") then
+               btp_set_cc(string.sub(arg2, 12), arg4,
+                           string.sub(arg2, 10));
+            elseif (string.sub(arg2, 0, 8) == "btpaddcc") then
+                btp_set_cc(nil, arg4, nil);
+            elseif (string.sub(arg2, 0, 5) == "btpcc") then
+                doCC = true;
+                addonCmd = true;
+            end
+    end
+end
+
+function btp_cc()
+    if (UnitClass("player") == "Druid" and
+       (btp_can_cast("Hibernate") or btp_can_cast("Cyclone") or
+        btp_can_cast("Entangling Roots"))) then
+        FuckBlizzardByName("druidcc");
+        return true;
+    elseif (UnitClass("player") == "Priest" and
+           (btp_can_cast("Shackle Undead"))) then
+        FuckBlizzardByName("priestcc");
+        return true;
+    elseif (UnitClass("player") == "Warlock" and
+           (btp_can_cast("Banish") or btp_can_cast("Fear") or
+            btp_can_cast("Seduction"))) then
+        FuckBlizzardByName("warlockcc");
+        return true;
+    elseif (UnitClass("player") == "Mage" and
+           (btp_can_cast("Polymorph"))) then
+        FuckBlizzardByName("magecc");
+        return true;
+    elseif (UnitClass("player") == "Rogue" and
+           (btp_can_cast("Blind"))) then
+        FuckBlizzardByName("roguecc");
+        return true;
+    end
+
+    return false;
+end
+
+function btp_set_cc(targetName, playerName, creatureType)
+    unit = "target";
+
+    if (InCombatLockdown()) then
+        return false;
+    end
+
+    if (creatureType == "R") then
+        creatureType = "Dragonkin";
+    elseif (creatureType == "B") then
+        creatureType = "Beast";
+    elseif (creatureType == "D") then
+        creatureType = "Demon";
+    elseif (creatureType == "H") then
+        creatureType = "Humanoid";
+    end
+
+    if (targetName) then
+        if (UnitClass("player") == "Druid" and
+           (creatureType == "Beast" or creatureType == "Dragonkin")) then
+            btp_cc_button("BtpDruidCC",
+                          "/cast Hibernate",
+                          "druidcc", targetName);
+        elseif (UnitClass("player") == "Druid") then
+            btp_cc_button("BtpDruidCC",
+                          "/castsequence Cyclone, Entangling Roots",
+                          "druidcc", targetName);
+        elseif (UnitClass("player") == "Priest" and
+                creatureType == "Undead") then
+            btp_cc_button("BtpPriestCC", "/cast Shackle Undead", "priestcc",
+                          targetName);
+        elseif (UnitClass("player") == "Warlock" and
+                creatureType == "Demon") then
+            btp_cc_button("BtpWarlockCC", "/cast Banish", "warlockcc",
+                          targetName);
+        elseif (UnitClass("player") == "Warlock" and
+                creatureType == "Humanoid" and btp_can_cast("Seduction")) then
+            btp_cc_button("BtpWarlockCC", "/castsequence Seduction, Fear",
+                          "warlockcc", targetName);
+        elseif (UnitClass("player") == "Warlock") then
+            btp_cc_button("BtpWarlockCC", "/cast Fear", "warlockcc",
+                          targetName);
+        elseif (UnitClass("player") == "Mage") then
+            btp_cc_button("BtpMageCC", "/cast Polymorph", "magecc", targetName);
+        elseif (UnitClass("player") == "Rogue") then
+            btp_cc_button("BtpRogueCC", "/cast Blind", "roguecc", targetName);
+        end
+    else
+        for i = 0, GetNumGuildMembers(true) do
+            name, rank, rankIndex, level, class, zone, note, officernote,
+            online, status = GetGuildRosterInfo(i);
+
+            if (name and playerName and name == playerName) then
+                for j = 1, GetNumRaidMembers() do
+                    nextPlayer = "raid" .. j;
+                    name, realm = UnitName(nextPlayer);
+                    if (name == playerName) then
+                        unit = nextPlayer;
+                        break;
+                    end
+                end
+
+                if (GetNumRaidMembers() <= 0) then
+                    for j = 1, GetNumPartyMembers() do
+                        nextPlayer = "party" .. j;
+                        name, realm = UnitName(nextPlayer);
+                            if (name == playerName) then
+                            unit = nextPlayer;
+                            break;
+                        end
+                    end
+                end
+            end
+        end
+
+        if (UnitClass("player") == "Druid" and
+           (UnitCreatureType(unit .. "target") == "Beast" or
+            UnitCreatureType(unit .. "target") == "Dragonkin")) then
+            btp_cc_button("BtpDruidCC",
+                          "/cast Hibernate",
+                          "druidcc", UnitName(unit .. "target"));
+        elseif (UnitClass("player") == "Druid") then
+            btp_cc_button("BtpDruidCC",
+                          "/castsequence Cyclone, Entangling Roots",
+                          "druidcc", UnitName(unit .. "target"));
+        elseif (UnitClass("player") == "Priest" and
+                UnitCreatureType(unit .. "target") == "Undead") then
+            btp_cc_button("BtpPriestCC", "/cast Shackle Undead", "priestcc",
+                          UnitName(unit .. "target"));
+        elseif (UnitClass("player") == "Warlock" and
+                UnitCreatureType(unit .. "target") == "Demon") then
+            btp_cc_button("BtpWarlockCC", "/cast Banish", "warlockcc",
+                          UnitName(unit .. "target"));
+        elseif (UnitClass("player") == "Warlock" and
+                UnitCreatureType(unit .. "target") == "Humanoid" and
+                btp_can_cast("Seduction")) then
+            btp_cc_button("BtpWarlockCC", "/castsequence Seduction, Fear",
+                          "warlockcc", UnitName(unit .. "target"));
+        elseif (UnitClass("player") == "Warlock") then
+            btp_cc_button("BtpWarlockCC", "/cast Fear", "warlockcc",
+                          UnitName(unit .. "target"));
+        elseif (UnitClass("player") == "Mage") then
+            btp_cc_button("BtpMageCC", "/cast Polymorph", "magecc",
+                          UnitName(unit .. "target"));
+        elseif (UnitClass("player") == "Rogue") then
+            btp_cc_button("BtpRogueCC", "/cast Blind", "roguecc",
+                          UnitName(unit .. "target"));
+        end
+    end
+end
+
+function btp_cc_button(buttonName, macro, mapName, targetName)
+    if (btnCC == nil) then
+        btnCC = CreateFrame("Button", buttonName, nil,
+                            "SecureActionButtonTemplate");
+        btnCC:RegisterForClicks("AnyUp");                 
+    end
+
+    btnCC:SetAttribute("type", "macro");
+    btnCC:SetAttribute("macrotext", "/focus target\n/targetexact " ..
+                       targetName ..  "\n" .. macro ..  "\n/target focus");
+    SetBindingClick("ALT-CTRL-SHIFT-9", buttonName);
+end
+
+function btp_set_macro(buttonName, macro, num)
+    if (btnCC == nil) then
+        btnCC = CreateFrame("Button", buttonName, nil,
+                            "SecureActionButtonTemplate");
+        btnCC:RegisterForClicks("AnyUp");                 
+    end
+
+    btnCC:SetAttribute("type", "macro");
+    btnCC:SetAttribute("macrotext", macro);
+    SetBindingClick("ALT-CTRL-SHIFT-" .. num, buttonName);
+end
+
+function btp_general_chat_msg_guild()
+    i = math.random(10);
+
+    if (not botOff and event == "CHAT_MSG_GUILD" and
+        arg2 ~= UnitName("player") and i == 5 and
+       (string.find(arg1, "moo") or string.find(arg1, "MOO") or
+        string.find(arg1, "Moo")) and UnitName("player") == "Moovaca") then
+        SendChatMessage("vaca", "GUILD", nil);
+    end
+
+    if (not botOff and event == "CHAT_MSG_GUILD" and
+        arg2 ~= UnitName("player") and i == 7 and
+        UnitName("player") == "Moovaca") then
+        SendChatMessage(Chatter(arg1), "GUILD", nil);
+    end
+end
+
+function btp_invite()
+    for i = 0, GetNumGuildMembers(true) do
+        name, rank, rankIndex, level, class, zone, note, officernote,
+        online, status = GetGuildRosterInfo(i);
+
+        if (level == 70) then
+            InviteUnit(name);
+        end
+    end
+end
+
+function btp_general_chat_msg_whisper()
+    inGuild    = false;
+    partyOK    = false;
+    nextPlayer = "no one";
+    unitid     = "no one";
+    instanceID = 0;
+
+    if (not botOff and event == "CHAT_MSG_WHISPER") then
+        GuildRoster();
+
+        for i = 0, GetNumGuildMembers(true) do
+            name, rank, rankIndex, level, class, zone, note, officernote,
+            online, status = GetGuildRosterInfo(i);
+
+            if (name and arg2 and name == arg2 and
+                arg2 ~= UnitName("player")) then
+
+               for j = 1, GetNumRaidMembers() do
+                   nextPlayer = "raid" .. j;
+
+                   if (name == UnitName(nextPlayer)) then
+                       unitid = nextPlayer;
+                   end
+               end
+
+               if (GetNumRaidMembers() <= 0) then
+                   for j = 1, GetNumPartyMembers() do
+                       nextPlayer = "party" .. j;
+
+                       if (name == UnitName(nextPlayer)) then
+                           unitid = nextPlayer;
+                       end
+                   end
+               end
+
+               inGuild = true;
+               break;
+            end
+        end
+
+        if (inGuild) then
+            if (string.sub(arg1, 0, 7) == "btphelp") then
+                SendChatMessage("Hello " .. arg2 ..  ", here is a list of the commands you can use with me.  Pleae note that the commands are to be used without the [] and <> wrappers.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpinvite] -- If I am party leader or I have assist, then I will send you an invite.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpfly] <location name> -- Give this command with the name or partial name of the place you want me to fly, then send a btpclick to have me fly there.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpbootycall] -- If you give me a booty call in Outlands I will fly to your location myself.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpbeg] -- Toggles my ability to beg for change when I am not in a group.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btproll] -- This will cause me to do a /roll.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpclick] -- This will cause me to right-click in the center of my screen.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpdrink] -- Sick of waiting for me to drink?  Force me to.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btphearth] -- Toggle hearthing on and off.  by default I will hearth to my home location if I am not in PvP mode and I am not in a group.  If your trying to switch my mode this may cause me to hearth.  Using btphearth will stop this.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpaddcc] <R B D H> <targetname> -- Set my CC target to either the creature type (R = Dragonkin, B = Beast, D = Demon, H = Humanoid) and target name (with exact case), or if no creature type and target name is given, then the target you have targeted.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpcc] -- CC the target(s) set with the btpaddcc command.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btprelease] -- Toggle release spirit on and off.  by default I will release spirit, but in an instance this can be problematic.  This option will tell me if I am supposed to release spirit or not.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpdecurse] -- Toggle blocking on decurse on or off.  This means that if someone needs a decurse the code will block on that before anyone gets a heal.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpstatus] -- I will report as much of my configuration as possible.  Note: Please use this command to see if I am currently in a group with other guild members, find out what zone I am in, figure out what follow mode I am using, and more.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btploot] <wait,pass,greed,need> -- wait: wait for pass, greed, or need.  pass: pass on all loot.  greed: greed roll loot.  need: need roll loot. NOTE: if using wait and you then pass, greed, or need, remember to flip back to wait.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpstop] -- Tells me that I should stop following.  After this command I will simply stand in one place and twitch every now and then.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpstart] -- Tells me to start following again.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpforward] -- Tells me to run forward real fast.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpjump] -- Makes me jump.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpdown] -- Makes me swim down real fast.  Use this if you need to push my ghost below the water.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpreset] -- Every now and then I may crash.  Send me a btpreset either when your done with me, or when I crash.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpitem] <trade drink list> <item link> -- Get a list of the items in my inventory, then you can tell me to either consume that item myself, or trade it to you.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpsend] <playername> <message> -- Tells me to send <message> as a whisper to <playername>.  NOTE: make sure the first letter of the player name is capital.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpparty] -- I will send a message to the party.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpraid] -- I will send a message to the raid.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpbattleground] -- I will send a message to the battleground.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpwhisper] <playername> -- Tells me to relay all of the whispers I get to <playername>. NOTE: make sure the first letter of the player name is capital.  Running the command again will tell me not to relay.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpinnervate] <playername> -- Innervate this player when he or she is low on mana instead of self.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpraidheal] -- This toggles raid healing mode.  In this mode people who are NOT in the priority list will only get ONE healing over time buff in the higher heatlth range.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpdistcheck] -- This toggles distance checks on and off for the bot.  Useful in fights like the Prince in Karazan.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpselfheal] -- Toggles off priority for large heals on the bot before other players.  This helps in fights like Prince in Karazan.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btppriority] -- This makes it so either I only heal my priority list of everyone.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btphplist] -- List all people in the priority list.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btphpdel] -- Clear priority list.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btphpadd] <playername> -- Add playername to the priority list.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpfollow] <playername> -- Will tell me to follow the player <playername>, or if I am already following someone I will go back into guild follow mode. NOTE: in guild follow mode I will always follow the last guild member.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpfeadd] <playername> -- Will tell me NOT to follow the player <playername>.  Use this command if you are using more than one bot so that we do not follow eachother.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpfedel] -- Will remove follow exclusions.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btpfelist] -- List follow exclusions.", "WHISPER", nil, arg2);
+
+
+                SendChatMessage("[btppvp] -- My default follow mode is to group with guild members and follow them; however, I also have a PVP follow mode.  This mode allows me to move around battlegrounds by taging to other players, and means I do NOT need a guild member in the party.", "WHISPER", nil, arg2);
+                SendChatMessage("[btppvp] -- Please note, IF I am in PVP mode and I am NOT in battlegrounds, then I will not accept invites or stay in a group.  You must use the [btppvp] command to put me in guild follow mode.  You may also want to block hearthing with [btphearth].", "WHISPER", nil, arg2);
+
+            elseif (string.sub(arg1, 0, 10) == "btpforward") then
+                FuckBlizzardMove("MOVEFORWARD");
+            elseif (string.sub(arg1, 0, 7) == "btpjump") then
+                FuckBlizzardMove("JUMP");
+            elseif (string.sub(arg1, 0, 7) == "btpdown") then
+                FuckBlizzardMove("DOWN");
+            elseif (string.sub(arg1, 0, 8) == "btpclick") then
+                FuckBlizzardMove("CLICK");
+            elseif (string.sub(arg1, 0, 7) == "btpstop") then
+                btpFollow = false;
+                FuckBlizzardMove("TURNLEFT");
+            elseif (string.sub(arg1, 0, 8) == "btpstart") then
+                btpFollow = true;
+            elseif (string.sub(arg1, 0, 6) == "btpfly") then
+                    FlightDestination = string.sub(arg1, 8);
+            elseif (string.sub(arg1, 0, 12) == "btpbootycall") then
+                SendWho('n-"' .. arg2 .. '"');
+                charname, guildname, level, race, class, zone,
+                unknown = GetWhoInfo(1);
+
+                if (zone ~= GetZoneText()) then
+                    SetMapZoom(GetCurrentMapContinent());
+                end
+
+                x, y = GetPlayerMapPosition(unitid);
+                x, y = x * 100, y * 100;
+
+                if (x > 0 and y > 0 and zone) then
+                    btp_move_to_location(zone, x, y);
+                    bootyCall = true;
+                    bootyName = arg2;
+                    SendChatMessage("God damn you're HOT!  Be Right There!",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 14) == "btpearthplayer") then
+                    earthShieldManual = true;
+                    earthShieldPlayer = string.sub(arg1, 16);
+                    SendChatMessage("Added " .. string.sub(arg1, 16) ..
+                                    " as my earth shield target.",
+                                    "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 17) == "btpdelearthplayer") then
+                    earthShieldManual = false;
+                    SendChatMessage("Removed " .. earthShieldPlayer ..
+                                    " as my earth shield target.",
+                                    "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 11) == "btpraidheal") then
+               if (btpRaidHeal) then
+                    btpRaidHeal = false;
+                    SendChatMessage("I will heal in normal mode!",
+                                    "WHISPER", nil, arg2);
+               else
+                    btpRaidHeal = true;
+                    SendChatMessage("I will heal in raid mode!",
+                                    "WHISPER", nil, arg2);
+               end
+            elseif (string.sub(arg1, 0, 12) == "btpdistcheck") then
+               if (dontCheckDist) then
+                    dontCheckDist = false;
+                    SendChatMessage("I will check distance!",
+                                    "WHISPER", nil, arg2);
+               else
+                    dontCheckDist = true;
+                    SendChatMessage("I will NOT check distance!",
+                                    "WHISPER", nil, arg2);
+               end
+            elseif (string.sub(arg1, 0, 11) == "btpselfheal") then
+               if (botSelfHeal) then
+                    botSelfHeal = false;
+                    SendChatMessage("I will NOT put big heals on myself" ..
+                                    " before others!", "WHISPER", nil, arg2);
+               else
+                    botSelfHeal = true;
+                    SendChatMessage("I will do big heals on myself before" ..
+                                    " others!", "WHISPER", nil, arg2);
+               end
+            elseif (string.sub(arg1, 0, 11) == "btppriority") then
+               if (PRIORITY_ONLY) then
+                    PRIORITY_ONLY = false;
+                    SendChatMessage("I will heal everyone!",
+                                    "WHISPER", nil, arg2);
+               else
+                    PRIORITY_ONLY = true;
+                    SendChatMessage("I will only heal my priority list!",
+                                    "WHISPER", nil, arg2);
+               end
+            elseif (string.sub(arg1, 0, 6) == "btpbeg") then
+                if (dontBeg) then
+                    dontBeg = false;
+                    SendChatMessage("I will now beg for change!",
+                                    "WHISPER", nil, arg2);
+               else
+                    dontBeg = true;
+                    SendChatMessage("I no longer beg for change!",
+                                    "WHISPER", nil, arg2);
+               end
+            elseif (string.sub(arg1, 0, 8) == "btpreset") then
+                SendChatMessage("Reloading my UI... BRB!",
+                                "WHISPER", nil, arg2);
+                reloadUI = true;
+                addonCmd = true;
+            elseif (string.sub(arg1, 0, 7) == "btproll") then
+                RandomRoll(1,100);
+                SendChatMessage("I better win this!",
+                                "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 8) == "btpdrink") then
+                forceDrink = true;
+                SendChatMessage("Damn I am parched!!!",
+                                "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 7) == "btploot") then
+                btp_loot(string.sub(arg1, 9));
+                SendChatMessage("I am now in " .. lootMode .. " loot mode.",
+                                "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 9) == "btphearth") then
+                if (dontHearth) then
+                    dontHearth = false;
+                    SendChatMessage("I will use my hearthstone again.",
+                                    "WHISPER", nil, arg2);
+                else
+                    dontHearth = true;
+                    SendChatMessage("I will no longer use my hearthstone.",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 9) == "btpaddcc ") then
+                    btp_set_cc(string.sub(arg1, 12), arg2,
+                               string.sub(arg1, 10));
+            elseif (string.sub(arg1, 0, 8) == "btpaddcc") then
+                    btp_set_cc(nil, arg2, nil);
+            elseif (string.sub(arg1, 0, 5) == "btpcc") then
+                    doCC = true;
+                    addonCmd = true;
+            elseif (string.sub(arg1, 0, 10) == "btprelease") then
+                if (dontRelease) then
+                    dontRelease = false;
+                    SendChatMessage("I will release spirit.",
+                                    "WHISPER", nil, arg2);
+                else
+                    dontRelease = true;
+                    SendChatMessage("I will no longer release spirit.",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 6) == "btppop") then
+                if (dontPop) then
+                    dontPop = false;
+                    SendChatMessage("I will res.", "WHISPER", nil, arg2);
+                else
+                    dontPop = true;
+                    SendChatMessage("I will no longer res.",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 10) == "btpdecurse") then
+                if (blockOnDecurse) then
+                    blockOnDecurse = false;
+                    SendChatMessage("I will _not_ block on decurse.",
+                                    "WHISPER", nil, arg2);
+                else
+                    blockOnDecurse = true;
+                    SendChatMessage("I will block on decurse.",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 7) == "btpsend") then
+                    x, y = string.find(string.sub(arg1, 9), "%s");
+                    SendChatMessage(string.sub(arg1, y + 9),
+                                    "WHISPER", nil, string.sub(arg1, 9, y + 7));
+            elseif (string.sub(arg1, 0, 8) == "btpparty") then
+                    SendChatMessage(string.sub(arg1, 10), "PARTY", nil);
+            elseif (string.sub(arg1, 0, 7) == "btpraid") then
+                    SendChatMessage(string.sub(arg1, 9), "RAID", nil);
+            elseif (string.sub(arg1, 0, 15) == "btpbattleground") then
+                    SendChatMessage(string.sub(arg1, 17), "BATTLEGROUND", nil);
+            elseif (string.sub(arg1, 0, 7) == "btpitem") then
+                if (string.sub(string.sub(arg1, 9), 0, 5) == "trade") then
+                    TradeItem(string.sub(arg1, 16), arg2);
+                elseif (string.sub(string.sub(arg1, 9), 0, 5) == "drink") then
+                    for bag=0,4 do
+                      for slot=1,GetContainerNumSlots(bag) do
+                        if (GetContainerItemLink(bag,slot) and
+                            GetContainerItemLink(bag,slot) ==
+                            string.sub(arg1, 16)) then
+                            FuckBlizUseContainerItem(bag,slot);
+                            return true;
+                        end
+                      end
+                    end
+                else
+                    for bag=0,4 do
+                      for slot=1,GetContainerNumSlots(bag) do
+                        if (GetContainerItemLink(bag,slot)) then
+                           itemName, itemLink, itemRarity, itemLevel,
+                           itemMinLevel, itemType, itemSubType, itemStackCount,
+                           itemEquipLoc, invTexture = 
+                           GetItemInfo(GetContainerItemLink(bag,slot));
+                   
+                           if (itemType == "Consumable") then
+                               SendChatMessage(itemLink, "WHISPER",
+                                               nil, arg2);
+                           end
+                        end
+                      end
+                    end
+                end
+            elseif (string.sub(arg1, 0, 9) == "btphplist") then
+                for i = 0, pcount do                   
+                    if (PRIORITY_G[i]) then
+                        SendChatMessage("P" .. i .. ": " .. PRIORITY_G[i] ..
+                                        ".", "WHISPER", nil, arg2);
+                    end
+                end
+            elseif (string.sub(arg1, 0, 9) == "btpfelist") then
+                for i = 0, fecount do                   
+                    if (FE_G[i]) then
+                        SendChatMessage("P" .. i .. ": " .. FE_G[i] ..
+                                        ".", "WHISPER", nil, arg2);
+                    end
+                end
+            elseif (string.sub(arg1, 0, 8) == "btphpdel") then
+                    btp_heal_priority_del();
+                    SendChatMessage("Cleared priority list!",
+                                    "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 8) == "btphpadd") then
+                    btp_heal_priority_add(string.sub(arg1, 10));
+                    SendChatMessage("Added " .. string.sub(arg1, 10) ..
+                                    " to the priority list.",
+                                    "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 8) == "btpfedel") then
+                    btp_follow_exclusion_del();
+                    SendChatMessage("Cleared follow exclusion list!",
+                                    "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 8) == "btpfeadd") then
+                    btp_follow_exclusion_add(string.sub(arg1, 10));
+                    SendChatMessage("Added " .. string.sub(arg1, 10) ..
+                                    " to the follow exclusion list.",
+                                    "WHISPER", nil, arg2);
+            elseif (string.sub(arg1, 0, 9) == "btpfollow") then
+                if (manualFollow) then
+                    manualFollow = false;
+                    manualFollowName = "no one"
+                    SendChatMessage("I am now in guild follow mode.",
+                                    "WHISPER", nil, arg2);
+                else
+                    manualFollowName = string.sub(arg1, 11);
+                    manualFollow = true;
+                    SendChatMessage("I am now following " .. manualFollowName,
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 10) == "btpwhisper") then
+                if (whisperPlayer ~= "no one") then
+                    whisperPlayer = "no one";
+                    SendChatMessage("I am now relaying whispers to " ..
+                                    whisperPlayer .. ".", "WHISPER", nil, arg2);
+                else
+                    whisperPlayer = string.sub(arg1, 12);
+                    SendChatMessage("I am now relaying whispers to " ..
+                                    whisperPlayer .. ".", "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 12) == "btpinnervate") then
+                if (iTarget ~= UnitName("player")) then
+                    iTarget = UnitName("player");
+                    SendChatMessage("I will now innervate " ..
+                                    iTarget .. ".", "WHISPER", nil, arg2);
+                else
+                    iTarget = string.sub(arg1, 12);
+                    SendChatMessage("I will now innervate " ..
+                                    iTarget .. ".", "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 6) == "btppvp") then
+                BTP_Pvp();
+                if (pvpBot) then
+                    SendChatMessage("Now in PVP follow mode.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("Now in non-PVP follow mode.",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 9) == "btpinvite") then
+                InviteUnit(arg2);
+            elseif (string.sub(arg1, 0, 9) == "btpstatus") then
+                for i=1, MAX_BATTLEFIELD_QUEUES do
+                        status, mapName, instanceID = GetBattlefieldStatus(i);
+                        if (status == "active") then
+                            break;
+                        end
+                end
+
+                for i = 1, GetNumRaidMembers() do
+                    nextPlayer = "raid" .. i;
+
+                    for j = 0, GetNumGuildMembers(true) do
+                        name, rank, rankIndex, level, class, zone, note,
+                        officernote, online, status = GetGuildRosterInfo(j);
+
+                        if (name and UnitName(nextPlayer) and
+                            name == UnitName(nextPlayer) and
+                            UnitName("player") ~= UnitName(nextPlayer)) then
+                           partyOK = true;
+                        end
+                    end
+                end
+
+                if (GetNumRaidMembers() <= 0) then
+                    for i = 1, GetNumPartyMembers() do
+                        nextPlayer = "party" .. i;
+
+                        for j = 0, GetNumGuildMembers(true) do
+                            name, rank, rankIndex, level, class, zone, note,
+                            officernote, online, status = GetGuildRosterInfo(j);
+
+                            if (name and UnitName(nextPlayer) and
+                                name == UnitName(nextPlayer) and
+                                UnitName("player") ~= UnitName(nextPlayer)) then
+                               partyOK = true;
+                            end
+                        end
+                    end
+                end
+
+                if (instanceID == 0) then
+                    SendChatMessage("I am in " .. GetZoneText() ..
+                                    " in the " .. GetSubZoneText(),
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("I am in " .. GetZoneText() ..
+                                    " in the " .. GetSubZoneText() .. 
+                                    " instance number " .. instanceID,
+                                    "WHISPER", nil, arg2);
+                end
+
+                if (pvpBot) then
+                    SendChatMessage("I am in PVP follow mode tagged to " ..
+                                    manualFollowName .. ".", "WHISPER", nil,
+                                    arg2);
+                else
+                    SendChatMessage("I am in guild follow mode tagged to " ..
+                                    manualFollowName .. ".", "WHISPER", nil,
+                                    arg2);
+                end
+
+                if (not btpFollow) then
+                    SendChatMessage("I am currently being told to stand still.",
+                                    "WHISPER", nil, arg2);
+                end
+
+                SendChatMessage("I am now in " .. lootMode .. " loot mode.",
+                                "WHISPER", nil, arg2);
+
+                SendChatMessage("I am relaying all my whispers to " ..
+                                whisperPlayer .. ".", "WHISPER", nil, arg2);
+
+                SendChatMessage("I will innervate " .. iTarget .. ".",
+                                "WHISPER", nil, arg2);
+
+                if (dontHearth) then
+                    SendChatMessage("I will not use my hearthstone.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("I will use my hearthstone.",
+                                    "WHISPER", nil, arg2);
+                end
+
+                if (dontRelease) then
+                    SendChatMessage("I will not release spirit.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("I will release spirit.",
+                                    "WHISPER", nil, arg2);
+                end
+
+                if (dontPop) then
+                    SendChatMessage("I will not res.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("I will res.",
+                                    "WHISPER", nil, arg2);
+                end
+
+                if (blockOnDecurse) then
+                    SendChatMessage("I will block on decurse.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("I will _not_ block on decurse.",
+                                    "WHISPER", nil, arg2);
+                end
+
+                if (dontBeg) then
+                    SendChatMessage("I will not beg for change.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("I will beg for change if left alone.",
+                                    "WHISPER", nil, arg2);
+                end
+
+               if (btpRaidHeal) then
+                    SendChatMessage("I will heal in raid mode!",
+                                    "WHISPER", nil, arg2);
+               else
+                    SendChatMessage("I will heal in normal mode!",
+                                    "WHISPER", nil, arg2);
+               end
+
+               if (UnitClass("player") == "Shaman" and earthShieldManual) then
+                    SendChatMessage(earthShieldPlayer ..
+                                    " is my earth shield target.",
+                                    "WHISPER", nil, arg2);
+               elseif (UnitClass("player") == "Shaman" and pcount > 0) then
+                    SendChatMessage("I will use my priority list to " ..
+                                    "set my earth shield target!",
+                                    "WHISPER", nil, arg2);
+               elseif (UnitClass("player") == "Shaman") then
+                    SendChatMessage("I have no earth shield target!",
+                                    "WHISPER", nil, arg2);
+               end
+
+               if (dontCheckDist) then
+                    SendChatMessage("I will NOT check distance!",
+                                    "WHISPER", nil, arg2);
+               else                 
+                    SendChatMessage("I will check distance!",
+                                    "WHISPER", nil, arg2);
+               end
+
+               if (botSelfHeal) then
+                    SendChatMessage("I will do big heals on myself before" ..
+                                    " others!", "WHISPER", nil, arg2);
+               else
+                    SendChatMessage("I will NOT put big heals on myself" ..
+                                    " before others!", "WHISPER", nil, arg2);
+               end
+
+               SendChatMessage("My priority list is below:",
+                               "WHISPER", nil, arg2);
+               for i = 0, pcount do
+                   if (PRIORITY_G[i]) then
+                       SendChatMessage("P" .. i .. ": " .. PRIORITY_G[i] ..
+                                       ".", "WHISPER", nil, arg2);
+                   end
+               end
+
+               SendChatMessage("My follow exclusion list is below:",
+                               "WHISPER", nil, arg2);
+               for i = 0, fecount do
+                   if (FE_G[i]) then
+                       SendChatMessage("FE" .. i .. ": " .. FE_G[i] ..
+                                       ".", "WHISPER", nil, arg2);
+                   end
+               end
+
+               if (PRIORITY_ONLY) then
+                    SendChatMessage("I will only heal my priority list!",
+                                    "WHISPER", nil, arg2);
+               else
+                    SendChatMessage("I will heal everyone!",
+                                    "WHISPER", nil, arg2);
+               end
+
+                if (UnitHealth("player") <= 1 and
+                    not partyOK) then
+                    corpseX, corpseY = GetCorpseMapPosition();
+                    corpseX = corpseX * 100;
+                    corpseY = corpseY * 100;
+                    SendChatMessage("I am dead and my corpse is at " ..
+                                    corpseX .. " " .. corpseY ..
+                                    ".  Please help me!",
+                                    "WHISPER", nil, arg2);
+                elseif(partyOK) then
+                    SendChatMessage("I am currently busy at the moment.  Try me again later.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("I have some free time! Send me an invite and I will join you!  Oh and do not forget to reset my settings if need be.", "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 2) == "wl" or
+                    string.sub(arg1, 0, 2) == "gb") then
+                -- DO NOTHING
+            else
+                if (whisperPlayer ~= "no one") then
+                    SendChatMessage("[" .. arg2 .. "] " .. arg1,
+                                    "WHISPER", nil, whisperPlayer);
+                end
+            end
+
+            return true;
+        end
+
+        if (whisperPlayer ~= "no one") then
+            SendChatMessage("[" .. arg2 .. "] " .. arg1,
+                            "WHISPER", nil, whisperPlayer);
+        elseif (pvpBot) then
+            lastChatter = GetTime();
+            newChatter = true;
+            chatterPlayer = arg2;
+            chatterMessage = arg1;
+        end
+    end
+end
+
+function FunTrink()
+    if (funTrink) then
+        funTrink = false;
+        btp_frame_debug("FUN TRINKET -- Off.");
+    else
+        funTrink = true;
+        btp_frame_debug("FUN TRINKET -- On.");
+    end
+end
+
+function DontBeg()
+    if (dontBeg) then
+        dontBeg = false;
+        btp_frame_debug("BEGGING -- On.");
+    else
+        dontBeg = true;
+        btp_frame_debug("BEGGING -- Off.");
+    end
+end
+
+function DontHearth()
+    if (dontHearth) then
+        dontHearth = false;
+        btp_frame_debug("HEARTHING -- On.");
+    else
+        dontHearth = true;
+        btp_frame_debug("HEARTHING -- Off.");
+    end
+end
+
+function DontRelease()
+    if (dontRelease) then
+        dontRelease = false;
+        btp_frame_debug("RELEASE SPIRIT -- On.");
+    else
+        dontRelease = true;
+        btp_frame_debug("RELEASE SPIRIT -- Off.");
+    end
+end
+
+function DontPop()
+    if (dontPop) then
+        dontPop = false;
+        btp_frame_debug("RES -- On.");
+    else
+        dontPop = true;
+        btp_frame_debug("RES -- Off.");
+    end
+end
+
+function DecurseToggle()
+    if (blockOnDecurse) then
+        blockOnDecurse = false;
+        btp_frame_debug("BLOCK ON DECURSE -- Off.");
+    else
+        blockOnDecurse = true;
+        btp_frame_debug("BLOCK ON DECURSE -- On.");
+    end
+end
+
+function RaidHeal()
+   if (btpRaidHeal) then
+        btpRaidHeal = false;
+        btp_frame_debug("RAID HEAL -- Off.");
+   else
+        btpRaidHeal = true;
+        btp_frame_debug("RAID HEAL -- On.");
+   end
+end
+
+function BTP_Pvp()
+    if (pvpBot) then
+        pvpBot = false;
+        btp_frame_debug("BOT -- Now in normal mode.");
+    else
+        pvpBot = true;
+        btp_frame_debug("BOT -- Now in PVP mode.");
+    end
+end
+
+function BTP_Follow()
+    if (manualFollow) then
+        manualFollow = false;
+        btp_frame_debug("BOT -- Now in guild follow mode.");
+    else
+        manualFollow = true;
+        manualFollowName = UnitName("target");
+        btp_frame_debug("BOT -- Now following " .. manualFollowName .."!");
+    end
+end
+
+function BTP_Innervate()
+    if (iTarget ~= UnitName("player")) then
+        iTarget = UnitName("player");
+        btp_frame_debug("BOT -- will now innervate self.");
+    else
+        iTarget = UnitName("target");
+        btp_frame_debug("BOT -- will now innervate " .. iTarget .."!");
+    end
+end
+
+function BTP_Stop()
+    btpFollow = false;
+    btp_frame_debug("BOT -- Will not follow.");
+end
+
+function BTP_Start()
+    btpFollow = true;
+    btp_frame_debug("BOT -- In follow mode.");
+end
+
+function SelfHeal(healthThresh, manaThresh)
+    hasHealthStone = false;
+    healthStoneBag = 0;
+    healthStoneSlot = 1;
+    hasManaPotion = false;
+    manaPotionBag = 0;
+    manaPotionSlot = 1;
+    hasHealthPotion = false;
+    healthPotionBag = 0;
+    healthPotionSlot = 1;
+
+    for bag=0,4 do
+      for slot=1,GetContainerNumSlots(bag) do
+        if (GetContainerItemLink(bag,slot)) then
+          if (string.find(GetContainerItemLink(bag,slot), "Healthstone")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasHealthStone = true;
+                  healthStoneBag = bag;
+                  healthStoneSlot = slot;
+              end
+              break;
+          end
+        end
+      end
+    end
+           
+    if (IsActiveBattlefieldArena() == nil) then
+        for bag=0,4 do
+          for slot=1,GetContainerNumSlots(bag) do
+            if (GetContainerItemLink(bag,slot)) then
+              if (string.find(GetContainerItemLink(bag,slot),
+                                                   "Mana Potion")) then
+                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  if (duration - (GetTime() - start) <= 0) then
+                      hasManaPotion = true;
+                      manaPotionBag = bag;
+                      manaPotionSlot = slot;
+                  end
+                  break;
+              end
+            end
+          end
+        end
+
+        for bag=0,4 do
+          for slot=1,GetContainerNumSlots(bag) do
+            if (GetContainerItemLink(bag,slot)) then
+              if (string.find(GetContainerItemLink(bag,slot),
+                  "Healing Potion")) then
+                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  if (duration - (GetTime() - start) <= 0) then
+                      hasHealthPotion = true;
+                      healthPotionBag = bag;
+                      healthPotionSlot = slot;
+                  end
+                  break;
+              end
+            end
+          end
+        end
+    end
+
+    if (GetNumBattlefieldScores() > 0 and
+        IsActiveBattlefieldArena() == nil) then
+        for bag=0,4 do
+          for slot=1,GetContainerNumSlots(bag) do
+            if (GetContainerItemLink(bag,slot)) then
+              if (string.find(GetContainerItemLink(bag,slot),
+                  "Mana Draught")) then
+                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  if (duration - (GetTime() - start) <= 0) then
+                      hasManaPotion = true;
+                      manaPotionBag = bag;
+                      manaPotionSlot = slot;
+                  end
+                  break;
+              end
+            end
+          end
+        end
+
+        for bag=0,4 do
+          for slot=1,GetContainerNumSlots(bag) do
+            if (GetContainerItemLink(bag,slot)) then
+              if (string.find(GetContainerItemLink(bag,slot),
+                  "Healing Draught")) then
+                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  if (duration - (GetTime() - start) <= 0) then
+                      hasHealthPotion = true;
+                      healthPotionBag = bag;
+                      healthPotionSlot = slot;
+                  end
+                  break;
+              end
+            end
+          end
+        end
+    end
+
+    if (hasHealthStone and UnitAffectingCombat("player") and
+        UnitHealth("player")/UnitHealthMax("player") <= healthThresh) then
+        FuckBlizUseContainerItem(healthStoneBag, healthStoneSlot);
+
+        if (GetNumRaidMembers() <= 0 and (GetTime() - lastSelfHeal) >= 5 and
+            UnitClass("player") ~= "Warlock") then
+            lastSelfHeal = GetTime();
+            SendChatMessage("Used my healthstone.  Can You drop another on me?",
+                            "PARTY", nil);
+        end
+
+        return true;
+    elseif (hasHealthPotion and
+            UnitHealth("player")/UnitHealthMax("player") <= healthThresh and
+            UnitAffectingCombat("player")) then
+        FuckBlizUseContainerItem(healthPotionBag, healthPotionSlot);
+        return true;
+    elseif (hasManaPotion and UnitAffectingCombat("player") and
+            UnitMana("player")/UnitManaMax("player") <= manaThresh) then
+        FuckBlizUseContainerItem(manaPotionBag, manaPotionSlot);
+        return true;
+    end
+
+    return false;
+end
+
+function Trinkets()
+    trinkSlot = DEF_TRINK_SLOT;
+    trinkSlotPrimary = PRIMARY_TRINK_SLOT;
+
+    hasDebuff = false;
+    orbOn = false;
+    almostReady = false;
+    almostReadyPrimary = false;
+    partyCount = 1;
+    stopTop = false;
+
+    hasBattleStandard = false;
+    battleStandardBag = 0;
+    battleStandardSlot = 0;
+
+    hasFrostBattleStandard = false;
+    battleFrostStandardBag = 0;
+    battleFrostStandardSlot = 0;
+
+    hasDefTrink = false;
+    defTrinkBag = 0;
+    defTrinkSlot = 0;
+
+    readyDefTali = false;
+    hasDefTali = false;
+    defTaliBag = 0;
+    defTaliSlot = 0;
+
+    readyBarov = false;
+    hasBarov = false;
+    barovBag = 0;
+    barovSlot = 0;
+
+    readyMark = false;
+    hasMark = false;
+    markBag = 0;
+    markSlot = 0;
+
+    readyDemon = false;
+    hasDemon = false;
+    demonBag = 0;
+    demonSlot = 0;
+
+    readyDeception = false;
+    hasDeception = false;
+    deceptionBag = 0;
+    deceptionSlot = 0;
+
+    readyLifestone = false;
+    hasLifestone = false;
+    lifestoneBag = 0;
+    lifestoneSlot = 0;
+
+    readyBurst = false;
+    hasBurst = false;
+    burstBag = 0;
+    burstSlot = 0;
+
+    readyBoom = false;
+    hasBoom = false;
+    boomBag = 0;
+    boomSlot = 0;
+
+    readyLighter = false;
+    hasLighter = false;
+    lighterBag = 0;
+    lighterSlot = 0;
+
+    readyCannon = false;
+    hasCannon = false;
+    cannonBag = 0;
+    cannonSlot = 0;
+
+    readyPrism = false;
+    hasPrism = false;
+    prisimBag = 0;
+    prisimSlot = 0;
+
+    readyAlacrity = false;
+    hasAlacrity = false;
+    alacrityBag = 0;
+    alacritySlot = 0;
+
+    --
+    -- These are the variables for the 2 minute cooldown trinkets
+    -- that up your damage stats.  When adding a new damage trinket below
+    -- make sure to add variables for it.
+    --
+    readyCrescent = false;
+    hasCrescent = false;
+    crescentBag = 0;
+    crescentSlot = 0;
+
+    readyXiris = false;
+    hasXiris = false;
+    xirisBag = 0;
+    xirisSlot = 0;
+
+    readyBloodgem = false;
+    hasBloodgem = false;
+    bloodgemBag = 0;
+    bloodgemSlot = 0;
+
+    readyIllidari = false;
+    hasIllidari = false;
+    illidariBag = 0;
+    illidariSlot = 0;
+
+    readyCrystal = false;
+    hasCrystal = false;
+    crystalBag = 0;
+    crystalSlot = 0;
+
+    readyDraenei = false;
+    hasDraenei = false;
+    draeneiBag = 0;
+    draeneiSlot = 0;
+
+    readyVim = false;
+    hasVim = false;
+    vimBag = 0;
+    vimSlot = 0;
+
+    readyStark = false;
+    hasStark = false;
+    starkBag = 0;
+    starkSlot = 0;
+
+    readyPrayer = false;
+    hasPrayer = false;
+    prayerBag = 0;
+    prayerSlot = 0;
+
+    readyDrakk = false;
+    hasDrakk = false;
+    drakkBag = 0;
+    drakkSlot = 0;
+
+    if (UnitClass("player") == "Warlock") then
+        DEF_TRINKET = WARLOCK_DEF_TRINKET;
+    elseif (UnitClass("player") == "Death Knight") then
+        DEF_TRINKET = DEATHKNIGHT_DEF_TRINKET;
+    elseif (UnitClass("player") == "Druid") then
+        DEF_TRINKET = DRUID_DEF_TRINKET;
+    elseif (UnitClass("player") == "Priest") then
+        DEF_TRINKET = PRIEST_DEF_TRINKET;
+    elseif (UnitClass("player") == "Hunter") then
+        DEF_TRINKET = HUNTER_DEF_TRINKET;
+    elseif (UnitClass("player") == "Warrior") then
+        DEF_TRINKET = WARRIOR_DEF_TRINKET;
+    elseif (UnitClass("player") == "Rogue") then
+        DEF_TRINKET = ROGUE_DEF_TRINKET;
+    elseif (UnitClass("player") == "Shaman") then
+        DEF_TRINKET = SHAMAN_DEF_TRINKET;
+    elseif (UnitClass("player") == "Mage") then
+        DEF_TRINKET = MAGE_DEF_TRINKET;
+    elseif (UnitClass("player") == "Paladin") then
+        DEF_TRINKET = PALADIN_DEF_TRINKET;
+    end
+
+    if (GetInventoryItemLink("player", trinkSlot)) then
+        start, duration, enable = GetInventoryItemCooldown("player", trinkSlot);
+        if (duration - (GetTime() - start) > 0 and
+            duration - (GetTime() - start) <= 30) then
+            almostReady = true;
+        end
+
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Six Demon Bag")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDemon = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Mark of Resolution")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyMark = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Orb of Deception")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            --
+            -- Orb of Deception check
+            --
+            orbOn, myOrb, numOrb = btp_check_buff("AntiShadow", "player");
+
+            if (duration - (GetTime() - start) > 1500 and
+                duration - (GetTime() - start) <= 1800 and orbOn) then
+                stopTop = true;
+            elseif (duration - (GetTime() - start) <= 0) then
+                readyDeception = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Barov Peasant Caller")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyBarov = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Defiler's Talisman")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDefTali = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Lifestone")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                      trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyLifestone = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Burst of Knowledge")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) > 890 and
+                duration - (GetTime() - start) <= 900) then
+                stopTop = true;
+            elseif (duration - (GetTime() - start) <= 0) then
+                readyBurst = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Smokey's Lighter")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyLighter = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Linken's Boomerang")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyBoom = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Cannonball Runner")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyCannon = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Prismcharm")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyPrism = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Charm of Alacrity")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyAlacrity = true;
+            end
+        end
+    end
+
+    if (GetInventoryItemLink("player", trinkSlotPrimary)) then
+        start, duration, enable = GetInventoryItemCooldown("player",
+                                                           trinkSlotPrimary);
+        if (duration - (GetTime() - start) > 0 and
+            duration - (GetTime() - start) <= 30) then
+            almostReadyPrimary = true;
+        end
+
+        --
+        -- The following is for your primary trinkets.  Change these to the
+        -- Trinket you will always keep in your lower slot.
+        --
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Icon of the Silver Crescent")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyCrescent = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Xi'ri's Gift")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyXiris = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Scryer's Bloodgem")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyBloodgem = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Vengeance of the Illidari")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyIllidari = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Ancient Crystal Talisman")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyCrystal = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Ancient Draenei Arcane Relic")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDraenei = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Terokkar Tablet of Vim")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyVim = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Starkiller's Bauble")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyStark = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Lower City Prayerbook")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                              trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyPrayer = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Draconic Infused Emblem")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                              trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDrakk = true;
+            end
+        end
+    end
+
+    local bag = 4
+    while (bag >= 0) do
+      for slot=1,GetContainerNumSlots(bag) do
+        if (GetContainerItemLink(bag,slot)) then
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Frostwolf Battle Standard")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 0) then
+                    hasFrostBattleStandard = true;
+                    battleFrostStandardBag = bag;
+                    battleFrostStandardSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Horde Battle Standard")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 0) then
+                    hasBattleStandard = true;
+                    battleStandardBag = bag;
+                    battleStandardSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot), DEF_TRINKET)) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDefTrink = true;
+                    defTrinkBag = bag;
+                    defTrinkSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Six Demon Bag")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDemon = true;
+                    demonBag = bag;
+                    demonSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Mark of Resolution")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasMark = true;
+                    markBag = bag;
+                    markSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Orb of Deception")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDeception = true;
+                    deceptionBag = bag;
+                    deceptionSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Barov Peasant Caller")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBarov = true;
+                    barovBag = bag;
+                    barovSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Defiler's Talisman")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDefTali = true;
+                    defTaliBag = bag;
+                    defTaliSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot), "Lifestone")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasLifestone = true;
+                    lifestoneBag = bag;
+                    lifestoneSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Burst of Knowledge")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBurst = true;
+                    burstBag = bag;
+                    burstSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Smokey's Lighter")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasLighter = true;
+                    lighterBag = bag;
+                    lighterSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Linken's Boomerang")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBoom = true;
+                    boomBag = bag;
+                    boomSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Cannonball Runner")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasCannon = true;
+                    cannonBag = bag;
+                    cannonSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot), "Prismcharm")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasPrism = true;
+                    prismBag = bag;
+                    prismSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Charm of Alacrity")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasAlacrity = true;
+                    alacrityBag = bag;
+                    alacritySlot = slot;
+                end
+            end
+
+            --
+            -- The following is to find primary trinkets in your bags.
+            -- These are those 2 minute cooldown + to damage or healing
+            -- trinkets.  If you do not have any don't worry, just put on
+            -- a normal trinket that does + to stats in its place.
+            --
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Icon of the Silver Crescent")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasCrescent = true;
+                    crescentBag = bag;
+                    crescentSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Xi'ri's Gift")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasXiris = true;
+                    xirisBag = bag;
+                    xirisSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Lower City Prayerbook")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasPrayer = true;
+                    prayerBag = bag;
+                    prayerSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Draconic Infused Emblem")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDrakk = true;
+                    drakkBag = bag;
+                    drakkSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Scryer's Bloodgem")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBloodgem = true;
+                    bloodgemBag = bag;
+                    bloodgemSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Vengeance of the Illidari")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasIllidari = true;
+                    illidariBag = bag;
+                    illidariSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Ancient Crystal Talisman")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasCrystal = true;
+                    crystalBag = bag;
+                    crystalSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Ancient Draenei Arcane Relic")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDraenei = true;
+                    draeneiBag = bag;
+                    draeneiSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Terokkar Tablet of Vim")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasVim = true;
+                    vimBag = bag;
+                    vimSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Starkiller's Bauble")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasStark = true;
+                    starkBag = bag;
+                    starkSlot = slot;
+                end
+            end
+        end
+      end
+
+      bag = bag - 1;
+    end
+
+    RequestBattlefieldScoreData();
+
+    if (UnitAffectingCombat("player")) then
+
+        for i = 1, GetNumPartyMembers() do
+            nextPlayer = "party" .. i;
+            if (btp_check_dist(nextPlayer, 1)) then
+               partyCount = partyCount + 1;
+            end
+        end
+
+        for i=1, MAX_BATTLEFIELD_QUEUES do
+            status, mapName, instanceID = GetBattlefieldStatus(i);
+            if (status == "active" and
+                string.find(mapName, "Alterac Valley") and
+                math_round(GetNumPartyMembers() * .5) <=  partyCount and
+                GetNumBattlefieldScores() > 0 and hasFrostBattleStandard) then
+                FuckBlizUseContainerItem(battleFrostStandardBag,
+                                         battleFrostStandardSlot);
+            end
+        end
+
+        if (math_round(GetNumPartyMembers() * .5) <=  partyCount and
+            GetNumBattlefieldScores() > 0 and hasBattleStandard) then
+            FuckBlizUseContainerItem(battleStandardBag, battleStandardSlot);
+        end
+
+        debuffTexture = "foo";
+        i = 1;
+
+        while (debuffTexture) do
+            debuffName, debuffRank, debuffTexture, debuffApplications,
+            debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+            debuffStealable = UnitDebuff("player", i);
+
+            if (debuffTexture and not strfind(debuffTexture, "Bandage_08")) then
+                hasDebuff = true;
+            end
+
+            i = i + 1;
+        end
+
+        if (readyCrescent) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyXiris) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyBloodgem) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyIllidari) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyCrystal) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyDraenei) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyVim) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyStark) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyPrayer) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyDrakk) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        end
+
+        if (readyDemon) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyMark and
+                UnitHealth("player")/UnitHealthMax("player") <= .75) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyDeception) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyBarov and UnitFactionGroup("target")) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyDefTali and
+                UnitHealth("player")/UnitHealthMax("player") <= .75) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyLifestone and
+                UnitHealth("player")/UnitHealthMax("player") <= .75) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyBoom) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyBurst) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyLighter) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyCannon and UnitFactionGroup("target")) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyPrism) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyAlacrity) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        end
+    else
+        if (not funTrink) then
+            return false;
+        end
+
+        if (not stopTop and not almostReady) then
+            if (hasPrism and UnitPowerType("target") == 0) then
+                UseContainerItem(prismBag, prismSlot);
+            elseif (hasMark and UnitPowerType("target") > 0 and
+                   not (readyPrism)) then
+                UseContainerItem(markBag, markSlot);
+            elseif (hasDeception and not
+                   (readyMark or readyPrism)) then
+                UseContainerItem(deceptionBag, deceptionSlot);
+            elseif (hasBarov and UnitFactionGroup("target") and not
+                   (readyMark or readyDeception or readyPrism)) then
+                UseContainerItem(barovBag, barovSlot);
+            elseif (hasBurst and not (readyMark or
+                    readyDeception or readyBarov or readyPrism)) then
+                UseContainerItem(burstBag, burstSlot);
+            elseif (hasCannon and UnitFactionGroup("target") and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyPrism)) then
+                UseContainerItem(cannonBag, cannonSlot);
+            elseif (hasLighter and UnitPowerType("target") > 0 and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyCannon or readyPrism)) then
+                UseContainerItem(lighterBag, lighterSlot);
+            elseif (hasBoom and not
+                   (readyLighter or readyBurst or readyMark or
+                    readyDeception or readyBarov or 
+                    readyCannon or readyPrism)) then
+                UseContainerItem(boomBag, boomSlot);
+            elseif (hasDemon and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or
+                    readyCannon or readyPrism)) then
+                UseContainerItem(demonBag, demonSlot);
+            elseif (hasAlacrity and not
+                   (readyBurst or readyDemon or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or 
+                    readyCannon or readyPrism)) then
+                UseContainerItem(alacrityBag, alacritySlot);
+            elseif (hasDefTali and UnitPowerType("target") > 0 and not
+                   (readyBurst or readyDemon or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or readyCannon or
+                    readyPrism or readyAlacrity)) then
+                UseContainerItem(defTaliBag, defTaliSlot);
+            elseif (hasLifestone and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or
+                    readyCannon or readyPrism or readyDemon or
+                    readyAlacrity or readyDefTali)) then
+                UseContainerItem(lifestoneBag, lifestoneSlot);
+            elseif (hasDefTrink and not (readyBurst or readyDemon or
+                    readyMark or readyDeception or readyBarov or
+                    readyDefTali or readyLighter or readyLifestone or
+                    readyBoom or readyCannon or readyPrism or
+                    readyAlacrity)) then
+                UseContainerItem(defTrinkBag, defTrinkSlot);
+            end
+        end
+
+        if (not almostReadyPrimary) then
+            if (hasCrescent) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(crescentBag, crescentSlot);
+            elseif (hasXiris and not (readyCrescent)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(xirisBag, xirisSlot);
+            elseif (hasBloodgem and not (readyCrescent or readyXiris)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(bloodgemBag, bloodgemSlot);
+            elseif (hasIllidari and not (readyCrescent or readyXiris or
+                    readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(illidariBag, illidariSlot);
+            elseif (hasCrystal and not (readyCrescent or readyIllidari or
+                    readyXiris or readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(crystalBag, crystalSlot);
+            elseif (hasDraenei and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyXiris or readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(draeneiBag, draeneiSlot);
+            elseif (hasVim and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyXiris or
+                    readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(vimBag, vimSlot);
+            elseif (hasStark and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyXiris or readyVim or
+                    readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(starkBag, starkSlot);
+            elseif (hasPrayer and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyXiris or readyVim or
+                    readyBloodgem or readyStark)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(prayerBag, prayerSlot);
+            elseif (hasDrakk and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyPrayer or
+                    readyXiris or readyVim or readyBloodgem or readyStark)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(drakkBag, drakkSlot);
+            end
+        end
+    end
+
+    return false;
+end
+
+btp_trinkets =  { };
+
+local t       = new();
+t.name        = "Six Demon Bag";
+t.found       = true;
+t.ready       = false;
+t.bag         = 0
+t.slot        = 0
+
+btp_trinkets[1] = t;
+
+function TrinketsTest()
+    trinkSlot = DEF_TRINK_SLOT;
+    trinkSlotPrimary = PRIMARY_TRINK_SLOT;
+
+    orbOn = false;
+    almostReady = false;
+    almostReadyPrimary = false;
+    partyCount = 1;
+    stopTop = false;
+
+    hasBattleStandard = false;
+    battleStandardBag = 0;
+    battleStandardSlot = 0;
+
+    hasFrostBattleStandard = false;
+    battleFrostStandardBag = 0;
+    battleFrostStandardSlot = 0;
+
+    hasDefTrink = false;
+    defTrinkBag = 0;
+    defTrinkSlot = 0;
+
+    readyDefTali = false;
+    hasDefTali = false;
+    defTaliBag = 0;
+    defTaliSlot = 0;
+
+    readyBarov = false;
+    hasBarov = false;
+    barovBag = 0;
+    barovSlot = 0;
+
+    readyMark = false;
+    hasMark = false;
+    markBag = 0;
+    markSlot = 0;
+
+    readyDemon = false;
+    hasDemon = false;
+    demonBag = 0;
+    demonSlot = 0;
+
+    readyDeception = false;
+    hasDeception = false;
+    deceptionBag = 0;
+    deceptionSlot = 0;
+
+    readyLifestone = false;
+    hasLifestone = false;
+    lifestoneBag = 0;
+    lifestoneSlot = 0;
+
+    readyBurst = false;
+    hasBurst = false;
+    burstBag = 0;
+    burstSlot = 0;
+
+    readyBoom = false;
+    hasBoom = false;
+    boomBag = 0;
+    boomSlot = 0;
+
+    readyLighter = false;
+    hasLighter = false;
+    lighterBag = 0;
+    lighterSlot = 0;
+
+    readyCannon = false;
+    hasCannon = false;
+    cannonBag = 0;
+    cannonSlot = 0;
+
+    readyPrism = false;
+    hasPrism = false;
+    prisimBag = 0;
+    prisimSlot = 0;
+
+    readyAlacrity = false;
+    hasAlacrity = false;
+    alacrityBag = 0;
+    alacritySlot = 0;
+
+    --
+    -- These are the variables for the 2 minute cooldown trinkets
+    -- that up your damage stats.  When adding a new damage trinket below
+    -- make sure to add variables for it.
+    --
+    readyCrescent = false;
+    hasCrescent = false;
+    crescentBag = 0;
+    crescentSlot = 0;
+
+    readyXiris = false;
+    hasXiris = false;
+    xirisBag = 0;
+    xirisSlot = 0;
+
+    readyBloodgem = false;
+    hasBloodgem = false;
+    bloodgemBag = 0;
+    bloodgemSlot = 0;
+
+    readyIllidari = false;
+    hasIllidari = false;
+    illidariBag = 0;
+    illidariSlot = 0;
+
+    readyCrystal = false;
+    hasCrystal = false;
+    crystalBag = 0;
+    crystalSlot = 0;
+
+    readyDraenei = false;
+    hasDraenei = false;
+    draeneiBag = 0;
+    draeneiSlot = 0;
+
+    readyVim = false;
+    hasVim = false;
+    vimBag = 0;
+    vimSlot = 0;
+
+    readyStark = false;
+    hasStark = false;
+    starkBag = 0;
+    starkSlot = 0;
+
+    readyPrayer = false;
+    hasPrayer = false;
+    prayerBag = 0;
+    prayerSlot = 0;
+
+    readyDrakk = false;
+    hasDrakk = false;
+    drakkBag = 0;
+    drakkSlot = 0;
+
+    if (UnitClass("player") == "Warlock") then
+        DEF_TRINKET = WARLOCK_DEF_TRINKET;
+    elseif (UnitClass("player") == "Death Knight") then
+        DEF_TRINKET = DEATHKNIGHT_DEF_TRINKET;
+    elseif (UnitClass("player") == "Druid") then
+        DEF_TRINKET = DRUID_DEF_TRINKET;
+    elseif (UnitClass("player") == "Priest") then
+        DEF_TRINKET = PRIEST_DEF_TRINKET;
+    elseif (UnitClass("player") == "Hunter") then
+        DEF_TRINKET = HUNTER_DEF_TRINKET;
+    elseif (UnitClass("player") == "Warrior") then
+        DEF_TRINKET = WARRIOR_DEF_TRINKET;
+    elseif (UnitClass("player") == "Rogue") then
+        DEF_TRINKET = ROGUE_DEF_TRINKET;
+    elseif (UnitClass("player") == "Shaman") then
+        DEF_TRINKET = SHAMAN_DEF_TRINKET;
+    elseif (UnitClass("player") == "Mage") then
+        DEF_TRINKET = MAGE_DEF_TRINKET;
+    elseif (UnitClass("player") == "Paladin") then
+        DEF_TRINKET = PALADIN_DEF_TRINKET;
+    end
+
+    if (GetInventoryItemLink("player", trinkSlot)) then
+        start, duration, enable = GetInventoryItemCooldown("player", trinkSlot);
+        if (duration - (GetTime() - start) > 0 and
+            duration - (GetTime() - start) <= 30) then
+            almostReady = true;
+        end
+
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Six Demon Bag")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDemon = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Mark of Resolution")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyMark = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Orb of Deception")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            --
+            -- Orb of Deception check
+            --
+            orbOn, myOrb, numOrb = btp_check_buff("AntiShadow", "player");
+
+            if (duration - (GetTime() - start) > 1500 and
+                duration - (GetTime() - start) <= 1800 and orbOn) then
+                stopTop = true;
+            elseif (duration - (GetTime() - start) <= 0) then
+                readyDeception = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Barov Peasant Caller")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyBarov = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Defiler's Talisman")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDefTali = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Lifestone")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                      trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyLifestone = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Burst of Knowledge")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) > 890 and
+                duration - (GetTime() - start) <= 900) then
+                stopTop = true;
+            elseif (duration - (GetTime() - start) <= 0) then
+                readyBurst = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Smokey's Lighter")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyLighter = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Linken's Boomerang")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyBoom = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Cannonball Runner")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyCannon = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Prismcharm")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyPrism = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlot),
+                        "Charm of Alacrity")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                               trinkSlot);
+            if (duration - (GetTime() - start) <= 0) then
+                readyAlacrity = true;
+            end
+        end
+    end
+
+    if (GetInventoryItemLink("player", trinkSlotPrimary)) then
+        start, duration, enable = GetInventoryItemCooldown("player",
+                                                           trinkSlotPrimary);
+        if (duration - (GetTime() - start) > 0 and
+            duration - (GetTime() - start) <= 30) then
+            almostReadyPrimary = true;
+        end
+
+        --
+        -- The following is for your primary trinkets.  Change these to the
+        -- Trinket you will always keep in your lower slot.
+        --
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Icon of the Silver Crescent")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyCrescent = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Xi'ri's Gift")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyXiris = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Scryer's Bloodgem")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyBloodgem = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Vengeance of the Illidari")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyIllidari = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Ancient Crystal Talisman")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyCrystal = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Ancient Draenei Arcane Relic")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDraenei = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Terokkar Tablet of Vim")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyVim = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Starkiller's Bauble")) then
+            start, duration,
+            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyStark = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Lower City Prayerbook")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                              trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyPrayer = true;
+            end
+        end
+        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
+                        "Draconic Infused Emblem")) then
+            start, duration, enable = GetInventoryItemCooldown("player",
+                                                              trinkSlotPrimary);
+            if (duration - (GetTime() - start) <= 0) then
+                readyDrakk = true;
+            end
+        end
+    end
+
+    local bag = 4
+    while (bag >= 0) do
+      for slot=1,GetContainerNumSlots(bag) do
+        if (GetContainerItemLink(bag,slot)) then
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Frostwolf Battle Standard")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 0) then
+                    hasFrostBattleStandard = true;
+                    battleFrostStandardBag = bag;
+                    battleFrostStandardSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Horde Battle Standard")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 0) then
+                    hasBattleStandard = true;
+                    battleStandardBag = bag;
+                    battleStandardSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot), DEF_TRINKET)) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDefTrink = true;
+                    defTrinkBag = bag;
+                    defTrinkSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Six Demon Bag")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDemon = true;
+                    demonBag = bag;
+                    demonSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Mark of Resolution")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasMark = true;
+                    markBag = bag;
+                    markSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Orb of Deception")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDeception = true;
+                    deceptionBag = bag;
+                    deceptionSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Barov Peasant Caller")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBarov = true;
+                    barovBag = bag;
+                    barovSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Defiler's Talisman")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDefTali = true;
+                    defTaliBag = bag;
+                    defTaliSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot), "Lifestone")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasLifestone = true;
+                    lifestoneBag = bag;
+                    lifestoneSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Burst of Knowledge")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBurst = true;
+                    burstBag = bag;
+                    burstSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Smokey's Lighter")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasLighter = true;
+                    lighterBag = bag;
+                    lighterSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Linken's Boomerang")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBoom = true;
+                    boomBag = bag;
+                    boomSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Cannonball Runner")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasCannon = true;
+                    cannonBag = bag;
+                    cannonSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot), "Prismcharm")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasPrism = true;
+                    prismBag = bag;
+                    prismSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Charm of Alacrity")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasAlacrity = true;
+                    alacrityBag = bag;
+                    alacritySlot = slot;
+                end
+            end
+
+            --
+            -- The following is to find primary trinkets in your bags.
+            -- These are those 2 minute cooldown + to damage or healing
+            -- trinkets.  If you do not have any don't worry, just put on
+            -- a normal trinket that does + to stats in its place.
+            --
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Icon of the Silver Crescent")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasCrescent = true;
+                    crescentBag = bag;
+                    crescentSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Xi'ri's Gift")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasXiris = true;
+                    xirisBag = bag;
+                    xirisSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Lower City Prayerbook")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasPrayer = true;
+                    prayerBag = bag;
+                    prayerSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Draconic Infused Emblem")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDrakk = true;
+                    drakkBag = bag;
+                    drakkSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Scryer's Bloodgem")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasBloodgem = true;
+                    bloodgemBag = bag;
+                    bloodgemSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Vengeance of the Illidari")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasIllidari = true;
+                    illidariBag = bag;
+                    illidariSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Ancient Crystal Talisman")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasCrystal = true;
+                    crystalBag = bag;
+                    crystalSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Ancient Draenei Arcane Relic")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasDraenei = true;
+                    draeneiBag = bag;
+                    draeneiSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Terokkar Tablet of Vim")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasVim = true;
+                    vimBag = bag;
+                    vimSlot = slot;
+                end
+            end
+            if (string.find(GetContainerItemLink(bag,slot),
+                            "Starkiller's Bauble")) then
+                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                if (duration - (GetTime() - start) <= 30) then
+                    hasStark = true;
+                    starkBag = bag;
+                    starkSlot = slot;
+                end
+            end
+        end
+      end
+
+      bag = bag - 1;
+    end
+
+    RequestBattlefieldScoreData();
+
+    if (UnitAffectingCombat("player")) then
+
+        for i = 1, GetNumPartyMembers() do
+            nextPlayer = "party" .. i;
+            if (btp_check_dist(nextPlayer, 1)) then
+               partyCount = partyCount + 1;
+            end
+        end
+
+        for i=1, MAX_BATTLEFIELD_QUEUES do
+            status, mapName, instanceID = GetBattlefieldStatus(i);
+            if (status == "active" and
+                string.find(mapName, "Alterac Valley") and
+                math_round(GetNumPartyMembers() * .5) <=  partyCount and
+                GetNumBattlefieldScores() > 0 and hasFrostBattleStandard) then
+                FuckBlizUseContainerItem(battleFrostStandardBag,
+                                         battleFrostStandardSlot);
+            end
+        end
+
+        if (math_round(GetNumPartyMembers() * .5) <=  partyCount and
+            GetNumBattlefieldScores() > 0 and hasBattleStandard) then
+            FuckBlizUseContainerItem(battleStandardBag, battleStandardSlot);
+        end
+
+        if (readyCrescent) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyXiris) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyBloodgem) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyIllidari) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyCrystal) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyDraenei) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyVim) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyStark) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyPrayer) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        elseif (readyDrakk) then
+            FuckBlizUseInventoryItem(trinkSlotPrimary);
+            return true;
+        end
+
+        if (readyDemon) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyMark and
+                UnitHealth("player")/UnitHealthMax("player") <= .75) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyDeception) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyBarov and UnitFactionGroup("target")) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyDefTali and
+                UnitHealth("player")/UnitHealthMax("player") <= .75) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyLifestone and
+                UnitHealth("player")/UnitHealthMax("player") <= .75) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyBoom) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyBurst) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyLighter) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyCannon and UnitFactionGroup("target")) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyPrism) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        elseif (readyAlacrity) then
+            FuckBlizUseInventoryItem(trinkSlot);
+            return true;
+        end
+    else
+        if (not funTrink) then
+            return false;
+        end
+
+        if (not stopTop and not almostReady) then
+            if (hasPrism and UnitPowerType("target") == 0) then
+                UseContainerItem(prismBag, prismSlot);
+            elseif (hasMark and UnitPowerType("target") > 0 and
+                   not (readyPrism)) then
+                UseContainerItem(markBag, markSlot);
+            elseif (hasDeception and not
+                   (readyMark or readyPrism)) then
+                UseContainerItem(deceptionBag, deceptionSlot);
+            elseif (hasBarov and UnitFactionGroup("target") and not
+                   (readyMark or readyDeception or readyPrism)) then
+                UseContainerItem(barovBag, barovSlot);
+            elseif (hasBurst and not (readyMark or
+                    readyDeception or readyBarov or readyPrism)) then
+                UseContainerItem(burstBag, burstSlot);
+            elseif (hasCannon and UnitFactionGroup("target") and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyPrism)) then
+                UseContainerItem(cannonBag, cannonSlot);
+            elseif (hasLighter and UnitPowerType("target") > 0 and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyCannon or readyPrism)) then
+                UseContainerItem(lighterBag, lighterSlot);
+            elseif (hasBoom and not
+                   (readyLighter or readyBurst or readyMark or
+                    readyDeception or readyBarov or 
+                    readyCannon or readyPrism)) then
+                UseContainerItem(boomBag, boomSlot);
+            elseif (hasDemon and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or
+                    readyCannon or readyPrism)) then
+                UseContainerItem(demonBag, demonSlot);
+            elseif (hasAlacrity and not
+                   (readyBurst or readyDemon or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or 
+                    readyCannon or readyPrism)) then
+                UseContainerItem(alacrityBag, alacritySlot);
+            elseif (hasDefTali and UnitPowerType("target") > 0 and not
+                   (readyBurst or readyDemon or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or readyCannon or
+                    readyPrism or readyAlacrity)) then
+                UseContainerItem(defTaliBag, defTaliSlot);
+            elseif (hasLifestone and not
+                   (readyBurst or readyMark or readyDeception or
+                    readyBarov or readyLighter or readyBoom or
+                    readyCannon or readyPrism or readyDemon or
+                    readyAlacrity or readyDefTali)) then
+                UseContainerItem(lifestoneBag, lifestoneSlot);
+            elseif (hasDefTrink and not (readyBurst or readyDemon or
+                    readyMark or readyDeception or readyBarov or
+                    readyDefTali or readyLighter or readyLifestone or
+                    readyBoom or readyCannon or readyPrism or
+                    readyAlacrity)) then
+                UseContainerItem(defTrinkBag, defTrinkSlot);
+            end
+        end
+
+        if (not almostReadyPrimary) then
+            if (hasCrescent) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(crescentBag, crescentSlot);
+            elseif (hasXiris and not (readyCrescent)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(xirisBag, xirisSlot);
+            elseif (hasBloodgem and not (readyCrescent or readyXiris)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(bloodgemBag, bloodgemSlot);
+            elseif (hasIllidari and not (readyCrescent or readyXiris or
+                    readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(illidariBag, illidariSlot);
+            elseif (hasCrystal and not (readyCrescent or readyIllidari or
+                    readyXiris or readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(crystalBag, crystalSlot);
+            elseif (hasDraenei and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyXiris or readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(draeneiBag, draeneiSlot);
+            elseif (hasVim and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyXiris or
+                    readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(vimBag, vimSlot);
+            elseif (hasStark and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyXiris or readyVim or
+                    readyBloodgem)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(starkBag, starkSlot);
+            elseif (hasPrayer and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyXiris or readyVim or
+                    readyBloodgem or readyStark)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(prayerBag, prayerSlot);
+            elseif (hasDrakk and not (readyCrescent or readyIllidari or
+                    readyCrystal or readyDraenei or readyPrayer or
+                    readyXiris or readyVim or readyBloodgem or readyStark)) then
+                PickupInventoryItem(trinkSlotPrimary);
+                PutItemInBackpack();
+                UseContainerItem(drakkBag, drakkSlot);
+            end
+        end
+    end
+
+    return false;
+end
+
+
+function TradeItem(itemName, playerName)
+    unitName = nil;
+    itemBag = nil;
+    itemSlot = nil;
+    freeBag = nil;
+    freeSlot = nil;
+    isStack = false;
+
+    if (itemName and 
+       (string.find(itemName, "Bandage") or
+        string.find(itemName, "Healing Potion") or
+        string.find(itemName, "Mana Potion") or
+        string.find(itemName, "Milk") or
+        string.find(itemName, "Nectar") or
+        string.find(itemName, "Juice") or
+        string.find(itemName, "Dew") or
+        string.find(itemName, "Ethermead") or
+        string.find(itemName, "Manna Biscuit") or
+        string.find(itemName, "Star's Tears") or
+        string.find(itemName, "Water"))) then
+        isStack = true;
+    end
+
+    for i = 1, GetNumRaidMembers() do
+        nextPlayer = "raid" .. i;
+
+        if (playerName and UnitName(nextPlayer) and
+            playerName == UnitName(nextPlayer) and
+            UnitName("player") ~= UnitName(nextPlayer)) then
+
+           if (btp_check_dist(nextPlayer, 1)) then
+               unitName = nextPlayer;
+           end
+        end
+    end
+
+    if (GetNumRaidMembers() <= 0) then
+        for i = 1, GetNumPartyMembers() do
+            nextPlayer = "party" .. i;
+
+            if (playerName and UnitName(nextPlayer) and
+                playerName == UnitName(nextPlayer) and
+                UnitName("player") ~= UnitName(nextPlayer)) then
+
+               if (btp_check_dist(nextPlayer, 1)) then
+                   unitName = nextPlayer;
+               end
+            end
+        end
+    end
+
+    for bag=0,4 do
+      for slot=1,GetContainerNumSlots(bag) do
+        if (GetContainerItemLink(bag,slot)) then
+          if (GetContainerItemLink(bag,slot) == itemName) then
+              itemBag = bag;
+              itemSlot = slot;
+          end
+        else
+            if (not freeBag and not freeSlot) then
+                freeBag = bag;
+                freeSlot = slot;
+            end
+        end
+      end
+    end
+
+    if (unitName and itemBag and itemSlot) then
+        if (not CursorHasItem() and isStack) then
+            PickupContainerItem(itemBag, itemSlot);
+        elseif (not CursorHasItem()) then
+            SplitContainerItem(itemBag, itemSlot, 1);
+            PickupContainerItem(freeBag, freeSlot);
+            doTrade = true;
+            tradeName = unitName;
+        end
+
+        if (CursorHasItem()) then
+           DropItemOnUnit(unitName);
+        end
+    end
+end
+
+-- function to add and remove priorities
+function btp_loot(mode)
+    lootMode = mode;
+    btp_frame_debug("Loot Mode is now: " .. mode);
+end;
+
+-- our global priority list
+PRIORITY_G = { };
+
+-- function to add and remove priorities
+function btp_heal_priority_add(pname)
+        PRIORITY_G[pcount] = string.lower(pname);
+        pcount = pcount + 1;
+        btp_frame_debug("Added priority #" .. pcount .. ": " .. pname);
+end;
+
+function btp_heal_priority_del()
+        PRIORITY_G = { };
+        pcount = 0;
+end
+
+function btp_heal_priority_list()
+        for i = 0, pcount - 1 do
+            btp_frame_debug("P" .. i .. ": " .. PRIORITY_G[i]);
+        end
+end
+
+-- our global priority list
+FE_G = { };
+
+-- function to add and remove follow exclusions
+function btp_follow_exclusion_add(pname)
+        for i = 0, fecount - 1 do
+            if (FE_G[i] == string.lower(pname)) then
+                return;
+            end
+        end
+
+        FE_G[fecount] = string.lower(pname);
+        fecount = fecount + 1;
+        btp_frame_debug("Added follow exclusion #" .. fecount .. ": " .. pname);
+end;
+
+function btp_follow_exclusion_del()
+        FE_G = { };
+        fecount = 0;
+end
+
+function btp_follow_exclusion_list()
+        for i = 0, fecount - 1 do
+            btp_frame_debug("FE" .. i .. ": " .. FE_G[i]);
+        end
+end
+
+function btp_round(num, idp)
+        return tonumber(string.format("%." .. (idp or 0) .. "f", num))
+end
+
+function btp_is_cc()
+        return false;
+end
+
+function btp_spell_damage(sname)
+    --
+    -- Not sure how to do this yet, but if we can get the damage
+    -- for a particular spell and the durration of the effect
+    -- this could be useful in the future.  For now, the warlock
+    -- "Drain Soul" spell is used.  Please feel free to add more.
+    --
+
+    --
+    -- Make sure we have data on this spell.
+    --
+    if (btp_dmg_array[sname] == nil) then
+        return 0;
+    end
+
+    sid = btp_get_spell_id(sname);
+
+    if (sid ~= nil) then
+        spellName, spellRank = GetSpellName(sid, BOOKTYPE_SPELL);
+        speed, low, high, pos, neg = UnitRangedDamage("player");
+        return (btp_dmg_array[sname][spellRank] + high + pos + neg);
+    else
+        return 0;
+    end
+
+end
+
+function btp_check_player_buff(buff)
+                return btp_check_buff(buff, "player");
+end
+
+-- Returns:
+--     hasBuff:    (true | false)
+--     myBuff:     (true | false)
+--     stackNum:   Number of buffs in the stack if myBuff is true, otherwise
+--                 this returns the sum of all buffs of this type and their
+--                 stack numbers.
+--
+function btp_check_buff(buff, unit)
+    local i = 1;
+    local hasBuff = false;
+    local stackNum = 0;
+    local buffTexture = "foo";
+
+    if (not unit) then
+        unit="player";
+    end
+
+    while (buffTexture) do
+        buffName, buffRank, buffTexture, buffApplications,
+        buffType, buffDuration, buffTime, buffMine,
+        buffStealable = UnitBuff(unit, i);
+
+        if (buffTexture and buffMine == "player" and
+            strfind(buffTexture, buff)) then
+            return true, true, buffApplications;
+        elseif (buffTexture and strfind(buffTexture, buff)) then
+            hasBuff = true;
+            stackNum = stackNum + buffApplications;
+        end
+
+        i = i + 1;
+    end
+
+    if (hasBuff) then
+        return true, false, stackNum;
+    else
+        return false, false, 0;
+    end
+end
+
+
+function btp_check_player_debuff(buff)
+        return btp_check_debuff(buff, "player");
+end
+
+-- Returns:
+--     hasDebuff:    (true | false)
+--     myDebuff:     (true | false)
+--     stackNum:     Number of debuffs in the stack if myDebuff is true,
+--                   otherwise this returns the sum of all debuffs of
+--                   this type and their stack numbers.
+--
+function btp_check_debuff(buff, unit)
+    local i = 1;
+    local hasDebuff = false;
+    local stackNum = 0;
+    local debuffTexture = "foo";
+
+    if (not unit) then
+        unit="player";
+    end
+
+    while (debuffTexture) do
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff(unit, i);
+
+        if (debuffTexture and debuffMine == "player" and
+            strfind(debuffTexture, buff)) then
+            return true, true, debuffApplications;
+        elseif (debuffTexture and strfind(debuffTexture, buff)) then
+            hasDebuff = true;
+            stackNum = stackNum + debuffApplications;
+        end
+
+        i = i + 1;
+    end
+
+    if (hasDebuff) then
+        return true, false, stackNum;
+    else
+        return false, false, 0;
+    end
+end
+
+function btp_set_cb(sname, tname)
+        if (cb_array[sname] ~= nil) then
+            current_cb = cb_array[sname];
+            current_cb_target = tname;
+        end
+end
+
+function btp_cast_spell(sname)
+        return btp_cast_spell_on_target(sname, "target");
+end
+
+function btp_cast_spell_alt(sname)
+        return btp_cast_spell_on_target_alt(sname, "target");
+end
+
+function btp_cast_spell_on_target(sname, tname)
+        if (not sname or not tname) then
+            return false;
+        end
+
+        if (not btp_spell_known(sname)) then
+                return false;
+        end
+
+        if (btp_can_cast(sname)) then
+                -- btp_frame_debug("Casting: " .. sname .. " On: " .. tname);
+                btp_set_cb(sname, tname);
+
+                if (tname ~= "target") then
+                    FuckBlizzardTargetUnit(tname);
+                end
+
+                FuckBlizzardByName(sname);
+                return true;
+        end
+
+        return false;
+end
+
+function btp_cast_spell_on_target_alt(sname, tname)
+        if (not sname or not tname) then
+            return false;
+        end
+
+        if (not btp_spell_known(sname)) then
+                return false;
+        end
+
+        if (btp_can_cast(sname)) then
+                -- btp_frame_debug("Cast Alt: " .. sname .. " On: " .. tname);
+                if (tname ~= "target") then
+                    FuckBlizzardTargetUnitAlt(tname);
+                end
+
+                FuckBlizzardByNameAlt(sname);
+                return true;
+        end
+
+        return false;
+end
+
+function btp_can_cast(sname)
+        if(sname == nil) then
+            return false;
+        end
+
+        -- check if we disabled the spell
+        use_spell = CONFIG_SPELLS[sname];
+        if(use_spell == nil or use_spell == false) then
+                return false;
+        end
+
+        -- btp_frame_debug("trying to cast: " .. sname);
+        if(btp_spell_known(sname)) then
+                usable, nomana = IsUsableSpell(sname);
+                if (nomana) then
+                    -- btp_frame_debug("No mana for: " .. sname);
+                    return false;
+                end
+
+                local sid = btp_get_spell_id(sname);
+                if(not sid) then                    
+                    -- btp_frame_debug(sname .. " has no SID.");
+                end
+
+                local psid = btp_get_spell_id_pet(sname);
+                if(not psid) then                    
+                    -- btp_frame_debug(sname .. " has no PID.");
+                end
+
+                if (sid) then
+                    -- btp_frame_debug("SID: " .. sid);
+                    if (GetSpellCooldown(sid, BOOKTYPE_SPELL) == 0) then
+                            return true;
+                    else
+                            -- btp_frame_debug(sname .. " is in cooldown");
+                    end
+                elseif (psid) then
+                    -- btp_frame_debug("PSID: " .. psid);
+                    if (GetSpellCooldown(psid, BOOKTYPE_PET) == 0) then
+                            return true;
+                    else
+                            -- btp_frame_debug(sname .. " is in cooldown");
+                    end
+                end
+        end
+        
+        return false;
+end 
+
+function btp_spell_known(sname)
+        if (sname) then
+                local i = 1;
+                local spell, rank;
+                repeat
+                        spell, rank = GetSpellName(i, BOOKTYPE_SPELL)
+                        if(spell == sname and rank ~= nil) then
+                                return true;
+                        end
+                        i = i +1;
+                until (not spell)
+
+                local i = 1;
+                local spell, rank;
+                repeat
+                        spell, rank = GetSpellName(i, BOOKTYPE_PET)
+                        if(spell == sname and rank ~= nil) then
+                                return true;
+                        end
+                        i = i +1;
+                until (not spell)
+        end
+        return false;
+end
+
+function btp_get_spell_id(SpellName)
+        local SpellCount = 0;
+        local ReturnName;
+        local ReturnRank;
+
+        while (SpellName ~= ReturnName) do
+                SpellCount = SpellCount + 1;
+                ReturnName, ReturnRank = GetSpellName(SpellCount,
+                                                      BOOKTYPE_SPELL);
+                if(not ReturnName) then
+                    return false;
+                end
+        end
+
+        while (SpellName and ReturnName and SpellName == ReturnName) do
+                SpellID = SpellCount;
+                SpellCount = SpellCount + 1;
+                ReturnName, ReturnRank = GetSpellName(SpellCount,
+                                                      BOOKTYPE_SPELL);
+                if (SpellName ~= ReturnName) then
+                        break;
+                end
+                if(not ReturnName) then
+                        break;
+                end
+        end
+
+        return SpellID;
+end
+
+function btp_get_spell_id_pet(SpellName)
+        local SpellCount = 0;
+        local ReturnName;
+        local ReturnRank;
+
+        while (SpellName ~= ReturnName) do
+                SpellCount = SpellCount + 1;
+                ReturnName, ReturnRank = GetSpellName(SpellCount, BOOKTYPE_PET);
+                if(not ReturnName) then
+                    return false;
+                end
+        end
+
+        while (SpellName and ReturnName and SpellName == ReturnName) do
+                SpellID = SpellCount;
+                SpellCount = SpellCount + 1;
+                ReturnName, ReturnRank = GetSpellName(SpellCount, BOOKTYPE_PET);
+                if (SpellName ~= ReturnName) then
+                        break;
+                end
+                if(not ReturnName) then
+                        break;
+                end
+        end
+
+        return SpellID;
+end
+
+
+function btp_health_status_quick()
+    local lowest_health = 0;
+    local lowest_target = 0;
+    local lowest_percent = 1;
+
+    -- only check raid if we are in one
+    if(UnitInRaid("player")) then
+    for i = 1, GetNumRaidMembers() do
+            nextPlayer     = "raid" .. i;
+            cur_health     = UnitHealth(nextPlayer);
+            cur_health_max = UnitHealthMax(nextPlayer);
+            cur_class      = UnitClass(nextPlayer);
+            cur_percent    = cur_health / cur_health_max;
+
+        if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
+            lowest_percent = cur_percent;
+            lowest_target = nextPlayer;
+            lowest_health = (cur_health_max - cur_health)
+            -- btp_frame_debug("raid-name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
+        end
+
+    end
+    else
+
+    -- check the party
+    for i = 1, GetNumPartyMembers() do
+        nextPlayer     = "party" .. i;
+        cur_health     = UnitHealth(nextPlayer);
+        cur_health_max = UnitHealthMax(nextPlayer);
+        cur_class      = UnitClass(nextPlayer);
+        cur_percent    = cur_health / cur_health_max;
+
+        if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
+            lowest_percent = cur_percent;
+            lowest_target = nextPlayer;
+            lowest_health = (cur_health_max - cur_health)
+            -- btp_frame_debug("name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
+        end
+
+    end
+    end
+
+    if(not lowest_percent or lowest_percent == 1) then
+        return false;
+    end
+
+    return lowest_percent, lowest_health, lowest_target;
+end
+
+
+function btp_dont_follow(name)
+    if (name == nil) then
+        return true;
+    end
+
+    if(fecount > 0) then
+        for j = 0, fecount - 1 do
+            pval = FE_G[j];
+
+            if (string.lower(name) == string.lower(pval)) then
+                return true;
+            end
+        end
+    end
+
+    return false;
+end
+
+
+function btp_health_status(thresh)
+    btp_health_status(thresh, false);
+end
+
+-- This function should make some basic priority decisions
+-- on who should get a heal.
+function btp_health_status(thresh, raidHeal)
+    skipPlayer       = false;
+    cur_heal         = nil;
+    cur_priority     = 0;
+    cur_heal_percent = 1;
+    cur_percent      = 0;
+    cur_subgroup     = 1;
+    party_cnt        = 0;
+    raid_cnt         = 0;
+
+    party_status[1] = 0;
+    party_status[2] = 0;
+    party_status[3] = 0;
+    party_status[4] = 0;
+    party_status[5] = 0;
+    party_status[6] = 0;
+    party_status[7] = 0;
+    party_status[8] = 0;
+
+    for i = 1, GetNumRaidMembers() do
+        nextPlayer     = "raid" .. i;
+        cur_health     = UnitHealth(nextPlayer);
+        cur_health_max = UnitHealthMax(nextPlayer);
+        cur_class      = UnitClass(nextPlayer);
+        cur_threat     = UnitThreatSituation(nextPlayer);
+        cur_percent    = cur_health / cur_health_max;
+
+        if(not UnitInVehicle(nextPlayer) and cur_percent <= thresh and
+           cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
+                name, rank, subgroup, level, class, fileName, zone, online,
+                isDead, role, isML = GetRaidRosterInfo(i + 1);
+
+                raid_cnt                   = raid_cnt + 1;
+                party_status[subgroup]     = party_status[subgroup] + 1;
+        end
+
+        --
+        -- We could check for pets here, but for now we don't care about
+        -- how hurt pets are.  They will get heals if they need them,
+        -- but we're not going to blow the good stuff on pets.
+        --
+    end
+
+    for i = 0, GetNumPartyMembers() do
+        if (i == 0) then
+            nextPlayer = "player";
+        else
+            nextPlayer = "party" .. i;
+        end
+
+        cur_health     = UnitHealth(nextPlayer);
+        cur_health_max = UnitHealthMax(nextPlayer);
+        cur_class      = UnitClass(nextPlayer);
+        cur_threat     = UnitThreatSituation(nextPlayer);
+        cur_percent    = cur_health / cur_health_max;
+
+        if(not UnitInVehicle(nextPlayer) and cur_percent <= thresh and
+           cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
+                party_cnt = party_cnt + 1;
+        end
+
+        --
+        -- We could check for pets here, but for now we don't care about
+        -- how hurt pets are.  They will get heals if they need them,
+        -- but we're not going to blow the good stuff on pets.
+        --
+    end
+
+    --
+    -- First check our priority queue
+    --
+    if(pcount > 0) then
+        for j = 0, pcount do
+            pval = PRIORITY_G[j];
+
+            for i = 1, GetNumRaidMembers() do
+                nextPlayer = "raid" .. i;
+
+                cur_health     = UnitHealth(nextPlayer);
+                cur_health_max = UnitHealthMax(nextPlayer);
+                cur_class      = UnitClass(nextPlayer);
+                cur_percent    = cur_health / cur_health_max;
+
+                if(cur_health/cur_health_max <= thresh and
+                   not UnitInVehicle(nextPlayer) and
+                   cur_health >= 2 and btp_check_dist(nextPlayer, 1) and
+                   pval and UnitName(nextPlayer) and
+                   string.lower(UnitName(nextPlayer)) ==
+                   string.lower(pval)) then
+                    name, rank, subgroup, level, class, fileName, zone, online,
+                    isDead, role, isML = GetRaidRosterInfo(i + 1);
+
+                    return nextPlayer, party_cnt, raid_cnt,
+                           party_status[subgroup];
+                end
+            end
+
+            if (GetNumRaidMembers() <= 0) then
+                for i = 0, GetNumPartyMembers() do
+                    if (i == 0) then
+                        nextPlayer = "player";
+                    else
+                        nextPlayer = "party" .. i;
+                    end
+
+                    cur_health     = UnitHealth(nextPlayer);
+                    cur_health_max = UnitHealthMax(nextPlayer);
+                    cur_class      = UnitClass(nextPlayer);
+                    cur_percent    = cur_health / cur_health_max;
+
+                    if(cur_health/cur_health_max <= thresh and
+                       not UnitInVehicle(nextPlayer) and
+                       cur_health >= 2 and btp_check_dist(nextPlayer, 1) and
+                       pval and UnitName(nextPlayer) and
+                       string.lower(UnitName(nextPlayer)) ==
+                       string.lower(pval)) then
+                        return nextPlayer, party_cnt, raid_cnt, party_cnt;
+                    end
+                end
+            end
+        end
+    end
+
+    if(PRIORITY_ONLY) then
+        return false;
+    end
+
+    -- Now that we are done checking our priorities check
+    -- to see if any party or raid members are below thresh
+
+    for i = 1, GetNumRaidMembers() do
+        nextPlayer     = "raid" .. i;
+        cur_health     = UnitHealth(nextPlayer);
+        cur_health_max = UnitHealthMax(nextPlayer);
+        cur_class      = UnitClass(nextPlayer);
+        cur_threat     = UnitThreatSituation(nextPlayer);
+        cur_percent    = cur_health / cur_health_max;
+
+        if (raidHeal and cur_threat ~= nil and cur_threat < 2) then
+           skipPlayer = false;
+
+           --
+           -- Rejuvination check
+           --
+           hasRejuvenation, myRejuvenation,
+           numRejuvenation = btp_check_buff("Rejuvenation", nextPlayer);
+
+           --
+           -- Lifebloom check
+           --
+           hasLifebloom, myLifebloom,
+           numLifebloom = btp_check_buff("Felblossom", nextPlayer);
+
+           --
+           -- Regrowth check
+           --
+           hasRegrowth, myRegrowth,
+           numRegrowth = btp_check_buff("ResistNature", nextPlayer);
+
+           --
+           -- Renew check
+           --
+           hasRenew, myRenew,
+           numRenew = btp_check_buff("Renew", nextPlayer);
+
+           --
+           -- Wild Growth check
+           --
+           hasWildGrowth, myWildGrowth,
+           numWildGrowth = btp_check_buff("Flourish", nextPlayer);
+
+           --
+           -- Riptide Buff check
+           --
+           hasRiptide, myRiptide,
+           numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
+
+           if (hasRejuvenation or hasLifebloom or hasRegrowth or
+               hasRenew or hasWildGrowth or hasRiptide) then
+               skipPlayer = true;
+           end
+        end
+
+        name, rank, subgroup, level, class, fileName, zone, online,
+        isDead, role, isML = GetRaidRosterInfo(i + 1);
+
+        if(not skipPlayer and cur_percent <= thresh and
+           not UnitInVehicle(nextPlayer) and
+           cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
+
+            -- Tanking
+            if(cur_threat ~= nil and cur_threat > 1) then
+                if(cur_heal_percent > cur_percent) then
+                    cur_heal         = nextPlayer;
+                    cur_priority     = 100;
+                    cur_heal_percent = cur_percent;
+                    cur_subgroup     = subgroup;
+                end
+            end
+
+            -- second in line are potential healers
+            if(cur_class == "Priest" or 
+               cur_class == "Druid" or
+               cur_class == "Paladin" or
+               cur_class == "Shaman") then
+                if(cur_priority <= 75 and
+                   cur_heal_percent > cur_percent) then
+                    cur_heal         = nextPlayer;
+                    cur_priority     = 75;
+                    cur_heal_percent = cur_percent;
+                    cur_subgroup     = subgroup;
+                end
+            end
+            
+            -- dps classes all get the same
+            if(cur_priority <= 50 and
+               cur_heal_percent > cur_percent) then
+                cur_heal         = nextPlayer;
+                cur_priority     = 50;
+                cur_heal_percent = cur_percent;
+                cur_subgroup     = subgroup;
+            end
+        end
+
+        -- check raid pets lowest priority
+        if(UnitExists("raidpet" .. i)) then
+            nextPet        = "raidpet" .. i;
+            pet_health     = UnitHealth(nextPet);
+            pet_health_max = UnitHealthMax(nextPet);
+            pet_threat     = UnitThreatSituation(nextPet);
+            pet_percent    = pet_health / pet_health_max;
+
+            if (raidHeal and pet_threat ~= nil and pet_threat < 2) then
+               skipPlayer = false;
+
+               --
+               -- Rejuvination check
+               --
+               hasRejuvenation, myRejuvenation,
+               numRejuvenation = btp_check_buff("Rejuvenation", nextPet);
+
+               --
+               -- Lifebloom check
+               --
+               hasLifebloom, myLifebloom,
+               numLifebloom = btp_check_buff("Felblossom", nextPet);
+
+               --
+               -- Regrowth check
+               --
+               hasRegrowth, myRegrowth,
+               numRegrowth = btp_check_buff("ResistNature", nextPet);
+
+               --
+               -- Renew check
+               --
+               hasRenew, myRenew,
+               numRenew = btp_check_buff("Renew", nextPet);
+
+               --
+               -- Wild Growth check
+               --
+               hasWildGrowth, myWildGrowth,
+               numWildGrowth = btp_check_buff("Flourish", nextPet);
+
+               --
+               -- Riptide Buff check
+               --
+               hasRiptide, myRiptide,
+               numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
+
+               if (hasRejuvenation or hasLifebloom or hasRegrowth or
+                   hasRenew or hasWildGrowth or hasRiptide) then
+                   skipPlayer = true;
+               end
+            end
+
+            if(not skipPlayer and pet_percent <= thresh and
+               not UnitInVehicle(nextPlayer) and
+               pet_health > 5 and btp_check_dist(nextPet, 1)) then
+                if(cur_priority <= 20 and pet_threat ~= nil and
+                   pet_threat > 1 and cur_heal_percent > pet_percent) then
+                    cur_heal         = nextPet;
+                    cur_priority     = 20;
+                    cur_heal_percent = pet_percent;
+                    cur_subgroup     = subgroup;
+                end
+
+                if(cur_priority <= 10 and
+                   cur_heal_percent > pet_percent) then
+                    cur_heal         = nextPet;
+                    cur_priority     = 10;
+                    cur_heal_percent = pet_percent;
+                    cur_subgroup     = subgroup;
+                end
+            end
+        end
+    end
+
+    if (GetNumRaidMembers() <= 0) then
+        for i = 0, GetNumPartyMembers() do
+            if (i == 0) then
+                nextPlayer = "player";
+            else
+                nextPlayer = "party" .. i;
+            end
+
+            cur_health     = UnitHealth(nextPlayer);
+            cur_health_max = UnitHealthMax(nextPlayer);
+            cur_class      = UnitClass(nextPlayer);
+            cur_threat     = UnitThreatSituation(nextPlayer);
+            cur_percent    = cur_health / cur_health_max;
+
+            if (raidHeal and cur_threat ~= nil and cur_threat < 2) then
+               skipPlayer = false;
+
+               --
+               -- Rejuvination check
+               --
+               hasRejuvenation, myRejuvenation,
+               numRejuvenation = btp_check_buff("Rejuvenation", nextPlayer);
+
+               --
+               -- Lifebloom check
+               --
+               hasLifebloom, myLifebloom,
+               numLifebloom = btp_check_buff("Felblossom", nextPlayer);
+
+               --
+               -- Regrowth check
+               --
+               hasRegrowth, myRegrowth,
+               numRegrowth = btp_check_buff("ResistNature", nextPlayer);
+
+               --
+               -- Renew check
+               --
+               hasRenew, myRenew,
+               numRenew = btp_check_buff("Renew", nextPlayer);
+
+               --
+               -- Wild Growth check
+               --
+               hasWildGrowth, myWildGrowth,
+               numWildGrowth = btp_check_buff("Flourish", nextPlayer);
+
+               --
+               -- Riptide Buff check
+               --
+               hasRiptide, myRiptide,
+               numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
+
+               if (hasRejuvenation or hasLifebloom or hasRegrowth or
+                   hasRenew or hasWildGrowth or hasRiptide) then
+                   skipPlayer = true;
+               end
+            end
+
+            if(not skipPlayer and cur_percent <= thresh and
+               not UnitInVehicle(nextPlayer) and
+               cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
+
+                -- Tanking
+                if(cur_threat ~= nil and cur_threat > 1) then
+                    if(cur_heal_percent > cur_percent) then
+                        cur_heal         = nextPlayer;
+                        cur_priority     = 100;
+                        cur_heal_percent = cur_percent;
+                    end
+                end
+
+                -- second in line are the healers
+                if(cur_class == "Priest" or
+                   cur_class == "Druid" or
+                   cur_class == "Paladin" or
+                   cur_class == "Shaman") then
+                    if(cur_priority <= 75 and
+                       cur_heal_percent > cur_percent) then
+                        cur_heal         = nextPlayer;
+                        cur_priority     = 75;
+                        cur_heal_percent = cur_percent;
+                    end
+                end
+                
+                -- dps classes all get the same
+                if(cur_priority <= 50 and
+                   cur_heal_percent > cur_percent) then
+                    cur_heal         = nextPlayer;
+                    cur_priority     = 50;
+                    cur_heal_percent = cur_percent;
+                end
+            end
+
+            -- check party pets lowest priority
+            if(UnitExists("partypet" .. i)) then
+                nextPet        = "partypet" .. i;
+                pet_health     = UnitHealth(nextPet);
+                pet_health_max = UnitHealthMax(nextPet);
+                pet_threat     = UnitThreatSituation(nextPet);
+                pet_percent    = pet_health / pet_health_max;
+
+                if (raidHeal and pet_threat ~= nil and pet_threat < 2) then
+                   skipPlayer = false;
+
+                   --
+                   -- Rejuvination check
+                   --
+                   hasRejuvenation, myRejuvenation,
+                   numRejuvenation = btp_check_buff("Rejuvenation", nextPet);
+
+                   --
+                   -- Lifebloom check
+                   --
+                   hasLifebloom, myLifebloom,
+                   numLifebloom = btp_check_buff("Felblossom", nextPet);
+
+                   --
+                   -- Regrowth check
+                   --
+                   hasRegrowth, myRegrowth,
+                   numRegrowth = btp_check_buff("ResistNature", nextPet);
+
+                   --
+                   -- Renew check
+                   --
+                   hasRenew, myRenew,
+                   numRenew = btp_check_buff("Renew", nextPet);
+
+                   --
+                   -- Wild Growth check
+                   --
+                   hasWildGrowth, myWildGrowth,
+                   numWildGrowth = btp_check_buff("Flourish", nextPet);
+
+                   --
+                   -- Riptide Buff check
+                   --
+                   hasRiptide, myRiptide,
+                   numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
+
+                   if (hasRejuvenation or hasLifebloom or hasRegrowth or
+                       hasRenew or hasWildGrowth or hasRiptide) then
+                       skipPlayer = true;
+                   end
+                end
+
+                if(not skipPlayer and pet_percent <= thresh and
+                   not UnitInVehicle(nextPlayer) and
+                   pet_health > 5 and btp_check_dist(nextPet, 1)) then
+                    if(cur_priority <= 20 and pet_threat ~= nil and
+                       pet_threat > 1 and cur_heal_percent > pet_percent) then
+                        cur_heal         = nextPet;
+                        cur_priority     = 20;
+                        cur_heal_percent = pet_percent;
+                    end
+
+                    if(cur_priority <= 10 and
+                       cur_heal_percent > pet_percent) then
+                        cur_heal         = nextPet;
+                        cur_priority     = 10;
+                        cur_heal_percent = pet_percent;
+                    end
+                end
+            end
+        end
+    end
+
+    if(cur_heal ~= nil) then
+        if (GetNumRaidMembers() <= 0) then
+            return cur_heal, party_cnt, raid_cnt, party_cnt;
+        else
+            return cur_heal, party_cnt, raid_cnt, party_status[cur_subgroup];
+        end
+    end
+
+    return false;
+end
+
+-- this is the begining of the new bot function
+function btp_bot_new()
+	-- first bind our keys
+	ProphetKeyBindings();
+
+    -- check our state
+    btp_bot_init();
+
+    -- if we are in CONFIG_OPTS[DPS] is ann run
+    if(btp_check_opt(DPS)) then
+        if(btp_bot_dps()) then return ture; end
+    end
+end
+
+
+-- not yet in use will not work since MOUNT_NAMES not defined
+function btp_is_mounted(unitid)
+    if(IsMounted(unitid)) then
+        return true
+    end
+    return false;
+--     for i = 1, 64 do
+--         buffName, buffRank, buffTexture,
+--         buffApplications, buffDuration,
+--         buffTime = UnitBuff(unitid, i);
+--         for(MOUNT_NAMES) do
+--             if (buffTexture and (strfind(buffTexture, MOUNT_NAMES[x][name]))) then
+--                 playerOnMount = true;
+--             end
+--         end
+-- 
+--     end
+end
+
+-- This function sets most of the global variables
+-- that are used for state information
+function btp_bot_init()
+    _btp_follow_player = "";
+    _btp_assist_player = "";
+end
+
+-- check an option in CONFIG_OPTS
+function btp_check_opt(optname)
+    return CONFIG_OPTS[optname]["VALUE"];
+end
+
+function btp_set_opt(optname, value)
+    -- make sure types look right first
+    CONFIG_OPTS[optname]["VALUE"] = value;
+end
+
+function btp_bot_dps(unit)
+end
+
+function btp_report_afk()
+    if (GetNumBattlefieldScores() > 0) then
+        for index = 1, GetNumBattlefieldScores() do
+            name, killingBlows, honorKills, deaths, honorGained,
+            faction, rank, race, class, filename, damageDone,
+            healingDone = GetBattlefieldScore(index);
+
+            if (name ~= nil and string.find(name, "-")) then
+                x, y = string.find(name, "-");
+                name = string.sub(name, 0, x - 1);
+            end
+
+            if (bgStats[name] == nil) then
+                bgStats[name] = { };
+            end
+
+            if (bgStats[name]["dd"] == nil) then
+                bgStats[name]["dd"] = 0;
+            end
+
+            if (bgStats[name]["hd"] == nil) then
+                bgStats[name]["hd"] = 0;
+            end
+
+            if (bgStats[name]["time"] == nil) then
+                bgStats[name]["time"] = GetTime();
+            end
+
+            if (bgStats[name]["reported"] == nil) then
+                bgStats[name]["reported"] = false;
+            end
+
+            if (bgStats[name]["dd"] ~= damageDone and
+                bgStats[name]["hd"] ~= healingDone) then
+                --
+                -- Keep track of player stats
+                --
+                bgStats[name]["dd"]   = damageDone;
+                bgStats[name]["hd"]   = healingDone;
+                bgStats[name]["time"] = GetTime();
+            end
+        end
+
+        --
+        -- Report the player AFK if they do not do any damage or healing
+        -- for 5 minutes or more.
+        --
+        for i = GetNumRaidMembers() - 1, 1, -1 do
+            nextPlayer = "raid" .. i;
+            if (bgStats[UnitName(nextPlayer)] ~= nil and
+               (GetTime() - bgStats[UnitName(nextPlayer)]["time"]) > 300 and
+                not bgStats[UnitName(nextPlayer)]["reported"]) then
+                -- Let's report the user AFK
+                -- I hope Blizzard likes what we're doing here.
+                -- This should help fix the AFK bot problem in BGs.
+                bgStats[UnitName(nextPlayer)]["reported"] = true;
+                ReportPlayerIsPVPAFK(nextPlayer);
+            end
+        end
+
+        if (GetNumRaidMembers() <= 0) then
+            for i = GetNumPartyMembers() - 1, 1, -1 do
+                nextPlayer = "party" .. i;
+                if (bgStats[UnitName(nextPlayer)] ~= nil and
+                   (GetTime() -bgStats[UnitName(nextPlayer)]["time"]) > 300 and
+                    not bgStats[UnitName(nextPlayer)]["reported"]) then
+                    -- Let's AFK the user
+                    -- I hope Blizzard likes what we're doing here.
+                    -- This should help fix the AFK bot problem in BGs.
+                    bgStats[UnitName(nextPlayer)]["reported"] = true;
+                    ReportPlayerIsPVPAFK(nextPlayer);
+                end
+            end
+        end
+    end
+end
+
+function btp_bot()
+    hasHearthStone = false;
+    hearthBag = 0;
+    hearthSlot = 1;
+    hasWater = false;
+    waterBag = 0;
+    waterSlot = 1;
+    hasMount = false;
+    hasFastMount = false;
+    hasFastFlyingMount = false;
+    hasFlyingMount = false;
+    flyingMountSlot = 1;
+    flyingMountSlotFast = 1;
+    nextPlayer = "player";
+    followPlayer = nextPlayer;
+    bestDamage = 0;
+    partyOK = false;
+    playerOnMount = false;
+    targetOnMount = false;
+    playerOnFlyingMount = false;
+    targetOnFlyingMount = false;
+    isDrinking = false;
+    castingBandage = false;
+    hasSwiftFlightForm = false;
+    hasFlightForm = false;
+    hasBasicCampfire = false;
+    basicCampfireNotReady = false;
+    shadowTrance = false;
+    canCurse = true;
+    canInst = true;
+    warlockInstCount = 0;
+    startName = "no one";
+    noFollow = false;
+    queueNow = false;
+    unitid = "no one";
+
+    hasBandageBuff, myBandageBuff,
+    numBandageBuff = btp_check_buff("Holy_Heal", bandageTarget);
+      
+    if (((GetTime() - lastBandage) <= 1) or myBandageBuff) then
+        castingBandage = true;
+    end
+
+    if (castingBandage) then
+        return true;
+    end
+
+    if (current_cb ~= nil and current_cb()) then
+        return true;
+    end
+
+    ProphetKeyBindings();
+
+    hasPreperation, myPreperation,
+    numPreperation = btp_check_buff("WispSplode", "player");
+      
+    hasFreeCast, myFreeCast,
+    numFreeCast = btp_check_buff("Holy_Resurrection", "player");
+
+    if (doTrade and tradeName) then
+        PickupContainerItem(freeBag, freeSlot);
+
+        if (CursorHasItem()) then
+           DropItemOnUnit(tradeName);
+           doTrade = false;
+           tradeName = nil;
+        end
+    end
+
+    if ((GetTime() - lastBotWater) <= 2) then
+        isDrinking = true;
+    end
+
+    if (newChatter and chatterCount > 8 and
+        chatterPlayer == lastChatterPlayer) then
+        newChatter = false;
+        chatterCount = chatterCount + 1;
+        -- Ignore the jerk.  But we should never get here.  Unless
+        -- it is a GM or something.  Then we are in trouble.
+    elseif (newChatter and chatterCount == 8 and
+            chatterPlayer == lastChatterPlayer) then
+        newChatter = false;
+        chatterCount = chatterCount + 1;
+        SendChatMessage("Welcome to my ignore list!",
+                        "WHISPER", nil, chatterPlayer);
+        AddIgnore(chatterPlayer);
+    elseif (newChatter and chatterCount > 4 and
+            chatterPlayer == lastChatterPlayer) then
+        newChatter = false;
+        chatterCount = chatterCount + 1;
+        -- Ignore the jerk.
+    elseif (newChatter and chatterCount == 4 and
+            chatterPlayer == lastChatterPlayer) then
+        i = math.random(MAX_ANOY_MESSAGE);
+        newChatter = false;
+        chatterCount = chatterCount + 1;
+        SendChatMessage(anoyMessage[i], "WHISPER", nil, chatterPlayer);
+    elseif (newChatter and (GetTime() - lastChatter) >= 5) then
+        lastChatter = GetTime();
+        newChatter = false;
+
+        if (chatterPlayer == lastChatterPlayer) then
+            chatterCount = chatterCount + 1;
+        else
+            lastChatterPlayer = chatterPlayer;
+            chatterCount = 0;
+        end
+        
+        SendChatMessage(Chatter(chatterMessage), "WHISPER", nil, chatterPlayer);
+    end
+
+    if (not LoggingChat()) then
+      DEFAULT_CHAT_FRAME:AddMessage("Chat is not being logged - starting it!");
+      LoggingChat(1);
+    end
+
+    if (botOff) then
+--         btp_frame_create_pos("Casting Bar", "0", "-425", 400, 100);
+--         btp_frame_set_color_hex("Casting Bar", "FF0000");
+        botOff = false;
+    end
+
+    local i = 1
+    while true do
+       local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+       if not spellName then
+          do break end
+       end
+
+       if (strfind(spellName, "Swift Flight Form")) then
+           hasSwiftFlightFrom = true;
+       end
+
+       if (strfind(spellName, "Flight Form")) then
+           hasFlightFrom = true;
+       end
+
+       if (strfind(spellName, "Basic Campfire")) then
+           hasBasicCampfire = true;
+           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
+           if (duration - (GetTime() - start) > 0) then
+              basicCampfireNotReady = true;
+           end
+       end
+
+       i = i + 1
+    end
+
+    --
+    -- This code does takes care of SendAddonMessage() commands.
+    --
+    if (addonCmd) then
+        if (doWarstomp and UnitClass("player") == "Druid" and
+            btp_cast_spell("War Stomp")) then
+            doWarstomp = false;
+            addonCmd = false;
+            return true;
+        elseif (doEntangleRoot and UnitClass("player") == "Druid") then
+
+            if (btp_druid_istree()) then
+                doEntangleRoot = false;
+                addonCmd = false;
+                return false;
+            end
+
+            if (btp_cast_spell_on_target("Entangling Roots",
+                doAssistUnit .. "target")) then
+                FuckBlizzardTargetUnit("playertarget");
+                doEntangleRoot = false;
+                addonCmd = false;
+                return true;
+            end
+        elseif (doTreeForm and UnitClass("player") == "Druid" and
+                btp_cast_spell("Tree of Life")) then
+            doTreeForm = false;
+            addonCmd = false;
+            return true;
+        elseif (doHibernate and UnitClass("player") == "Druid") then
+
+            if (btp_druid_istree()) then
+                doHibernate = false;
+                addonCmd = false;
+                return false;
+            end
+
+            if (btp_cast_spell_on_target("Hibernate",
+                doAssistUnit .. "target")) then
+                FuckBlizzardTargetUnit("playertarget");
+                doHibernate = false;
+                addonCmd = false;
+                return true;
+            end
+        elseif (doFaerieFire and UnitClass("player") == "Druid") then
+
+            if (btp_druid_istree()) then
+                doFaerieFire = false;
+                addonCmd = false;
+                return false;
+            end
+
+            if (btp_cast_spell_on_target("Faerie Fire",
+                doAssistUnit .. "target")) then
+                FuckBlizzardTargetUnit("playertarget");
+                doFaerieFire = false;
+                addonCmd = false;
+                return true;
+            end
+        elseif (doCyclone and UnitClass("player") == "Druid") then
+
+            if (btp_druid_istree()) then
+                doCyclone = false;
+                addonCmd = false;
+                return false;
+            end
+
+            if (btp_cast_spell_on_target("Cyclone",
+                                         doAssistUnit .. "target")) then
+                FuckBlizzardTargetUnit("playertarget");
+                doCyclone = false;
+                addonCmd = false;
+                return true;
+            end
+        elseif (doShackle and UnitClass("player") == "Priest" and
+                btp_cast_spell_on_target("Shackle Undead",
+                doAssistUnit .. "target")) then
+            FuckBlizzardTargetUnit("playertarget");
+            doShackle = false;
+            addonCmd = false;
+            return true;
+        elseif (doShadowWordPain and UnitClass("player") == "Priest" and
+                btp_cast_spell_on_target("Shadow Word: Pain",
+                doAssistUnit .. "target")) then
+            FuckBlizzardTargetUnit("playertarget");
+            doShadowWordPain = false;
+            addonCmd = false;
+            return true;
+        elseif (doShadowfiend and UnitClass("player") == "Priest" and
+                btp_cast_spell_on_target("Shadowfiend",
+                doAssistUnit .. "target")) then
+            FuckBlizzardTargetUnit("playertarget");
+            doShadowfiend = false;
+            addonCmd = false;
+            return true;
+        elseif (doPsychicScream and UnitClass("player") == "Priest" and
+                btp_cast_spell("Psychic Scream")) then
+            doPsychicScream = false;
+            addonCmd = false;
+            return true;
+        elseif (doLightwell and UnitClass("player") == "Priest" and
+                btp_cast_spell("Lightwell")) then
+            doLightwell = false;
+            addonCmd = false;
+            return true;
+        elseif (doCC and btp_cc()) then
+            doCC = false;
+            addonCmd = false;
+            return true;
+        elseif (reloadUI) then
+            reloadUI = false;
+            addonCmd = false;
+            ReloadUI();
+            return true;
+        else
+            if (UnitClass == "Druid" and
+               ((doCyclone and btp_can_cast("Cyclone")) or
+                (doWarstomp and btp_can_cast("War Stomp")) or
+                (doEntangleRoot and btp_can_cast("Entangling Roots")) or
+                (doTreeForm and btp_can_cast("Tree of Life")) or
+                (doHibernate and btp_can_cast("Hiberbate")) or
+                (doCC and btp_cc()) or
+                (doFaerieFire and btp_can_cast("Faerie Fire")))) then
+                return false;
+            elseif (UnitClass == "Priest" and
+                   ((doShackle and btp_can_cast("Shackle Undead")) or
+                    (doPsychicScream and btp_can_cast("Psychic Scream")) or
+                    (doShadowWordPain and btp_can_cast("Shadow Word: Pain")) or
+                    (doShadowfiend and btp_can_cast("Shadowfiend")) or
+                    (doCC and btp_cc()) or
+                    (doLightwell and btp_can_cast("Lightwell")))) then
+                return false;
+            elseif (UnitClass == "Druid" and
+                   (doShackle or doPsychicScream or doShadowWordPain or
+                    doLightwell)) then
+                doShackle = false;
+                doPsychicScream = false;
+                doShadowWordPain = false;
+                doLightwell = false;
+                addonCmd = false;
+            elseif (UnitClass == "Priest" and
+               (doCyclone or doWarstomp or doEntangleRoot or doTreeForm or
+                doHibernate or doFaerieFire)) then
+                doCyclone = false;
+                doWarstomp = false;
+                doEntangleRoot = false;
+                doTreeForm = false;
+                doHibernate = false;
+                doFaerieFire = false;
+                addonCmd = false;
+            end
+        end
+    end
+
+    local bag = 4
+    while (bag >= 0) do
+      for slot=1,GetContainerNumSlots(bag) do
+        if (GetContainerItemLink(bag,slot)) then
+
+            if (string.find(GetContainerItemLink(bag,slot), "Hearthstone")) then
+                hasHearthStone = true;
+                hearthBag = bag;
+                hearthSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot), "Milk")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Biscuit")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Strudel")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot), "Tea")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot), "Nectar")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot), "Juice")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot), "Dew")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot), "Ethermead")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
+                "Manna Biscuit")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
+                "Star's Tears")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot), "Water")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+        end
+      end
+
+      bag = bag - 1;
+    end
+
+    for i=1, GetNumCompanions("MOUNT") do
+        creatureID, creatureName, creatureSpellID, 
+        icon, issummoned = GetCompanionInfo("MOUNT", i);
+        if(creatureID ~= nil) then
+            -- btp_frame_debug("slot: " .. i .. " id: " ..
+            --                 creatureID .. " name: " ..
+            --                 creatureName .. " csid: " ..
+            --                 creatureSpellID); 
+            -- btp_frame_debug("icon: " .. icon);
+            -- issummoned is set if you are currently on the
+            -- mount nil otherwise issummoned: " .. issummoned);
+    
+            -- add eles statement to allow other types of mounts
+            if(not hasFastFlyingMount and
+               string.find(creatureName, "Swift") and
+               string.find(creatureName, "Wind Rider")) then
+                hasFastFlyingMount = true;
+                flyingMountSlotFast = i;
+            elseif (not hasFlyingMount and
+                    string.find(creatureName, "Wind Rider")) then
+                    hasFlyingMount = true;
+                    flyingMountSlot = i;
+            elseif (not hasFastMount and
+                    string.find(creatureName, "Dreadsteed")) then
+                hasFastMount = true;
+                mountSlotFast = i;
+            else
+                hasMount = true;
+                mountSlot = i;
+            end
+        end
+    end
+
+    for i=1, MAX_BATTLEFIELD_QUEUES do
+        status, mapName, instanceID = GetBattlefieldStatus(i);
+        if (status and status == "confirm") then
+            queueNow = true;
+        end
+    end
+
+    GuildRoster();
+
+    battlefieldWinner = GetBattlefieldWinner();
+    if (battlefieldWinner ~= nil) then
+        bgStats = { }; 
+        btp_follow_exclusion_del();
+        LeaveBattlefield();
+    end
+
+    RequestBattlefieldScoreData();
+    btp_report_afk();
+    SetMapToCurrentZone();
+    ConfirmReadyCheck(1);
+
+    if (queueNow) then
+      -- Solo queue for the first available battleground
+      JoinBattlefield(0,1);
+    end
+
+    --
+    -- Free action here will do nothing unless we have a debuff, and
+    -- would go off a maximum of two turns.  This should help use
+    -- the insignia and will of the forsaken more often when needed.
+    --
+    if (btp_free_action()) then
+        return true;
+    end
+
+    -- Mage Code for WATERBREAK
+    cur_mana = UnitMana("player")/UnitManaMax("player");
+    if(not dontBeg and UnitClass("player") == "Mage") then
+	    dontHearth = true;
+
+        local bag = 4
+        while (bag >= 0) do
+          for slot=1,GetContainerNumSlots(bag) do
+            if (GetContainerItemLink(bag,slot)) then
+                --
+                -- XXX: Add new alcohol
+                --
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Conjured Glacier Water")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+		    -- btp_frame_debug("Found Water " .. bag .. " " .. slot);
+                end
+            end
+          end
+          bag = bag - 1;
+	end
+
+        -- if (hasWater and (GetTime() - lastBooze) >= 30) then
+        if (cur_mana < .30) then
+		-- btp_frame_debug("take a drink");
+        	FuckBlizUseContainerItem(waterBag, waterSlot);
+		onMount = false;
+        	mageisDrinking = true;
+		return true;
+	elseif (mageisDrinking ~= false and cur_mana > .80) then
+		-- btp_frame_debug("done drinking");
+		mageisDrinking = false;
+		onMount = false;
+        end
+
+	if(not onMount and not mageisDrinking and cur_mana >= .99
+            and (UnitMana("player")/UnitManaMax("player") <= .3)) then
+        	-- FuckBlizUseContainerItem(mountBag,mountSlot);
+		CallCompanion("MOUNT", mountSlot);
+		onMount = true;
+	end
+    end
+
+
+    if(not dontBeg and WATERBREAK_USER ~= nil and WATERBREAK_USER ~= "" and
+       WATERBREAK_USER ~= false and UnitClass("player") == "Mage") then
+	    if(not isDrinking) then
+            btp_mage_waterbreak_trade(WATERBREAK_USER);
+        	FuckBlizzardByName("WATERBREAK");
+    	end
+
+    	AcceptTrade();
+    end
+    -- End WATERBREAK
+
+
+    if (GetNumPartyMembers() > 0 or
+        GetNumRaidMembers() > 0 or pvpBot) then
+        if (GetNumBattlefieldScores() <= 0) then
+            for i=1, MAX_BATTLEFIELD_QUEUES do
+                     status, mapName, instanceID = GetBattlefieldStatus(i);
+                    if (status == "confirm") then
+                            AcceptBattlefieldPort(i,1);
+                            StaticPopup_Hide("CONFIRM_BATTLEFIELD_ENTRY");
+                    end
+            end
+        end
+
+        for i = 1, GetNumRaidMembers() do
+            nextPlayer = "raid" .. i;
+
+            for j = 0, GetNumGuildMembers(true) do
+                name, rank, rankIndex, level, class, zone, note, officernote,
+                online, status = GetGuildRosterInfo(j);
+
+                if (manualFollow) then
+                    name = manualFollowName;
+                end
+                       
+                if (name and UnitName(nextPlayer) and
+                    name == UnitName(nextPlayer) and
+                    UnitName("player") ~= UnitName(nextPlayer)) then
+
+                   if (not btp_dont_follow(name) and
+                       CheckInteractDistance(nextPlayer, 4)) then
+                       followPlayer = nextPlayer;
+                   end
+
+                   partyOK = true;
+                end
+            end
+        end
+
+        if (GetNumRaidMembers() <= 0) then
+            for i = 1, GetNumPartyMembers() do
+                nextPlayer = "party" .. i;
+
+                for j = 0, GetNumGuildMembers(true) do
+                    name, rank, rankIndex, level, class, zone, note,
+                    officernote, online, status = GetGuildRosterInfo(j);
+
+                    if (manualFollow) then
+                        name = manualFollowName;
+                    end
+
+                    if (name and UnitName(nextPlayer) and
+                        name == UnitName(nextPlayer) and
+                        UnitName("player") ~= UnitName(nextPlayer)) then
+
+                       if (not btp_dont_follow(name) and
+                           CheckInteractDistance(nextPlayer, 4)) then
+                           followPlayer = nextPlayer;
+                       end
+
+                       partyOK = true;
+                    end
+                end
+            end
+        end
+
+        if (pvpBot and GetNumBattlefieldScores() > 0 and
+           (GetTime() - lastExcludeBroadcast) > 60) then
+            lastExcludeBroadcast = GetTime();
+            SendAddonMessage("BTP", "btpexclude", "BATTLEGROUND");
+        end
+
+        -- this is the bot follow code for pvp seems to have a bug
+        if (pvpBot and followPlayer == "player") then
+            partyOK = true;
+
+            for i = GetNumRaidMembers() - 1, 1, -1 do
+                nextPlayer = "raid" .. i;
+
+                if (CheckInteractDistance(nextPlayer, 4) and
+                    not btp_dont_follow(UnitName(nextPlayer)) and
+                    bgStats[UnitName(nextPlayer)] ~= nil and
+                    bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage and
+                   ((UnitHealth("player") < 2 and UnitHealth(nextPlayer) < 2) or
+                   (UnitHealth("player") >= 2 and
+                   UnitHealth(nextPlayer) >= 2))) then
+                    bestDamage = bgStats[UnitName(nextPlayer)]["dd"];
+                    followPlayer = nextPlayer;
+                end
+            end
+
+            if (GetNumRaidMembers() <= 0) then
+                for i = GetNumPartyMembers() - 1, 1, -1 do
+                    nextPlayer = "party" .. i;
+
+                    if (CheckInteractDistance(nextPlayer, 4) and
+                        not btp_dont_follow(UnitName(nextPlayer)) and
+                        bgStats[UnitName(nextPlayer)] ~= nil and
+                        bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage and
+                       ((UnitHealth("player") < 2 and
+                         UnitHealth(nextPlayer) < 2) or
+                       (UnitHealth("player") >= 2 and
+                        UnitHealth(nextPlayer) >= 2))) then
+                        bestDamage = bgStats[UnitName(nextPlayer)]["dd"];
+                        followPlayer = nextPlayer;
+                    end
+                end
+            end
+
+            --
+            -- This looks fucked up, but it is here to allow the bot
+            -- to mount up when there is no one around.  That way when
+            -- a player rides by it can quickly tag on and follow while
+            -- mounted.
+            --
+            if (UnitName(followPlayer) ~= UnitName("player")) then
+                targetOnMount = false;
+            else
+                targetOnMount = true;
+            end
+        end
+
+        if (partyOK) then
+            lastInParty = GetTime();
+
+            if (followPlayer == "player") then
+                noFollow = true;
+            end
+
+            buffTexture = "foo";
+            i = 1;
+
+            while (buffTexture) do
+                buffName, buffRank, buffTexture, buffApplications,
+                buffType, buffDuration, buffTime, buffMine,
+                buffStealable = UnitBuff("player", i);
+
+                if (buffTexture and (strfind(buffTexture, "Kodo") or
+                    strfind(buffTexture, "Raptor") or
+                    strfind(buffTexture, "horse") or
+                    strfind(buffTexture, "Swiftness") or
+                    strfind(buffTexture, "Dreadsteed") or
+                    strfind(buffTexture, "Tiger") or
+                    strfind(buffTexture, "Charger") or
+                    strfind(buffTexture, "Warstrider") or
+                    strfind(buffTexture, "Centaur") or
+                    strfind(buffTexture, "Cockatrice") or
+                    strfind(buffTexture, "Belt_12") or
+                    strfind(buffTexture, "Halloween_Witch") or
+                    strfind(buffTexture, "PolarBear") or
+                    strfind(buffTexture, "Mammoth") or
+                    strfind(buffTexture, "DireWolf"))) then
+                    playerOnMount = true;
+                end
+
+                if (buffTexture and
+                   (strfind(buffTexture, "FlightForm") or
+                    strfind(buffTexture, "NetherRay") or
+                    strfind(buffTexture, "Copter") or
+                    strfind(buffTexture, "Wyvern"))) then
+                    playerOnFlyingMount = true;
+                end
+
+                if (buffTexture and strfind(buffTexture, "Drink")) then
+                    isDrinking = true;
+                end
+
+                i = i + 1;
+            end
+
+            buffTexture = "foo";
+            i = 1;
+
+            while (buffTexture) do
+                buffName, buffRank, buffTexture, buffApplications,
+                buffType, buffDuration, buffTime, buffMine,
+                buffStealable = UnitBuff(followPlayer, i);
+
+                if (buffTexture and (strfind(buffTexture, "Kodo") or
+                    strfind(buffTexture, "Raptor") or
+                    strfind(buffTexture, "horse") or
+                    strfind(buffTexture, "Swiftness") or
+                    strfind(buffTexture, "Dreadsteed") or
+                    strfind(buffTexture, "Tiger") or
+                    strfind(buffTexture, "Charger") or
+                    strfind(buffTexture, "Warstrider") or
+                    strfind(buffTexture, "Centaur") or
+                    strfind(buffTexture, "Cockatrice") or
+                    strfind(buffTexture, "Belt_12") or
+                    strfind(buffTexture, "Halloween_Witch") or
+                    strfind(buffTexture, "PolarBear") or
+                    strfind(buffTexture, "Mammoth") or
+                    strfind(buffTexture, "DireWolf"))) then
+                    targetOnMount = true;
+                end
+
+                if (buffTexture and
+                   (strfind(buffTexture, "FlightForm") or
+                    strfind(buffTexture, "NetherRay") or
+                    strfind(buffTexture, "Copter") or
+                    strfind(buffTexture, "Wyvern"))) then
+                    targetOnFlyingMount = true;
+                end
+
+                i = i + 1;
+            end
+
+            if (not btp_dont_follow(UnitName(followPlayer)) and
+                btpFollow and not stopMoving and
+                (GetTime() - lastMountTry) > 2 and
+                not forceDrink and (not isDrinking or
+                UnitMana("player") == UnitManaMax("player"))) then
+
+                FollowUnit(followPlayer);
+
+                if (CheckInteractDistance(followPlayer, 4) and
+                    followPlayer ~= "player") then
+                    bootyCall = false;
+                end
+            end
+
+            if (hasWater and okayDrink) then
+                okayDrink = false;
+                FuckBlizUseContainerItem(waterBag,waterSlot);
+            end
+
+            if (okayMount and targetOnMount) then
+                if (hasFastMount) then
+                    CallCompanion("MOUNT", mountSlotFast);
+                elseif (hasMount) then
+                    CallCompanion("MOUNT", mountSlot);
+                end
+
+                okayMount = false;
+            elseif (okayMount) then
+                if (hasFastFlyingMount) then
+                    CallCompanion("MOUNT", flyingMountSlotFast);
+                elseif (hasFlyingMount) then
+                    CallCompanion("MOUNT", flyingMountSlot);
+                end
+
+                okayMount = false;
+            end
+
+            if ((GetTime() - lastSummon) >= 60) then
+                lastSummon = GetTime();
+                ConfirmSummon();
+            elseif (IsPartyLeader() and UnitName(followPlayer) and
+                    not btp_dont_follow(UnitName(followPlayer))) then
+                PromoteToLeader(followPlayer);
+            elseif (hasWater and (GetTime() - lastBotWater) >= 5 and
+                    UnitMana("player")/UnitManaMax("player") <= .3 and
+                    UnitMana("player") > 0 and UnitHealth("player") > 2 and
+                    not isDrinking and not targetOnMount and
+                    not UnitAffectingCombat("player")) then
+                lastBotWater = GetTime();
+                okayDrink = true;
+                FuckBlizzardMove("TURNLEFT");
+            elseif (hasWater and forceDrink and
+                   (GetTime() - lastBotWater) >= 3) then
+                forceDrink = false;
+                okayDrink = true;
+                lastBotWater = GetTime();
+                FuckBlizzardMove("TURNLEFT");
+            elseif ((targetOnMount or targetOnFlyingMount or bootyCall) and
+                     not (playerOnMount or playerOnFlyingMount) and
+                   (GetTime() - lastMountCheck) >= 5 and not isDrinking) then
+                --
+                -- Mount Up
+                --
+                lastMountCheck = GetTime();
+
+                if (targetOnMount) then
+                    if (btp_druid_istree()) then
+                        FuckBlizzardByNameAlt("Tree of Life");
+                    end
+
+                    if (hasFastMount) then
+                        FuckBlizzardMove("TURNLEFT");
+                        lastMountTry = GetTime();
+                        okayMount = true;
+                    elseif (hasMount) then
+                        FuckBlizzardMove("TURNLEFT");
+                        lastMountTry = GetTime();
+                        okayMount = true;
+                    end
+                else
+                    if (btp_druid_istree()) then
+                        FuckBlizzardByNameAlt("Tree of Life");
+                    end
+
+                    if (hasSwiftFlightFrom) then
+                        FuckBlizzardByName("Swift Flight Form");
+                    elseif (hasFlightFrom) then
+                        FuckBlizzardByName("Flight Form");
+                    elseif (hasFastFlyingMount) then
+                        FuckBlizzardMove("TURNLEFT");
+                        lastMountTry = GetTime();
+                        okayMount = true;
+                    elseif (hasFlyingMount) then
+                        FuckBlizzardMove("TURNLEFT");
+                        lastMountTry = GetTime();
+                        okayMount = true;
+                    end
+                end
+            elseif (not (targetOnMount or targetOnFlyingMount) and
+                   (playerOnMount or playerOnFlyingMount) and
+                   (GetTime() - lastMountCheck) >= 5) then
+                --
+                -- Dismount
+                --
+                lastMountCheck = GetTime();
+                Dismount();
+
+                if (btp_druid_isbird()) then
+                    if (hasSwiftFlightFrom) then
+                        FuckBlizzardByName("Swift Flight Form");
+                    elseif (hasFlightFrom) then
+                        FuckBlizzardByName("Flight Form");
+                    end
+                end
+            elseif (bootyCall) then
+                SendWho('n-"' .. bootyName .. '"');                     
+                charname, guildname, level, race, class, zone,
+                unknown = GetWhoInfo(1);                      
+
+                for j = 1, GetNumRaidMembers() do
+                    nextPlayer = "raid" .. j;
+
+                    if (bootyName == UnitName(nextPlayer)) then
+                        unitid = nextPlayer;
+                        break;
+                    end
+                end
+
+                if (GetNumRaidMembers() <= 0) then
+                    for j = 1, GetNumPartyMembers() do
+                        nextPlayer = "party" .. j;
+
+                        if (bootyName == UnitName(nextPlayer)) then
+                            unitid = nextPlayer;
+                            break;
+                        end
+                    end
+                end
+
+                if (unitid == "no one") then
+                    bootyCall = false;
+                    return false;
+                end
+
+                if (zone ~= GetZoneText()) then
+                    SetMapZoom(GetCurrentMapContinent());
+                end
+
+                x, y = GetPlayerMapPosition(unitid);
+                x, y = x * 100, y * 100;
+
+                if (x > 0 and y > 0 and zone) then
+                    btp_move_to_location(zone, x, y);
+                end
+            elseif (not dontPop and 
+                    UnitHealth("player") < 2 and HasSoulstone()) then
+                UseSoulstone();
+            elseif ((GetTime() - lastDice) >= 17) then
+                lastDice = GetTime();
+                for Rollid=0, 256 do
+                    if (lootMode == "greed") then
+                        RollOnLoot(Rollid, 1);
+                    elseif (lootMode == "need") then
+                        RollOnLoot(Rollid, 1);
+                    elseif (lootMode == "wait") then
+                        -- DO NOTHING
+                    else
+                        RollOnLoot(Rollid, 0);
+                    end
+                end
+            elseif ((GetTime() - lastQuestTrade) >= 7) then
+                lastQuestTrade = GetTime();
+                AcceptTrade();
+                AcceptQuest();
+            elseif (not dontRelease and
+                    IsActiveBattlefieldArena() == nil and
+                   (GetTime() - lastRelease) >= 23 and
+                    UnitHealth("player") < 2) then
+                lastRelease = GetTime();
+                RepopMe();
+            elseif (not dontPop and UnitHealth("player") < 2 and 
+                   (GetTime() - envRes) >= 11) then
+                envRes = GetTime();
+                RetrieveCorpse();
+            elseif ((hasFreeCast or hasPreperation or
+                   ((GetTime() - lastBuff) >= 5)) and
+                    not (playerOnMount or playerOnFlyingMount or isDrinking) and
+                    UnitHealth("player") > 2 and
+                    UnitClass("player") == "Shaman" and btp_sham_buff()) then
+                lastBuff = GetTime();
+            elseif ((hasFreeCast or hasPreperation or
+                   ((GetTime() - lastBuff) >= 5)) and not
+                   (playerOnMount or playerOnFlyingMount or isDrinking) and
+                    not UnitAffectingCombat("player") and
+                    UnitClass("player") ~= "Shaman" and
+                    UnitHealth("player") > 2) then
+                lastBuff = GetTime();
+                if (UnitClass("player") == "Priest" and pvpBot and
+                    UnitMana("player")/UnitManaMax("player") >= .9) then
+                    PriestBuff();
+                elseif (UnitClass("player") == "Priest" and
+                    UnitMana("player")/UnitManaMax("player") >= .3 and
+                    not pvpBot) then
+                    PriestBuff();
+                elseif (UnitClass("player") == "Druid" and
+                        UnitMana("player")/UnitManaMax("player") >= .3) then
+                    druid_buff();
+                elseif (UnitClass("player") == "Warlock" and
+                        UnitMana("player")/UnitManaMax("player") >= .3) then
+                    WarlockBuff();
+                end
+            else
+                if (UnitClass("player") == "Priest" and
+                    not (playerOnMount or playerOnFlyingMount or
+                         isDrinking)) then
+                    	btp_priest_heal();
+			if(DPS_MODE_ON == true and UnitAffectingCombat(followPlayer)
+				and UnitMana("player")/UnitManaMax("player") > .35
+				and UnitAffectingCombat("player")) then
+    				DPS_ASSIST_TARGET = followPlayer .. "target";
+				btp_priest_dps(DPS_ASSIST_TARGET);
+			end
+                elseif (UnitClass("player") == "Druid" and
+                        not (playerOnMount or playerOnFlyingMount or
+                             isDrinking)) then
+                    druid_heal();
+                elseif(UnitClass("player") == "Shaman" and
+                        not (playerOnMount or playerOnFlyingMount or
+                             isDrinking)) then
+                    btp_sham_heal();
+                elseif(UnitClass("player") == "Paladin" and
+                        not (playerOnMount or playerOnFlyingMount or
+                             isDrinking)) then
+                    btp_pal_heal();
+		elseif (UnitClass("player") == "Mage" and
+			not (playerOnMount or playerOnFlyingMount or
+			isDrinking)) then
+            if(btp_mage_buff()) then return true; end
+
+			if(DPS_MODE_ON == true and UnitAffectingCombat(followPlayer)) then
+				btp_mage_dps(DPS_ASSIST_TARGET);
+			end
+
+                elseif (UnitClass("player") == "Warlock" and
+                        not (playerOnMount or playerOnFlyingMount or
+                             isDrinking)) then
+                    if (pvpBot) then
+                        if (targetCount > 5) then
+                            FuckBlizzardTargetUnit("targetenemy");
+                            targetCount = 0;
+                        else
+                            targetCount = targetCount + 1;
+                        end
+
+                        if (UnitFactionGroup("player") ==
+                            UnitFactionGroup("target")) then
+                            targetCount = 6;
+                            return false;
+                        end
+
+                        if (WarlockPrimary()) then
+                            return true;
+                        elseif (WarlockInst()) then
+                            return true;
+                        elseif (WarlockDest()) then
+                            return true;
+                        else
+                            return false;
+                        end
+                    elseif (UnitAffectingCombat(followPlayer) and
+                            not noFollow) then
+                        FuckBlizzardTargetUnit(followPlayer .. "target");
+
+                        if (WarlockPrimary()) then
+                            return true;
+                        elseif (WarlockInst()) then
+                            return true;
+                        elseif (WarlockDest()) then
+                            return true;
+                        else
+                            return false;
+                        end
+                    end
+                end
+            end
+        else
+            LeaveParty();
+            AcceptGroup();
+        end
+    else
+        if (not dontHearth and (GetTime() - lastHearth) >= 3600 and
+            (GetTime() - lastInParty) >= 120) then
+            lastHearth = GetTime();
+            FuckBlizUseContainerItem(hearthBag,hearthSlot);
+        else
+            AcceptGroup();
+        end
+
+        if (not dontBeg and hasBasicCampfire and not basicCampfireNotReady) then
+            FuckBlizzardByName("Basic Campfire");
+            HoboBeg();
+        elseif (not dontBeg) then
+            if (UnitClass("player") == "Druid") then
+                druid_buff();
+            elseif (UnitClass("player") == "Priest") then
+                PriestBuff();
+            elseif (UnitClass("player") == "Mage") then
+		if(not mageisDrinking) then
+		btp_mage_waterbreak();
+		end
+            end
+
+            if ((GetTime() - lastQuestTrade) >= 7) then
+                lastQuestTrade = GetTime();
+                AcceptTrade();
+            end
+        end
+
+        hasWater = false;
+        local bag = 4
+        while (bag >= 0) do
+          for slot=1,GetContainerNumSlots(bag) do
+            if (GetContainerItemLink(bag,slot)) then
+                --
+                -- XXX: Add new alcohol
+                --
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Bottle of Pinot Noir")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+                end
+
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Flask of Port")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+                end
+
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Skin of Dwarven Stout")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+                end
+
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Flagon of Mead")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+                end
+
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Jug of Bourbon")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+                end
+
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Darkmoon Special Reserve")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+                end
+
+                if (string.find(GetContainerItemLink(bag,slot),
+                                "Cenarion Spirits")) then
+                    hasWater = true;
+                    waterBag = bag;
+                    waterSlot = slot;
+                end
+            end
+          end
+
+          bag = bag - 1;
+        end
+
+        if (hasWater and (GetTime() - lastBooze) >= 30) then
+            lastBooze = GetTime();
+            i = math.random(MAX_EMOTE_INDEX);
+
+            DoEmote(emote[i], "");
+            FuckBlizUseContainerItem(waterBag, waterSlot);
+        end
+    end
+end
+
+
+function btp_free_action()
+    duration = 0;
+    start = 0;
+    hasLivingAction = false;
+    hasInsignia = false;
+    insigniaSlot = 13;
+
+    if (UnitHealth("player") < 2) then
+        return false;
+    end
+
+    for slot=13,14 do
+      if (GetInventoryItemLink("player", slot) and
+          string.find(GetInventoryItemLink("player", slot),
+                      "of the Horde")) then
+        start, duration, enable = GetInventoryItemCooldown("player", trinkSlot);
+        if (duration - (GetTime() - start) <= 0) then
+            hasInsignia = true;
+            insigniaSlot = slot;
+        end
+      end
+    end
+
+    for bag=0,4 do
+      for slot=1,GetContainerNumSlots(bag) do
+        if (GetContainerItemLink(bag,slot) and
+            string.find(GetContainerItemLink(bag,slot),
+                        "Living Action Potion")) then
+            start, duration, enable = GetContainerItemCooldown(bag, slot);
+            if (duration - (GetTime() - start) <= 0) then
+                hasLivingAction = true;
+            end
+        end
+      end
+    end
+
+    if (btp_is_feared("player") and
+       (GetTime() - lastBreakCC) > 1 and
+        btp_cast_spell("Will of the Forsaken")) then
+        lastBreakCC = GetTime();
+        return true;
+    elseif (btp_is_impaired("player") and hasInsignia and
+           (GetTime() - lastBreakCC) > 1) then
+        lastBreakCC = GetTime();
+        FuckBlizUseInventoryItem(insigniaSlot);
+        return true;
+    elseif (btp_is_charmed("player") and
+           (GetTime() - lastBreakCC) > 1 and
+            btp_cast_spell("Will of the Forsaken")) then
+        lastBreakCC = GetTime();
+        return true;
+    elseif (btp_is_impaired("player") and hasLivingAction and
+           (GetTime() - lastBreakCC) > 1) then
+        for bag=0,4 do
+          for slot=1,GetContainerNumSlots(bag) do
+            if (GetContainerItemLink(bag,slot) and
+                string.find(GetContainerItemLink(bag,slot),
+                            "Living Action Potion")) then
+                FuckBlizUseContainerItem(bag,slot);
+                lastBreakCC = GetTime();
+                return true;
+            end
+          end
+        end
+    end
+
+    return false;
+end
+
+
+function btp_is_charmed(unit)
+    debuffTexture = "foo";
+    i = 1;
+
+    while (debuffTexture) do
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff(unit, i);
+
+        if (debuffTexture and debuffTimeLeft and
+            strfind(debuffTexture, "MindSteal")) then
+            return true;
+        end
+
+        i = i + 1;
+    end
+end
+
+
+function btp_is_feared(unit)
+    debuffTexture = "foo";
+    i = 1;
+
+    while (debuffTexture) do
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff(unit, i);
+
+        if (debuffTexture and debuffTimeLeft and
+           (strfind(debuffTexture, "DeathScream") or
+            strfind(debuffTexture, "PsychicScream") or
+            strfind(debuffTexture, "GolemThunderClap") or
+            strfind(debuffTexture, "Possession"))) then
+            return true;
+        end
+
+        i = i + 1;
+    end
+end
+
+
+function btp_is_impaired(unit)
+    if (btp_is_feared(unit) or btp_is_charmed(unit)) then
+        return true;
+    end
+
+    debuffTexture = "foo";
+    i = 1;
+
+    while (debuffTexture) do
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff(unit, i);
+
+        if (debuffTexture and debuffTimeLeft and
+           (strfind(debuffTexture, "Frost_Stun") or
+            strfind(debuffTexture, "FrostBolt02") or
+            strfind(debuffTexture, "FrostNova") or
+            strfind(debuffTexture, "FrostArmor") or
+            strfind(debuffTexture, "Rogue_Trip") or
+            strfind(debuffTexture, "GolemStormBolt") or
+            strfind(debuffTexture, "Spear_02") or
+            strfind(debuffTexture, "ChainsOfIce") or
+            strfind(debuffTexture, "Polymorph") or
+            strfind(debuffTexture, "Cripple") or
+            strfind(debuffTexture, "Nature_Sleep") or
+            strfind(debuffTexture, "MindSteal") or
+            strfind(debuffTexture, "ThunderClap") or
+            strfind(debuffTexture, "Nature_Slow") or
+            strfind(debuffTexture, "DeathScream") or
+            strfind(debuffTexture, "ShockWave") or
+            strfind(debuffTexture, "Hex") or
+            strfind(debuffTexture, "FrostShock") or
+            strfind(debuffTexture, "Sap") or
+            strfind(debuffTexture, "Gouge") or
+            strfind(debuffTexture, "CheapShot") or
+            strfind(debuffTexture, "KidneyShot") or
+            strfind(debuffTexture, "StrangleVines") or
+            strfind(debuffTexture, "Nature_EarthBind") or
+            strfind(debuffTexture, "Nature_Sleep") or
+            strfind(debuffTexture, "SealOfMight") or
+            strfind(debuffTexture, "TurnUndead") or
+            strfind(debuffTexture, "GrimWard") or
+            strfind(debuffTexture, "DeathCoil"))) then
+            return true;
+        end
+
+        i = i + 1;
+    end
+end
+
+
+function PrintBuffs()
+    btp_frame_debug("PLAYER BUFFS");
+    for i = 1, 64 do
+        buffName, buffRank, buffTexture, buffApplications,
+        buffType, buffDuration, buffTime, buffMine,
+        buffStealable = UnitBuff("player", i);
+
+        if (buffTexture) then
+            btp_frame_debug(buffTexture);
+        end
+    end
+
+    btp_frame_debug("PLAYER DEBUFFS");
+    for i = 1, 40 do
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff("player", i);
+
+        if (debuffTexture) then
+            btp_frame_debug(debuffTexture);
+        end
+    end
+
+    btp_frame_debug("TARGET BUFFS");
+    for i = 1, 64 do
+        buffName, buffRank, buffTexture, buffApplications,
+        buffType, buffDuration, buffTime, buffMine,
+        buffStealable = UnitBuff("target", i);
+
+        if (buffTexture) then
+            btp_frame_debug(buffTexture);
+        end
+    end
+
+    btp_frame_debug("TARGET DEBUFFS");
+    for i = 1, 40 do
+        debuffName, debuffRank, debuffTexture, debuffApplications,
+        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
+        debuffStealable = UnitDebuff("target", i);
+
+        if (debuffTexture) then
+            btp_frame_debug(debuffTexture);
+        end
+    end
+end
+
+function DrinkPotion()
+    duration = 0;
+    start = 0;
+    drankPotion = false;
+    hasPhysicalProtect = false;
+    hasShadowProtect = false;
+    hasFireProtect = false;
+    hasHolyProtect = false;
+    hasNatureProtect = false;
+    hasArcaneProtect = false;
+    hasMagicProtect = false;
+    hasFreeAction = false;
+    hasInvulnerability = false;
+    hasStealthDetect = false;
+    hasPoisonProtect = false;
+    hasFrostProtect = false;
+
+    for bag=0,4 do
+      for slot=1,GetContainerNumSlots(bag) do
+        if (GetContainerItemLink(bag,slot)) then
+          if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasPhysicalProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Shadow Protection")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasShadowProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Fire Protection")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasFireProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Holy Protection")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasHolyProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasNatureProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasArcaneProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasMagicProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasFreeAction = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasInvulnerability = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Catseye Elixir")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasStealthDetect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Poison Resistance")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasPoisonProtect = true;
+              end
+          elseif (string.find(GetContainerItemLink(bag,slot), "Frost Protection")) then
+              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasFrostProtect = true;
+              end
+          end
+        end
+      end
+    end
+
+    if (UnitClass("target") == "Warrior") then
+        if (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastPhysicalProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastFreeAction = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastInvulnerability = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Druid") then
+        if (hasArcaneProtect and (GetTime() - lastArcaneProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastArcaneProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasNatureProtect and (GetTime() - lastNatureProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastNatureProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastPhysicalProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastMagicProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Hunter") then
+        if (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastPhysicalProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasArcaneProtect and (GetTime() - lastArcaneProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastArcaneProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasNatureProtect and (GetTime() - lastNatureProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastNatureProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastFreeAction = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastInvulnerability = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Mage") then
+        if (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastMagicProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasFireProtect and (GetTime() - lastFireProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Fire Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastFireProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasFrostProtect and (GetTime() - lastFrostProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Frost Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastFrostProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasArcaneProtect and (GetTime() - lastArcaneProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastArcaneProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Paladin") then
+        if (hasHolyProtect and (GetTime() - lastHolyProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Holy Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastHolyProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastPhysicalProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastFreeAction = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastInvulnerability = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Priest") then
+        if (hasShadowProtect and (GetTime() - lastShadowProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Shadow Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastShadowProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasHolyProtect and (GetTime() - lastHolyProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Holy Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastHolyProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastMagicProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Rogue") then
+        if (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastFreeAction = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasPoisonProtect and (GetTime() - lastPoisonProtect) >= 61) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Poison Resistance")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastPoisonProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastPhysicalProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastInvulnerability = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasStealthDetect and (GetTime() - lastStealthDetect) >= 601) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Catseye Elixir")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastStealthDetect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Shaman") then
+        if (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastPhysicalProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasNatureProtect and (GetTime() - lastNatureProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastNatureProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastMagicProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    elseif (UnitClass("target") == "Warlock") then
+        if (hasShadowProtect and (GetTime() - lastShadowProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Shadow Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastShadowProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasFireProtect and (GetTime() - lastFireProtect) >= 3600) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Fire Protection")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastFireProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
+            for bag=0,4 do
+              for slot=1,GetContainerNumSlots(bag) do
+                if (GetContainerItemLink(bag,slot)) then
+                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+                      FuckBlizUseContainerItem(bag,slot);
+                      lastMagicProtect = GetTime();
+                      drankPotion = true;
+                  end
+                end
+              end
+            end
+        else
+            drankPotion = false;
+        end
+    end
+
+    return drankPotion;
+end
+
+function math_round( num,  idp )
+        -- init numbers
+        local idp = idp or 1
+        idp = idp + 1
+        --get rest
+        if tonumber(num) then
+                local dpoint = 0
+                local count = 0 
+                local strnum = ""
+                for i in string.gmatch( tostring( num ), "(.)") do
+                        if dpoint ~= 0 then
+                                count = count + 1
+                                if count == idp+1 then
+                                        break
+                                end
+                        end
+                        if i == "." then
+                                dpoint = 1
+                        end
+                        strnum = strnum..i
+                end
+                if dpoint == 0 then
+                        return num                               
+                end
+                -- get number to round
+                local toround = tonumber( string.sub( strnum, -1, -1 ) )
+                -- evaluate ( if x < 5 then x = 0 ) else x = 10
+                if toround < 5 then
+                        -- remove last number, done
+                        return  tonumber( string.sub( strnum, 1, -2 ) )
+                end
+                -- else remove last and add one to before
+                local ibefore = string.sub( strnum, -2, -2 )
+                -- if dot then only add one and return
+                if ibefore == "." then
+                        return tonumber( string.sub( strnum, 1, -3 ) ) + 1
+                end
+                ibefore = tonumber( ibefore )
+                ibefore = ibefore + 1
+                if ibefore == 10 then
+                        return math.round( tonumber( string.sub( strnum, 1, -2 ) ), idp-1 )
+                end
+                return tonumber( string.sub( strnum, 1, -3 )..ibefore )
+        end
+end
+
+function HoboBeg()
+    if ((GetTime() - lastBeg) >= 120) then
+        lastBeg = GetTime();
+        i = math.random(MAX_BEG_INDEX);
+        SendChatMessage(beg[i], "SAY", nil);
+    end
+end
+
+function Chatter(arg1)
+    position = 0;
+
+    for i = 1, MAX_CHATTER do
+        local j = 2;
+        local count = 0;
+        local chatterString = "none";
+        local chatterString2 = "none";
+        local testString = string.upper(arg1);
+
+        if (string.sub(testString, string.len(testString),
+            string.len(testString)) == "," or
+            string.sub(testString, string.len(testString),
+            string.len(testString)) == ")" or
+            string.sub(testString, string.len(testString),
+            string.len(testString)) == "!" or
+            string.sub(testString, string.len(testString),
+            string.len(testString)) == "]" or
+            string.sub(testString, string.len(testString),
+            string.len(testString)) == "." or
+            string.sub(testString, string.len(testString),
+            string.len(testString)) == "?") then
+            testString = string.sub(testString, 1, string.len(testString) - 1);
+        end
+
+        -- 
+        -- Looks like we find the case that starts and ends with '*'
+        -- Looks like we find the case that contains an '*'
+        -- 
+        if (chatter[i][1] and string.sub(chatter[i][1], 1, 1) == "*" and
+            string.sub(chatter[i][1], string.len(chatter[i][1]),
+            string.len(chatter[i][1])) == "*") then
+            chatterString = string.sub(chatter[i][1], 3,
+            string.len(chatter[i][1]) - 2);
+
+            chatterString = "%s" .. chatterString .. "%s";
+            if (chatter[i][1] and string.find(testString, chatterString)) then
+                while (chatter[i][j]) do
+                    count = count + 1;
+                    j = j + 1;
+                end
+
+                return chatter[i][(1 + math.random(count))];
+            end
+        elseif (chatter[i][1] and string.find(chatter[i][1], "*")) then
+            x, y = string.find(chatter[i][1], "*");
+
+            --
+            -- Starts with '*' or position 1
+            -- Contains '*' or position 2
+            -- Ends with '*' or position 3
+            --
+            if (x == 1) then
+                chatterString = string.sub(chatter[i][1], y + 2);
+                position = 1;
+            elseif (x > 1 and x < string.len(chatter[i][1])) then
+                chatterString = string.sub(chatter[i][1], 1, x - 1);
+                chatterString2 = string.sub(chatter[i][1], y + 1,
+                                            string.len(chatter[i][1]));
+                position = 2;
+            else
+                chatterString = string.sub(chatter[i][1], 1, x - 1);
+                position = 3;
+            end
+
+            if (chatter[i][1] and position == 2 and
+                string.sub(testString,  1, string.len(chatterString)) ==
+                chatterString and string.sub(testString,
+               (string.len(testString) - string.len(chatterString2)) + 1,
+                string.len(testString)) == chatterString2) then
+                while (chatter[i][j]) do
+                    count = count + 1;
+                    j = j + 1;
+                end
+
+                return chatter[i][(1 + math.random(count))];
+            elseif (chatter[i][1] and position == 1 and
+                    string.sub(testString,  string.len(testString) -
+                    strlen(chatterString), string.len(testString)) ==
+                    chatterString) then
+                while (chatter[i][j]) do
+                    count = count + 1;
+                    j = j + 1;
+                end
+
+                return chatter[i][(1 + math.random(count))];
+            elseif (chatter[i][1] and position == 3 and
+                    string.sub(testString, 1, string.len(chatterString)) ==
+                    chatterString) then
+                while (chatter[i][j]) do
+                    count = count + 1;
+                    j = j + 1;
+                end
+
+                return chatter[i][(1 + math.random(count))];
+            end
+        elseif (chatter[i][1] and testString == chatter[i][1]) then
+            while (chatter[i][j]) do
+                count = count + 1;
+                j = j + 1;
+            end
+
+            return chatter[i][(1 + math.random(count))];
+        end
+    end
+
+    return "";
+end
+
+function btp_has_magic_immune_shield(unit)
+    if (unit == nil) then
+        unit = "target";
+    end
+
+    --
+    -- Mage Ice Block
+    --
+    hasIceBlock, myIceBlock,
+    numIceBlock = btp_check_buff("Frost_Frost", unit);
+
+    --
+    -- Pally Divine Shield
+    --
+    hasDivineInt, myDivineInt,
+    numDivineInt = btp_check_buff("DivineIntervention", unit);
+
+    return (hasIceBlock or hasDivineInt);
+end
+
+function btp_has_physical_immune_shield(unit)
+    if (unit == nil) then
+        unit = "target";
+    end
+
+    --
+    -- Mage Ice Block
+    --
+    hasIceBlock, myIceBlock,
+    numIceBlock = btp_check_buff("Frost_Frost", unit);
+
+    --
+    -- Pally Divine Shield
+    --
+    hasDivineInt, myDivineInt,
+    numDivineInt = btp_check_buff("DivineIntervention", unit);
+
+    return (hasIceBlock or hasDivineInt);
+end
+
+function btp_has_immune_shield(unit)
+    if (unit == nil) then
+        unit = "target";
+    end
+
+    return (btp_has_magic_immune_shield(unit) and
+            btp_has_physical_immune_shield(unit));
+end
+
+function btp_has_magic_absorb_shield(unit)
+    if (unit == nil) then
+        unit = "target";
+    end
+
+    --
+    -- Mage Ice Shield
+    --
+    hasIceBarrier, myIceBarrier,
+    numIceBarrier = btp_check_buff("Ice_Lament", unit);
+
+    --
+    -- Priest Shield
+    --
+    hasPowerWordShield, myPowerWordShield,
+    numPowerWordShield = btp_check_buff("Ice_Lament", unit);
+
+    --
+    -- Warlock Shadow Ward
+    --
+    hasIceBarrier, myIceBarrier,
+    numIceBarrier = btp_check_buff("Ice_Lament", unit);
+
+    return (hasIceShield);
+end
+
+function btp_has_physical_absorb_shield(unit)
+    if (unit == nil) then
+        unit = "target";
+    end
+
+    --
+    -- Priest Shield
+    --
+    hasPowerWordShield, myPowerWordShield,
+    numPowerWordShield = btp_check_buff("Ice_Lament", unit);
+
+    --
+    -- Mage Ice Shield
+    --
+    hasIceBarrier, myIceBarrier,
+    numIceBarrier = btp_check_buff("Ice_Lament", unit);
+
+    return (hasIceShield);
+end
+
+function btp_has_absorb_shield(unit)
+    if (unit == nil) then
+        unit = "target";
+    end
+
+    return (btp_has_magic_absorb_shield(unit) and
+            btp_has_physical_absorb_shield(unit));
+end
+
+function btp_name_to_unit(name)
+    if (name == nil or name == "Unknown" or UnitName("player") == name) then
+        return "player";
+    end
+
+    for i = 1, GetNumRaidMembers() do
+        nextPlayer     = "raid" .. i;
+
+        if (UnitName(nextPlayer) == name) then
+            return nextPlayer;
+        end
+
+        if(UnitExists("raidpet" .. i) and UnitName("raidpet" .. i) == name) then
+            return "raidpet" .. i;
+        end
+    end
+
+    for i = 1, GetNumPartyMembers() do
+        nextPlayer = "party" .. i;
+
+        if (UnitName(nextPlayer) == name) then
+            return nextPlayer;
+        end
+
+        if(UnitExists("partypet" .. i) and
+           UnitName("partypet" .. i) == name) then
+            return "partypet" .. i;
+        end
+    end
+
+    return "player";
+end

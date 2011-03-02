@@ -1,0 +1,18 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"   xsi:schemaLocation="http://www.blizzard.com/wow/ui/"> 
+   <Script file="BtpFly.lua"/> 
+   <!-- Frame to handle all core events --> 
+   <Frame name="BtpFly"> 
+      <Scripts> 
+         <OnLoad> 
+            this:RegisterEvent("TAXIMAP_OPENED");
+            this:RegisterEvent("GOSSIP_SHOW");
+            this:RegisterEvent("MERCHANT_SHOW");
+            this:RegisterEvent("BATTLEFIELDS_SHOW");
+            this:RegisterEvent("CURSOR_UPDATE");
+         </OnLoad> 
+         <OnEvent> 
+               BtpFly_OnEvent(event, arg1, arg2);
+         </OnEvent> 
+      </Scripts> 
+   </Frame> 
+</Ui>

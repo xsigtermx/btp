@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"   xsi:schemaLocation="http://www.blizzard.com/wow/ui/"> 
+   <Script file="btp_hunter.lua"/>
+
+   <!-- Frame to handle all core events -->
+   <Frame name="btp_hunter_core">
+      <Scripts>
+         <OnLoad>
+            this:RegisterEvent("VARIABLES_LOADED");
+         </OnLoad>
+         <OnEvent>
+            if (event == "VARIABLES_LOADED") then
+               btp_hunter_initialize();
+            end
+         </OnEvent>
+      </Scripts>
+   </Frame>
+</Ui>

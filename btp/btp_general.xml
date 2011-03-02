@@ -1,0 +1,51 @@
+<!--
+
+This file is part of BTP.
+
+BTP is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BTP is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BTP.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
+
+<Ui xmlns="http://www.blizzard.com/wow/ui/"   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"   xsi:schemaLocation="http://www.blizzard.com/wow/ui/"> 
+   <Script file="btp_general.lua"/>
+
+   <!-- Frame to handle all core events -->
+   <Frame name="btp_general_core">
+      <Scripts>
+         <OnLoad>
+            this:RegisterEvent("VARIABLES_LOADED");
+            this:RegisterEvent("CHAT_MSG_ADDON");
+            this:RegisterEvent("CHAT_MSG_WHISPER");
+            this:RegisterEvent("CHAT_MSG_GUILD");
+            this:RegisterEvent("RESURRECT_REQUEST");
+            this:RegisterEvent("CURSOR_UPDATE");
+         </OnLoad>
+         <OnEvent>
+            if (event == "VARIABLES_LOADED") then
+                btp_general_initialize();
+            elseif (event == "CHAT_MSG_ADDON") then
+                btp_general_msg_addon();
+            elseif (event == "CHAT_MSG_WHISPER") then
+                btp_general_chat_msg_whisper();
+            elseif (event == "CHAT_MSG_GUILD") then
+                btp_general_chat_msg_guild();
+            elseif (event == "RESURRECT_REQUEST") then
+                btp_general_resurrect_request();
+            elseif (event == "CURSOR_UPDATE") then
+                btp_general_cursor_update();
+            end
+         </OnEvent>
+      </Scripts>
+   </Frame>
+</Ui>

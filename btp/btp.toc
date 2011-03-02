@@ -1,0 +1,33 @@
+## Interface: 30200
+## Title: BTP
+## Description: Behead The Prophet Add On
+## This file is part of BTP.
+## 
+## BTP is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+## 
+## BTP is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+## 
+## You should have received a copy of the GNU General Public License
+## along with BTP.  If not, see <http://www.gnu.org/licenses/>.
+## 
+btp_deathknight.xml
+btp_druid.xml
+btp_general.xml
+btp_hunter.xml
+btp_mage.xml
+btp_paladin.xml
+btp_priest.xml
+btp_rogue.xml
+btp_shaman.xml
+btp_warlock.xml
+btp_warrior.xml
+btp_node_data.xml
+btp_chatter.xml
+btp_frame.xml
+BtpFly.xml
