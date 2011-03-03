@@ -346,11 +346,43 @@ function btp_shift(div, str)
     return false;
 end
 
+function btp_dump_casting_info(unit)
+    if (not unit) then unit = "player"; end;
+
+    local spell, rank, displayName, icon, startTime, endTime, 
+          isTradeSkill, castID, interrupt = UnitCastingInfo(unit);
+
+    if (spell ~= nil) then
+
+        if (displayName == nil) then dispalyName = "NONE"; end
+        if (rank == nil) then rank = "NONE"; end
+        if (icon == nil) then icon = "NONE"; end
+        if (startTime == nil) then startTime = "NONE"; end
+        if (endTime == nil) then endTime = "NONE"; end
+
+        btp_frame_debug("spell: " .. spell .. " rank: " .. rank .. 
+                        " disp: " .. displayName .. " icon: " .. icon ..
+			" start: " .. startTime .. 
+                        " end: " .. endTime);
+        return true;
+    end
+    btp_frame_debug(UnitName(unit) .. " not casting");
+    return false;
+end
+
+function btp_dump_casting_info_short(unit)
+    local spell, _, _, _, _, endTime = UnitCastingInfo(unit);
+    if spell then 
+        local finish = endTime/1000 - GetTime()
+        ChatFrame1:AddMessage(spell .. ' will be finished casting in ' .. finish .. ' seconds.')
+    end
+end
+
 function btp_test()
-    if(btp_priest_is_sol()) then
-        btp_frame_debug("SOL IS GO");
+    if(btp_priest_is_pws()) then
+        btp_frame_debug("renew IS GO");
     else
-        btp_frame_debug("SOL IS BUST");
+        btp_frame_debug("renew IS BUST");
     end
     -- btp_bot_aoe();
 	-- btp_trade_item("Conjured Glacier Water", "Banmii");
@@ -399,7 +431,8 @@ function btp_init_spells()
 	btp_frame_debug("init spells");
 
 	repeat
-		spell, rank = GetSpellName(i, BOOKTYPE_SPELL)
+		spell, rank= GetSpellBookItemName(i, BOOKTYPE_SPELL)
+		
 		if(spell ~= nil and rank ~= nil) then
 			if(CONFIG_SPELLS[spell] == nil) then
 				CONFIG_SPELLS[spell] = true;
@@ -410,7 +443,7 @@ function btp_init_spells()
 
 	i = 1;
 	repeat
-		spell, rank = GetSpellName(i, BOOKTYPE_PET)
+		spell, rank = GetSpellBookItemName(i, BOOKTYPE_PET)
 		if(spell ~= nil and rank ~= nil) then
 			if(CONFIG_SPELLS[spell] == nil) then
 				CONFIG_SPELLS[spell] = true;

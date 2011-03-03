@@ -447,7 +447,7 @@ function btp_init_spells()
     -- btp_frame_debug("init spells");
 
     repeat
-        spell, rank = GetSpellName(i, BOOKTYPE_SPELL)
+        spell, rank = GetSpellBookItemName(i, BOOKTYPE_SPELL)
         if(spell ~= nil and rank ~= nil) then
             if(CONFIG_SPELLS[spell] == nil) then
                 CONFIG_SPELLS[spell] = true;
@@ -458,7 +458,7 @@ function btp_init_spells()
 
     i = 1;
     repeat
-        spell, rank = GetSpellName(i, BOOKTYPE_PET)
+        spell, rank = GetSpellBookItemName(i, BOOKTYPE_PET)
         if(spell ~= nil and rank ~= nil) then
             if(CONFIG_SPELLS[spell] == nil) then
                 CONFIG_SPELLS[spell] = true;
@@ -655,7 +655,7 @@ function btp_collect_herbs(clear_me)
 
     local i = 1
     while true do
-       local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+       local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
        if not spellName then
           do break end
        end
@@ -1808,7 +1808,7 @@ function ProphetKeyBindings()
             fuckBlizMapping["stopcasting"] = "ALT-CTRL-SHIFT-8";
 
             while true do
-               local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+               local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
                if not spellName then
                   do break end      
                end
@@ -1850,7 +1850,7 @@ function ProphetKeyBindings()
 
             i = 1;
             while true do
-               local spellName, spellRank = GetSpellName(i, BOOKTYPE_PET);
+               local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_PET);
                if not spellName then
                   do break end      
                end
@@ -5304,6 +5304,18 @@ function btp_heal_priority_list()
         end
 end
 
+function btp_heal_priority_check(unit)
+    if(pcount > 0) then
+        for j = 0, pcount do
+            pval = PRIORITY_G[j];
+            if (string.lower(UnitName(unit)) == string.lower(pval)) then
+                return true;
+            end
+        end
+    end
+    return false;
+end
+
 -- our global priority list
 FE_G = { };
 
@@ -5357,7 +5369,7 @@ function btp_spell_damage(sname)
     sid = btp_get_spell_id(sname);
 
     if (sid ~= nil) then
-        spellName, spellRank = GetSpellName(sid, BOOKTYPE_SPELL);
+        spellName, spellRank = GetSpellBookItemName(sid, BOOKTYPE_SPELL);
         speed, low, high, pos, neg = UnitRangedDamage("player");
         return (btp_dmg_array[sname][spellRank] + high + pos + neg);
     else
@@ -5408,6 +5420,28 @@ function btp_check_buff(buff, unit)
     else
         return false, false, 0;
     end
+end
+
+function btp_dispell_buffs(unit)
+    if (not unit) then unit="player"; end
+
+    while (buffTexture) do
+        buffName, buffRank, buffTexture, buffApplications,
+        buffType, buffDuration, buffTime, buffMine,
+        buffStealable = UnitBuff(unit, i);
+
+        if (buffTexture and buffMine == "player" and
+            strfind(buffTexture, buff)) then
+            return true, true, buffApplications;
+        elseif (buffTexture and strfind(buffTexture, buff)) then
+            hasBuff = true;
+            stackNum = stackNum + buffApplications;
+        end
+
+        i = i + 1;
+    end
+
+
 end
 
 
@@ -5489,6 +5523,8 @@ function btp_cast_spell_on_target(sname, tname)
 
                 FuckBlizzardByName(sname);
                 return true;
+--	else
+--		btp_frame_debug("FAILD CASTING: " .. sname .. " On: " .. tname);
         end
 
         return false;
@@ -5520,6 +5556,7 @@ function btp_can_cast(sname)
         if(sname == nil) then
             return false;
         end
+        -- btp_frame_debug("trying to cast: " .. sname);
 
         -- check if we disabled the spell
         use_spell = CONFIG_SPELLS[sname];
@@ -5527,7 +5564,6 @@ function btp_can_cast(sname)
                 return false;
         end
 
-        -- btp_frame_debug("trying to cast: " .. sname);
         if(btp_spell_known(sname)) then
                 usable, nomana = IsUsableSpell(sname);
                 if (nomana) then
@@ -5566,28 +5602,14 @@ function btp_can_cast(sname)
 end 
 
 function btp_spell_known(sname)
-        if (sname) then
-                local i = 1;
-                local spell, rank;
-                repeat
-                        spell, rank = GetSpellName(i, BOOKTYPE_SPELL)
-                        if(spell == sname and rank ~= nil) then
-                                return true;
-                        end
-                        i = i +1;
-                until (not spell)
+    if (sname) then
+	usable, nomana = IsUsableSpell(sname, BOOKTYPE_SPELL);
+	if (usable and nomana == nil) then return true; end;
+	usable, nomana = IsUsableSpell(sname, BOOKTYPE_PET);
+	if (usable and nomana == nil) then return true; end;
 
-                local i = 1;
-                local spell, rank;
-                repeat
-                        spell, rank = GetSpellName(i, BOOKTYPE_PET)
-                        if(spell == sname and rank ~= nil) then
-                                return true;
-                        end
-                        i = i +1;
-                until (not spell)
-        end
-        return false;
+    end
+    return false;
 end
 
 function btp_get_spell_id(SpellName)
@@ -5597,7 +5619,7 @@ function btp_get_spell_id(SpellName)
 
         while (SpellName ~= ReturnName) do
                 SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellName(SpellCount,
+                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount,
                                                       BOOKTYPE_SPELL);
                 if(not ReturnName) then
                     return false;
@@ -5607,7 +5629,7 @@ function btp_get_spell_id(SpellName)
         while (SpellName and ReturnName and SpellName == ReturnName) do
                 SpellID = SpellCount;
                 SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellName(SpellCount,
+                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount,
                                                       BOOKTYPE_SPELL);
                 if (SpellName ~= ReturnName) then
                         break;
@@ -5627,7 +5649,7 @@ function btp_get_spell_id_pet(SpellName)
 
         while (SpellName ~= ReturnName) do
                 SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellName(SpellCount, BOOKTYPE_PET);
+                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_PET);
                 if(not ReturnName) then
                     return false;
                 end
@@ -5636,7 +5658,7 @@ function btp_get_spell_id_pet(SpellName)
         while (SpellName and ReturnName and SpellName == ReturnName) do
                 SpellID = SpellCount;
                 SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellName(SpellCount, BOOKTYPE_PET);
+                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_PET);
                 if (SpellName ~= ReturnName) then
                         break;
                 end
@@ -5656,39 +5678,48 @@ function btp_health_status_quick()
 
     -- only check raid if we are in one
     if(UnitInRaid("player")) then
-    for i = 1, GetNumRaidMembers() do
+    	for i = 1, GetNumRaidMembers() do
             nextPlayer     = "raid" .. i;
             cur_health     = UnitHealth(nextPlayer);
             cur_health_max = UnitHealthMax(nextPlayer);
             cur_class      = UnitClass(nextPlayer);
             cur_percent    = cur_health / cur_health_max;
 
-        if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
-            lowest_percent = cur_percent;
-            lowest_target = nextPlayer;
-            lowest_health = (cur_health_max - cur_health)
-            -- btp_frame_debug("raid-name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
+            if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
+                lowest_percent = cur_percent;
+                lowest_target = nextPlayer;
+                lowest_health = (cur_health_max - cur_health)
+	        if (btp_heal_priority_check(lowest_target)) then
+                    return lowest_percent, lowest_health, lowest_target;
+	        end
+                -- btp_frame_debug("raid-name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
+            end
+
         end
-
-    end
-    else
-
     -- check the party
-    for i = 1, GetNumPartyMembers() do
-        nextPlayer     = "party" .. i;
-        cur_health     = UnitHealth(nextPlayer);
-        cur_health_max = UnitHealthMax(nextPlayer);
-        cur_class      = UnitClass(nextPlayer);
-        cur_percent    = cur_health / cur_health_max;
+    else
+    	for i = 1, GetNumPartyMembers() do
+            nextPlayer     = "party" .. i;
+            cur_health     = UnitHealth(nextPlayer);
+            cur_health_max = UnitHealthMax(nextPlayer);
+            cur_class      = UnitClass(nextPlayer);
+            cur_percent    = cur_health / cur_health_max;
 
-        if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
-            lowest_percent = cur_percent;
-            lowest_target = nextPlayer;
-            lowest_health = (cur_health_max - cur_health)
-            -- btp_frame_debug("name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
+            if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
+                lowest_percent = cur_percent;
+                lowest_target = nextPlayer;
+                lowest_health = (cur_health_max - cur_health)
+                -- btp_frame_debug("name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
+                if (btp_heal_priority_check(lowest_target)) then
+                    return lowest_percent, lowest_health, lowest_target;
+	        end
+            end
         end
-
     end
+
+    -- return in priority only mode
+    if(PRIORITY_ONLY) then
+        return false;
     end
 
     if(not lowest_percent or lowest_percent == 1) then
@@ -6216,25 +6247,120 @@ function btp_bot_new()
     end
 end
 
+function btp_is_drinking(unitid)
+    return btp_check_buff("Drink", unitid);
+end
 
--- not yet in use will not work since MOUNT_NAMES not defined
-function btp_is_mounted(unitid)
-    if(IsMounted(unitid)) then
-        return true
+-- would be nice
+function btp_foreach(list, callback)
+    return false;
+end
+
+
+function btp_icon_is_mount_ground(icon)
+    if (icon and (
+        strfind(icon, "Belt_12") or
+        strfind(icon, "camel") or
+        strfind(icon, "Centaur") or
+        strfind(icon, "Charger") or
+        strfind(icon, "Cockatrice") or
+        strfind(icon, "DireWolf") or
+        strfind(icon, "Dreadsteed") or
+        strfind(icon, "horse") or
+        strfind(icon, "Halloween_Witch") or
+        strfind(icon, "Kodo") or
+        strfind(icon, "Mammoth") or
+        strfind(icon, "Misc_Key_04") or
+        strfind(icon, "Misc_Key_14") or
+        strfind(icon, "Misc_Foot_Centaur") or
+        strfind(icon, "MountainRam") or
+        strfind(icon, "PolarBear") or
+        strfind(icon, "Raptor") or
+        strfind(icon, "raptor") or
+        strfind(icon, "Mount_Raven") or
+        strfind(icon, "Swiftness") or
+        strfind(icon, "Tiger") or
+        strfind(icon, "turtle") or
+        strfind(icon, "Warstrider") or
+        strfind(icon, "wolf")
+        )) then
+	    return true;
     end
     return false;
---     for i = 1, 64 do
---         buffName, buffRank, buffTexture,
---         buffApplications, buffDuration,
---         buffTime = UnitBuff(unitid, i);
---         for(MOUNT_NAMES) do
---             if (buffTexture and (strfind(buffTexture, MOUNT_NAMES[x][name]))) then
---                 playerOnMount = true;
---             end
---         end
--- 
---     end
 end
+
+function btp_icon_is_mount_flying(icon)
+    if (icon and (
+        strfind(icon, "Copter") or
+        strfind(icon, "DeathCharger") or
+        strfind(icon, "Drake") or
+        strfind(icon, "dragon") or
+        strfind(icon, "celestial") or
+        strfind(icon, "Celestial") or
+        strfind(icon, "FlightForm") or
+        strfind(icon, "frostwrym") or
+        strfind(icon, "flyingcarpet") or
+        strfind(icon, "Hippogryph") or
+        strfind(icon, "Gyrocoptor") or
+        strfind(icon, "NetherRay") or
+        strfind(icon, "rocketmount") or
+        strfind(icon, "windrider") or
+        strfind(icon, "Wyvern")
+        )) then
+         return true;
+    end
+    return false;
+end
+
+function btp_icon_is_mount(icon)
+    if (btp_icon_is_mount_ground(icon)) then return true; end
+    if (btp_icon_is_mount_flying(icon)) then return true; end
+    return false;
+end
+
+function btp_is_mounted_ground(unitid)
+    local i = 1;
+    local buffTexture = "foo";
+
+    while (buffTexture) do
+        buffName, buffRank, buffTexture, buffApplications,
+        buffType, buffDuration, buffTime, buffMine,
+        buffStealable = UnitBuff(unitid, i);
+        if (btp_icon_is_mount_ground(buffTexture)) then return true; end
+        i = i + 1;
+    end
+    return false
+end
+
+function btp_is_mounted_flying(unitid)
+    local i = 1;
+    local buffTexture = "foo";
+
+    while (buffTexture) do
+        buffName, buffRank, buffTexture, buffApplications,
+        buffType, buffDuration, buffTime, buffMine,
+        buffStealable = UnitBuff(unitid, i);
+        if (btp_icon_is_mount_flying(buffTexture)) then return true; end
+        i = i + 1;
+    end
+    return false;
+end
+
+function btp_is_mounted(unitid)
+    if (btp_is_mounted_ground(unitid)) then return true; end
+    if (btp_is_mounted_flying(unitid)) then return true; end
+end
+
+function btp_is_summoning_mount(unitid)
+    local spell, rank, displayName, icon, startTime, endTime, 
+    isTradeSkill, castID, interrupt = UnitCastingInfo(unitid);
+    if (spell ~= nil) then
+        return btp_icon_is_mount(icon);
+    end
+    return false
+end
+
+
 
 -- This function sets most of the global variables
 -- that are used for state information
@@ -6260,8 +6386,8 @@ function btp_report_afk()
     if (GetNumBattlefieldScores() > 0) then
         for index = 1, GetNumBattlefieldScores() do
             name, killingBlows, honorKills, deaths, honorGained,
-            faction, rank, race, class, filename, damageDone,
-            healingDone = GetBattlefieldScore(index);
+            faction, rank, race, class, damageDone, healingDone,
+            filename = GetBattlefieldScore(index);
 
             if (name ~= nil and string.find(name, "-")) then
                 x, y = string.find(name, "-");
@@ -6288,6 +6414,7 @@ function btp_report_afk()
                 bgStats[name]["reported"] = false;
             end
 
+	    -- always track current users stats
             if (bgStats[name]["dd"] ~= damageDone and
                 bgStats[name]["hd"] ~= healingDone) then
                 --
@@ -6297,6 +6424,8 @@ function btp_report_afk()
                 bgStats[name]["hd"]   = healingDone;
                 bgStats[name]["time"] = GetTime();
             end
+
+
         end
 
         --
@@ -6457,7 +6586,7 @@ function btp_bot()
 
     local i = 1
     while true do
-       local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+       local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
        if not spellName then
           do break end
        end
@@ -6660,6 +6789,13 @@ function btp_bot()
             end
 
             if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Cake")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
                 "Mana Strudel")) then
                 hasWater = true;
                 waterBag = bag;
@@ -6765,9 +6901,15 @@ function btp_bot()
 
     battlefieldWinner = GetBattlefieldWinner();
     if (battlefieldWinner ~= nil) then
-        bgStats = { }; 
-        btp_follow_exclusion_del();
-        LeaveBattlefield();
+        local temp_time = GetTime();
+        -- wait 30 seconds before we exit
+        if((temp_time - lastBG) >= 30) then
+            lastBG = 0;
+            bgStats = { }; 
+            btp_follow_exclusion_del();
+            LeaveBattlefield();
+        end
+        lastBG = temp_time;
     end
 
     RequestBattlefieldScoreData();
@@ -6921,6 +7063,7 @@ function btp_bot()
         if (pvpBot and followPlayer == "player") then
             partyOK = true;
 
+	    bestDamage = 0;
             for i = GetNumRaidMembers() - 1, 1, -1 do
                 nextPlayer = "raid" .. i;
 
@@ -6977,84 +7120,20 @@ function btp_bot()
             buffTexture = "foo";
             i = 1;
 
-            while (buffTexture) do
-                buffName, buffRank, buffTexture, buffApplications,
-                buffType, buffDuration, buffTime, buffMine,
-                buffStealable = UnitBuff("player", i);
+	    if (btp_is_mounted_ground("player")) then  playerOnMount = true; end
+	    if (btp_is_mounted_flying("player")) then  playerOnFlyingMount = true; end
+	    if (btp_is_drinking("player")) then isDrinking = true; end
 
-                if (buffTexture and (strfind(buffTexture, "Kodo") or
-                    strfind(buffTexture, "Raptor") or
-                    strfind(buffTexture, "horse") or
-                    strfind(buffTexture, "Swiftness") or
-                    strfind(buffTexture, "Dreadsteed") or
-                    strfind(buffTexture, "Tiger") or
-                    strfind(buffTexture, "Charger") or
-                    strfind(buffTexture, "Warstrider") or
-                    strfind(buffTexture, "Centaur") or
-                    strfind(buffTexture, "Cockatrice") or
-                    strfind(buffTexture, "Belt_12") or
-                    strfind(buffTexture, "Halloween_Witch") or
-                    strfind(buffTexture, "PolarBear") or
-                    strfind(buffTexture, "Mammoth") or
-                    strfind(buffTexture, "DireWolf"))) then
-                    playerOnMount = true;
-                end
-
-                if (buffTexture and
-                   (strfind(buffTexture, "FlightForm") or
-                    strfind(buffTexture, "NetherRay") or
-                    strfind(buffTexture, "Copter") or
-                    strfind(buffTexture, "Wyvern"))) then
-                    playerOnFlyingMount = true;
-                end
-
-                if (buffTexture and strfind(buffTexture, "Drink")) then
-                    isDrinking = true;
-                end
-
-                i = i + 1;
+            if (btp_is_summoning_mount(followPlayer)) then 
+                    btp_frame_debug(followPlayer .. " summoning mount");
+                    targetOnMount = true; 
             end
-
-            buffTexture = "foo";
-            i = 1;
-
-            while (buffTexture) do
-                buffName, buffRank, buffTexture, buffApplications,
-                buffType, buffDuration, buffTime, buffMine,
-                buffStealable = UnitBuff(followPlayer, i);
-
-                if (buffTexture and (strfind(buffTexture, "Kodo") or
-                    strfind(buffTexture, "Raptor") or
-                    strfind(buffTexture, "horse") or
-                    strfind(buffTexture, "Swiftness") or
-                    strfind(buffTexture, "Dreadsteed") or
-                    strfind(buffTexture, "Tiger") or
-                    strfind(buffTexture, "Charger") or
-                    strfind(buffTexture, "Warstrider") or
-                    strfind(buffTexture, "Centaur") or
-                    strfind(buffTexture, "Cockatrice") or
-                    strfind(buffTexture, "Belt_12") or
-                    strfind(buffTexture, "Halloween_Witch") or
-                    strfind(buffTexture, "PolarBear") or
-                    strfind(buffTexture, "Mammoth") or
-                    strfind(buffTexture, "DireWolf"))) then
-                    targetOnMount = true;
-                end
-
-                if (buffTexture and
-                   (strfind(buffTexture, "FlightForm") or
-                    strfind(buffTexture, "NetherRay") or
-                    strfind(buffTexture, "Copter") or
-                    strfind(buffTexture, "Wyvern"))) then
-                    targetOnFlyingMount = true;
-                end
-
-                i = i + 1;
-            end
+	    if (btp_is_mounted_ground(followPlayer)) then targetOnMount = true; end
+	    if (btp_is_mounted_flying(followPlayer)) then targetOnFlyingMount = true; end
 
             if (not btp_dont_follow(UnitName(followPlayer)) and
                 btpFollow and not stopMoving and
-                (GetTime() - lastMountTry) > 2 and
+                (GetTime() - lastMountTry) > 3 and
                 not forceDrink and (not isDrinking or
                 UnitMana("player") == UnitManaMax("player"))) then
 
@@ -7481,17 +7560,18 @@ function btp_free_action()
 
     if (btp_is_feared("player") and
        (GetTime() - lastBreakCC) > 1 and
-        btp_cast_spell("Will of the Forsaken")) then
+        (btp_cast_spell("Will of the Forsaken") or btp_cast_spell("Fade"))) then
         lastBreakCC = GetTime();
         return true;
     elseif (btp_is_impaired("player") and hasInsignia and
            (GetTime() - lastBreakCC) > 1) then
         lastBreakCC = GetTime();
+	if (btp_cast_spell("Fade")) then return true; end
         FuckBlizUseInventoryItem(insigniaSlot);
         return true;
     elseif (btp_is_charmed("player") and
            (GetTime() - lastBreakCC) > 1 and
-            btp_cast_spell("Will of the Forsaken")) then
+           (btp_cast_spell("Will of the Forsaken") or btp_cast_spell("Fade"))) then
         lastBreakCC = GetTime();
         return true;
     elseif (btp_is_impaired("player") and hasLivingAction and
@@ -7554,6 +7634,10 @@ function btp_is_feared(unit)
 end
 
 
+function btp_is_stunned(unit)
+    return btp_is_impaired(unit);
+end
+
 function btp_is_impaired(unit)
     if (btp_is_feared(unit) or btp_is_charmed(unit)) then
         return true;
@@ -7578,7 +7662,7 @@ function btp_is_impaired(unit)
             strfind(debuffTexture, "ChainsOfIce") or
             strfind(debuffTexture, "Polymorph") or
             strfind(debuffTexture, "Cripple") or
-            strfind(debuffTexture, "Nature_Sleep") or
+            -- strfind(debuffTexture, "Nature_Sleep") or
             strfind(debuffTexture, "MindSteal") or
             strfind(debuffTexture, "ThunderClap") or
             strfind(debuffTexture, "Nature_Slow") or
@@ -7592,7 +7676,7 @@ function btp_is_impaired(unit)
             strfind(debuffTexture, "KidneyShot") or
             strfind(debuffTexture, "StrangleVines") or
             strfind(debuffTexture, "Nature_EarthBind") or
-            strfind(debuffTexture, "Nature_Sleep") or
+            -- strfind(debuffTexture, "Nature_Sleep") or
             strfind(debuffTexture, "SealOfMight") or
             strfind(debuffTexture, "TurnUndead") or
             strfind(debuffTexture, "GrimWard") or
@@ -8484,3 +8568,10 @@ function btp_name_to_unit(name)
 
     return "player";
 end
+
+function btp_is_moving(unit)
+    if(not unit) then  unit = "player"; end
+    if (GetUnitSpeed(unit)>0) then return true; end
+    return false;
+end
+

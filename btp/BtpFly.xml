@@ -4,11 +4,11 @@
    <Frame name="BtpFly"> 
       <Scripts> 
          <OnLoad> 
-            this:RegisterEvent("TAXIMAP_OPENED");
-            this:RegisterEvent("GOSSIP_SHOW");
-            this:RegisterEvent("MERCHANT_SHOW");
-            this:RegisterEvent("BATTLEFIELDS_SHOW");
-            this:RegisterEvent("CURSOR_UPDATE");
+            self:RegisterEvent("TAXIMAP_OPENED");
+            self:RegisterEvent("GOSSIP_SHOW");
+            self:RegisterEvent("MERCHANT_SHOW");
+            self:RegisterEvent("BATTLEFIELDS_SHOW");
+            self:RegisterEvent("CURSOR_UPDATE");
          </OnLoad> 
          <OnEvent> 
                BtpFly_OnEvent(event, arg1, arg2);

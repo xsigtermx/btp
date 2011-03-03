@@ -5,7 +5,7 @@
    <Frame name="btp_hunter_core">
       <Scripts>
          <OnLoad>
-            this:RegisterEvent("VARIABLES_LOADED");
+            self:RegisterEvent("VARIABLES_LOADED");
          </OnLoad>
          <OnEvent>
             if (event == "VARIABLES_LOADED") then

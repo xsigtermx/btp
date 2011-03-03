@@ -24,15 +24,15 @@ along with BTP.  If not, see <http://www.gnu.org/licenses/>.
    <Frame name="btp_general_core">
       <Scripts>
          <OnLoad>
-            this:RegisterEvent("VARIABLES_LOADED");
-            this:RegisterEvent("CHAT_MSG_ADDON");
-            this:RegisterEvent("CHAT_MSG_WHISPER");
-            this:RegisterEvent("CHAT_MSG_GUILD");
-            this:RegisterEvent("RESURRECT_REQUEST");
-            this:RegisterEvent("CURSOR_UPDATE");
+            self:RegisterEvent("ADDON_LOADED");
+            self:RegisterEvent("CHAT_MSG_ADDON");
+            self:RegisterEvent("CHAT_MSG_WHISPER");
+            self:RegisterEvent("CHAT_MSG_GUILD");
+            self:RegisterEvent("RESURRECT_REQUEST");
+            self:RegisterEvent("CURSOR_UPDATE");
          </OnLoad>
          <OnEvent>
-            if (event == "VARIABLES_LOADED") then
+            if (event == "ADDON_LOADED") then
                 btp_general_initialize();
             elseif (event == "CHAT_MSG_ADDON") then
                 btp_general_msg_addon();

@@ -24,7 +24,7 @@ along with BTP.  If not, see <http://www.gnu.org/licenses/>.
    <Frame name="btp_warrior_core">
       <Scripts>
          <OnLoad>
-            this:RegisterEvent("VARIABLES_LOADED");
+            self:RegisterEvent("VARIABLES_LOADED");
          </OnLoad>
          <OnEvent>
             if (event == "VARIABLES_LOADED") then

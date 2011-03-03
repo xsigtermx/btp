@@ -44,7 +44,7 @@ function BtpFly_Taximap_Opened()
 
         local i = 1
         while true do
-           local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+           local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
            if not spellName then
               do break end
            end
