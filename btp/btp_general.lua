@@ -88,6 +88,7 @@ chatterCount        = 0;
 herbTimer           = 0;
 lastStopMoving      = 0;
 lastBreakCC         = 0;
+lastFarmTime        = 0;
 
 --
 -- Strings
@@ -115,6 +116,7 @@ lastZone          = nil;
 --
 manualFollow      = false;
 pvpBot            = false;
+farmBG            = false;
 reloadUI          = false;
 dontHearth        = false;
 dontRelease       = false;
@@ -254,6 +256,8 @@ function btp_general_initialize()
     SLASH_BTPINV1 = "/btpinnervate";
     SlashCmdList["BTPPVP"] = BTP_Pvp;
     SLASH_BTPPVP1 = "/btppvp";
+    SlashCmdList["BTPFARMBG"] = BTP_Farm_BG;
+    SLASH_BTPFARMBG1 = "/btpfarmbg";
     SlashCmdList["FUNTRNK"] = FunTrink;
     SLASH_FUNTRNK1 = "/funtrink";
     SlashCmdList["DONTBEG"] = DontBeg;
@@ -2775,6 +2779,9 @@ function btp_general_chat_msg_whisper()
                 SendChatMessage("[btpfelist] -- List follow exclusions.", "WHISPER", nil, arg2);
 
 
+                SendChatMessage("[btpfarmbg] -- Oh, This will tell me to Farm BGs (alone).", "WHISPER", nil, arg2);
+
+
                 SendChatMessage("[btppvp] -- My default follow mode is to group with guild members and follow them; however, I also have a PVP follow mode.  This mode allows me to move around battlegrounds by taging to other players, and means I do NOT need a guild member in the party.", "WHISPER", nil, arg2);
                 SendChatMessage("[btppvp] -- Please note, IF I am in PVP mode and I am NOT in battlegrounds, then I will not accept invites or stay in a group.  You must use the [btppvp] command to put me in guild follow mode.  You may also want to block hearthing with [btphearth].", "WHISPER", nil, arg2);
 
@@ -3049,6 +3056,15 @@ function btp_general_chat_msg_whisper()
                                     "WHISPER", nil, arg2);
                 else
                     SendChatMessage("Now in non-PVP follow mode.",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 9) == "btpfarmbg") then
+                BTP_Farm_BG();
+                if (farmBG) then
+                    SendChatMessage("Now in BG farm mode.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("Now in non-farm mode.",
                                     "WHISPER", nil, arg2);
                 end
             elseif (string.sub(arg1, 0, 9) == "btpinvite") then
@@ -3348,6 +3364,16 @@ function BTP_Pvp()
     else
         pvpBot = true;
         btp_frame_debug("BOT -- Now in PVP mode.");
+    end
+end
+
+function BTP_Farm_BG()
+    if (farmBG) then
+        farmBG = false;
+        btp_frame_debug("BOT -- Now in normal mode.");
+    else
+        farmBG = true;
+        btp_frame_debug("BOT -- Now in BG Farm mode.");
     end
 end
 
@@ -6270,6 +6296,7 @@ function btp_icon_is_mount_ground(icon)
         strfind(icon, "Halloween_Witch") or
         strfind(icon, "Kodo") or
         strfind(icon, "Mammoth") or
+        strfind(icon, "Misc_Key_03") or
         strfind(icon, "Misc_Key_04") or
         strfind(icon, "Misc_Key_14") or
         strfind(icon, "Misc_Foot_Centaur") or
@@ -6415,7 +6442,7 @@ function btp_report_afk()
             end
 
 	    -- always track current users stats
-            if (bgStats[name]["dd"] ~= damageDone and
+            if (bgStats[name]["dd"] ~= damageDone or
                 bgStats[name]["hd"] ~= healingDone) then
                 --
                 -- Keep track of player stats
@@ -6890,37 +6917,21 @@ function btp_bot()
         end
     end
 
-    for i=1, MAX_BATTLEFIELD_QUEUES do
-        status, mapName, instanceID = GetBattlefieldStatus(i);
-        if (status and status == "confirm") then
-            queueNow = true;
-        end
-    end
-
+    --
+    -- Just Load these because we need the data in memory.
+    --
     GuildRoster();
-
-    battlefieldWinner = GetBattlefieldWinner();
-    if (battlefieldWinner ~= nil) then
-        local temp_time = GetTime();
-        -- wait 30 seconds before we exit
-        if((temp_time - lastBG) >= 30) then
-            lastBG = 0;
-            bgStats = { }; 
-            btp_follow_exclusion_del();
-            LeaveBattlefield();
-        end
-        lastBG = temp_time;
-    end
-
-    RequestBattlefieldScoreData();
-    btp_report_afk();
     SetMapToCurrentZone();
-    ConfirmReadyCheck(1);
 
-    if (queueNow) then
-      -- Solo queue for the first available battleground
-      JoinBattlefield(0,1);
-    end
+    --
+    -- Trying to move some of the bot code around BGs out of this HUGE function.
+    --
+    btp_do_bg_stuff();
+
+    --
+    -- This is useful in raids
+    --
+    ConfirmReadyCheck(1);
 
     --
     -- Free action here will do nothing unless we have a debuff, and
@@ -7133,7 +7144,7 @@ function btp_bot()
 
             if (not btp_dont_follow(UnitName(followPlayer)) and
                 btpFollow and not stopMoving and
-                (GetTime() - lastMountTry) > 3 and
+                (GetTime() - lastMountTry) > 2 and
                 not forceDrink and (not isDrinking or
                 UnitMana("player") == UnitManaMax("player"))) then
 
@@ -8575,3 +8586,52 @@ function btp_is_moving(unit)
     return false;
 end
 
+function btp_do_bg_stuff()
+    RequestBattlefieldScoreData();
+
+    --
+    -- This should join the last BG we queued for if in BG farm mode.
+    --
+    for i=1, MAX_BATTLEFIELD_QUEUES do
+        status, mapName, instanceID = GetBattlefieldStatus(i);
+        if (status == "queued") then
+            --
+            -- hack to stop us from queueing for BG again.
+            --
+            lastFarmTime = GetTime();
+        end
+    end
+
+    if (farmBG and GetBattlefieldInstanceRunTime() == 0 and
+       (GetTime() - lastFarmTime) >= 60) then
+        -- Solo queue for the first available battleground
+        btp_frame_debug("Join BG");
+        JoinBattlefield(0);
+        lastFarmTime = GetTime();
+    end
+
+    --
+    -- If we are in BG and it has not ended get the last time we were in.
+    --
+    battlefieldWinner = GetBattlefieldWinner();
+
+    if (GetBattlefieldInstanceRunTime() > 0 and
+        battlefieldWinner == nil) then
+        lastBG = GetTime();
+    end
+
+    if (battlefieldWinner ~= nil) then
+        -- wait 10 seconds before we exit
+        if((GetTime() - lastBG) >= 10) then
+            lastBG = 0;
+            bgStats = { }; 
+            btp_follow_exclusion_del();
+            LeaveBattlefield();
+        end
+    end
+
+    --
+    -- Make AFK douche bags go bye bye.
+    --
+    btp_report_afk();
+end
