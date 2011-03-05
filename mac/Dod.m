@@ -278,7 +278,10 @@
 			farmCount = 0;
 			
 			if (farmBG == TRUE)
-				[event sendCenterClick: 0];
+			{
+				[event sendInput: @"h"];
+				[event sendInput: @"h"];
+			}
 		}
 		
 		[itFrame screenShot: &bitmap];

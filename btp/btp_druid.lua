@@ -61,6 +61,8 @@ function btp_druid_initialize()
     SLASH_DRUIDH1 = "/dh";
     SlashCmdList["DRUIDD"] = druid_dps;
     SLASH_DRUIDD1 = "/dd";
+    SlashCmdList["DRUIDS"] = druid_solo;
+    SLASH_DRUIDS1 = "/ds";
 
     cb_array["Regrowth"]           = btp_cb_druid_regrowth;
     cb_array["Healing Touch"]      = btp_cb_druid_healing_touch;
@@ -738,15 +740,6 @@ function druid_buff()
 end
 
 function druid_dps()
-    noMoonFire = true;
-    noEntanglingRoots = true;
-    noFaerieFire = true;
-    noInsectSwarm = true;
-    innervateNotReady = false;
-    hasWrath = false;
-    hasEntanglingRoots = false;
-    hasStarFire = false;
-
     if (current_cb ~= nil and current_cb()) then
         return true;
     end
@@ -755,87 +748,41 @@ function druid_dps()
     ProphetKeyBindings();
 
     --
-    -- Roots check
+    -- Thorns check
     --
-    hasEntanglingRoots, myEntanglingRoots,
-    numEntanglingRoots = btp_check_debuff("StrangleVines", "target");
-
-    if (myEntanglingRoots) then
-        noEntanglingRoots = false;
-    end
-
-    local i = 1
-    while true do
-       local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
-       if not spellName then
-          do break end
-       end
-
-       if (strfind(spellName, "Innervate")) then
-           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
-           if (duration - (GetTime() - start) > 0) then
-              innervateNotReady = true;
-           end
-       end
-
-       --
-       -- Non-cooldown spells
-       --
-       if (strfind(spellName, "Wrath")) then
-           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
-           if (duration - (GetTime() - start) <= 0) then
-              hasWrath = true;
-           end
-       end
-
-       if (strfind(spellName, "Entangling Roots")) then
-           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
-           if (duration - (GetTime() - start) <= 0) then
-              hasEntanglingRoots = true;
-           end
-       end
-
-       if (strfind(spellName, "Starfire")) then
-           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
-           if (duration - (GetTime() - start) <= 0) then
-              hasStarFire = true;
-           end
-       end
-
-       i = i + 1
-    end
+    hasMoonfire, myMoonfire,
+    numMoonfire = btp_check_debuff("StarFall", "target");
 
     if (SelfHeal(DR_THRESH, DR_MANA/3)) then
         --
         -- doing a self heal here (heathstones, potions, etc)
         --
-    elseif (hasInnervate and not innervateNotReady and
-            UnitMana("player")/UnitManaMax("player") <= DR_MANA and
-            UnitAffectingCombat("player")) then
-        FuckBlizzardByName("Innervate");
-    elseif (druid_heal()) then
-        --
-        -- Call healing function
-        --
-        -- btp_frame_debug("[HEALED]");
-    elseif (hasEntanglingRoots and noEntanglingRoots and
-           (GetTime() - lastEntanglingRoots) >= 13 and
-            UnitHealth("target") <= 15) then
-        lastEntanglingRoots = GetTime();
-        FuckBlizzardByName("Entangling Roots");
-    else
-        if (hasStarFire and druidDestCount == 0) then
-            FuckBlizzardByName("Starfire");
-        elseif (hasWrath and druidDestCount == 1) then
-            FuckBlizzardByName("Wrath");
-        end
-
-        if (druidDestCount >= MAX_DRDEST) then
-            druidDestCount = 0;
-        else
-            druidDestCount = druidDestCount + 1;
-        end
+    elseif (not myMoonfire and btp_cast_spell("Moonfire")) then
+        return true;
+    elseif (UnitHealth("player")/UnitHealthMax("player") == 1 and
+            btp_cast_spell("Starfire")) then
+        return true;
+    elseif (btp_cast_spell("Wrath")) then
+        return true;
     end
+
+    return false;
+end
+
+function druid_solo()
+    if (SelfHeal(DR_THRESH, DR_MANA/3)) then
+        --
+        -- doing a self heal here (heathstones, potions, etc)
+        --
+    elseif (druid_heal()) then
+        return true;
+    elseif (druid_buff()) then
+        return true;
+    elseif (druid_dps()) then
+        return true;
+    end
+
+    return false;
 end
 
 function btp_druid_boomkin()

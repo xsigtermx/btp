@@ -738,6 +738,15 @@ function btp_priest_dps(unit)
 end
 
 function btp_priest_heal()
+    --
+    -- Put any callback code here.
+    --
+
+    --
+    -- Run Trinket code.
+    --
+    Trinkets();
+
     if(pvpBot) then
         return btp_priest_heal_pvp_quick();
     end
