@@ -150,7 +150,7 @@ dontBeg           = true;
 funTrink          = false;
 botSelfHeal       = true;
 okayDrink         = false;
-okayMount = false;
+okayMount         = false;
 
 --
 -- Function Pointers
@@ -1545,16 +1545,8 @@ function BTP_Decursive()
     end
 
     if (UnitClass("player") == "Druid") then
-        if (hasCurseDebuff and
-            btp_cast_spell_on_target("Remove Curse", debuffPlayer)) then
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
-        elseif (hasPoisonDebuff and
-                btp_cast_spell_on_target("Abolish Poison", debuffPlayer)) then
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
-        elseif (hasPoisonDebuff and
-                btp_cast_spell_on_target("Cure Poison", debuffPlayer)) then
+        if ((hasCurseDebuff or hasPoisonDebuff) and
+            btp_cast_spell_on_target("Remove Corruption", debuffPlayer)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
         end
@@ -3918,7 +3910,9 @@ function Trinkets()
                 end
             end
             if (string.find(GetContainerItemLink(bag,slot),
-                            "Horde Battle Standard")) then
+                            "Horde Battle Standard") or
+                string.find(GetContainerItemLink(bag,slot),
+                            "Alliance Battle Standard")) then
                 start, duration, enable = GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 0) then
                     hasBattleStandard = true;
@@ -5467,6 +5461,10 @@ function btp_icon_is_mount_ground(icon)
         strfind(icon, "Tiger") or
         strfind(icon, "turtle") or
         strfind(icon, "Warstrider") or
+        strfind(icon, "RidingElekk") or
+        strfind(icon, "_Mount_BlackDireWolf") or
+        strfind(icon, "Mount_MechaStrider") or
+        strfind(icon, "_Mount_") or
         strfind(icon, "wolf")
         )) then
 	    return true;
@@ -6322,6 +6320,9 @@ function btp_bot()
             if (okayMount and targetOnMount) then
                 if (hasFastMount) then
                     CallCompanion("MOUNT", mountSlotFast);
+                elseif (btp_cast_spell("Running Wild")) then
+                    okayMount = false;
+                    return true;
                 elseif (hasMount) then
                     CallCompanion("MOUNT", mountSlot);
                 end
@@ -6375,6 +6376,10 @@ function btp_bot()
                         lastMountTry = GetTime();
                         okayMount = true;
                     elseif (hasMount) then
+                        FuckBlizzardMove("TURNLEFT");
+                        lastMountTry = GetTime();
+                        okayMount = true;
+                    elseif (btp_can_cast("Running Wild")) then
                         FuckBlizzardMove("TURNLEFT");
                         lastMountTry = GetTime();
                         okayMount = true;
@@ -6704,8 +6709,10 @@ function btp_free_action()
 
     for slot=13,14 do
       if (GetInventoryItemLink("player", slot) and
+         (string.find(GetInventoryItemLink("player", slot),
+                      "of the Horde") or
           string.find(GetInventoryItemLink("player", slot),
-                      "of the Horde")) then
+                      "of the Alliance"))) then
         start, duration, enable = GetInventoryItemCooldown("player", trinkSlot);
         if (duration - (GetTime() - start) <= 0) then
             hasInsignia = true;
