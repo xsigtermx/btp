@@ -24,10 +24,10 @@
 
 
 @interface EventAction : NSObject {
-	int downKeys[MAX_KEY_SIZE];
-	int upKeys[MAX_KEY_SIZE];
-	int downKeysCount;
-	int upKeysCount;
+	NSInteger downKeys[MAX_KEY_SIZE];
+	NSInteger upKeys[MAX_KEY_SIZE];
+	NSInteger downKeysCount;
+	NSInteger upKeysCount;
 	CGPoint center;
 	ProcessSerialNumber eventWindow;
 

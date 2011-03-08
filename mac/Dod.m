@@ -178,7 +178,7 @@
 	[pptFrame setEventWindow: wowWindow];
 	
 	[event sendInput: @"/btp_finit\n"];
-	usleep(loopTime);
+	usleep(BTP_WAIT_SLEEP);
 	
 	while (framesNotFound)
 	{
