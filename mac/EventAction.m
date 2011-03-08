@@ -91,18 +91,18 @@
 - (void) go
 {
 	NSInteger i;
+	CGEventFlags flags = 0;
+
+	/*
 	ProcessSerialNumber focusWindow;
 	Boolean isSameProcess = FALSE;
-//	Boolean pressShift = FALSE;
-//	Boolean pressAlt = FALSE;
-//	Boolean pressControl = FALSE;
-
-	/* This should stop us from blasting input out to other windows. */
+	
 	GetFrontProcess(&focusWindow);
 	SameProcess(&eventWindow, &focusWindow, &isSameProcess);
 	
 	if (!(isSameProcess))
 		return;
+	*/
 	
 	/* This function was depricated.  The new interface is complicated, and I think
 	 this may be the cause of failing to capture the "key press up" event.  For
@@ -113,52 +113,45 @@
 	{	
 	    for (i = 0; i < downKeysCount; i++)
 	    {
-//			/* compensate for API bug with shift */
-//			if (downKeys[i] == 56)
-//			{
-//				pressShift = TRUE;
-//				NSLog(@"SHIFT DOWN");
-//				//continue;
-//			}
-//			
-//			/* compensate for API bug with alt */
-//			if (downKeys[i] == 58)
-//			{
-//				pressAlt = TRUE;
-//				NSLog(@"ALT DOWN");
-//				continue;
-//			}
-//			
-//			/* compensate for API bug with ctrl */
-//			if (downKeys[i] == 59)
-//			{
-//				pressControl = TRUE;
-//				NSLog(@"CTRL DOWN");
-//				//continue;
-//			}
-//
-//			NSLog(@"KEY DOWN: %d", downKeys[i]);
-			CGEventRef tmpEvent = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)downKeys[i], true);
+			/* compensate for API bug with shift */
+			if (downKeys[i] == 56)
+			{
+				flags |= kCGEventFlagMaskShift;
+				continue;
+			}
 			
-		    if (tmpEvent)
-		    {
-//				if (pressShift)
-//					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskShift);
-//				
-//				if (pressAlt)
-//					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskAlternate);
-//				
-//				if (pressControl)
-//					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskControl);
-				
-				CGEventPost(kCGSessionEventTap, tmpEvent);
-				//CGEventPostToPSN(&eventWindow, tmpEvent);
-			    CFRelease(tmpEvent);
-		    }
-//			
-//			pressShift = FALSE;
-//			pressAlt = FALSE;
-//			pressControl = FALSE;
+			/* compensate for API bug with alt */
+			if (downKeys[i] == 58)
+			{
+				flags |= kCGEventFlagMaskAlternate;
+				continue;
+			}
+			
+			/* compensate for API bug with ctrl */
+			if (downKeys[i] == 59)
+			{
+				flags |= kCGEventFlagMaskControl;
+				continue;
+			}
+
+			CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+			
+			if (source)
+			{
+				CGEventRef tmpEvent = CGEventCreateKeyboardEvent(source, (CGKeyCode)downKeys[i], true);
+			
+				if (tmpEvent)
+				{			
+					CGEventSetFlags(tmpEvent, flags);
+					CGEventPost(kCGHIDEventTap, tmpEvent);
+					//CGEventPostToPSN(&eventWindow, tmpEvent);
+					CFRelease(tmpEvent);
+				}
+
+				CFRelease(source);
+			}
+
+			flags = 0;
 	    }
 	}
 	
@@ -166,54 +159,45 @@
 	{
 	    for (i = 0; i < upKeysCount; i++)
 	    {
-//			/* compensate for API bug with shift */
-//			if (upKeys[i] == 56)
-//			{
-//				pressShift = TRUE;
-//				NSLog(@"SHIFT UP");
-//				//continue;
-//			}
-//				
-//			/* compensate for API bug with alt */
-//			if (upKeys[i] == 58)
-//			{
-//				pressAlt = TRUE;
-//				NSLog(@"ALT UP");
-//				//continue;
-//			}
-//				
-//			/* compensate for API bug with ctrl */
-//			if (upKeys[i] == 59)
-//			{
-//				pressControl = TRUE;
-//				NSLog(@"CTRL UP");
-//				//continue;
-//			}
-//				
-//			NSLog(@"KEY UP: %d", upKeys[i]);
-			CGEventRef tmpEvent = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)upKeys[i], false);
-				
-			if (tmpEvent)
+			/* compensate for API bug with shift */
+			if (upKeys[i] == 56)
 			{
-//				/*
-//				if (pressShift)
-//					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskShift);
-//				
-//				if (pressAlt)
-//					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskAlternate);
-//				
-//				if (pressControl)
-//					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskControl);
-//				*/
-//				
-				CGEventPost(kCGSessionEventTap, tmpEvent);
-				//CGEventPostToPSN(&eventWindow, tmpEvent);
-				CFRelease(tmpEvent);
+				flags |= kCGEventFlagMaskShift;
+				continue;
 			}
-//			
-//			pressShift = FALSE;
-//			pressAlt = FALSE;
-//			pressControl = FALSE;
+			
+			/* compensate for API bug with alt */
+			if (upKeys[i] == 58)
+			{
+				flags |= kCGEventFlagMaskAlternate;
+				continue;
+			}
+			
+			/* compensate for API bug with ctrl */
+			if (upKeys[i] == 59)
+			{
+				flags |= kCGEventFlagMaskControl;
+				continue;
+			}
+			
+			CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+			
+			if (source)
+			{
+				CGEventRef tmpEvent = CGEventCreateKeyboardEvent(source, (CGKeyCode)upKeys[i], false);
+				
+				if (tmpEvent)
+				{		
+					CGEventSetFlags(tmpEvent, flags);
+					CGEventPost(kCGHIDEventTap, tmpEvent);
+					//CGEventPostToPSN(&eventWindow, tmpEvent);
+					CFRelease(tmpEvent);
+				}
+
+				CFRelease(source);
+			}
+			
+			flags = 0;
 	    }
 	}
 	
