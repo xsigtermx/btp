@@ -62,149 +62,54 @@
 
 - (void) sendCenterClick: (NSInteger) seconds
 {
-	Boolean isSameProcess = FALSE;
-	ProcessSerialNumber focusWindow;
-	
-	/* This should stop us from blasting input out to other windows. */
-	GetFrontProcess(&focusWindow);
-	SameProcess(&eventWindow, &focusWindow, &isSameProcess);
-	
-	if (!(isSameProcess))
-		return;
-	
-	/* This function was depricated.  The new interface is complicated, and I think
-           this may be the cause of failing to capture the "key press up" event.  For
-           now I'm going to see how things work without this. */	
-	// CGInhibitLocalEvents(TRUE);
-	
-	CGPostMouseEvent(center, TRUE, 2, FALSE, TRUE);
-	usleep(seconds);
-	CGPostMouseEvent(center, TRUE, 2, FALSE, FALSE);
-	
-	/* This function was depricated.  The new interface is complicated, and I think
-           this may be the cause of failing to capture the "key press up" event.  For
-           now I'm going to see how things work without this. */	
-	// CGInhibitLocalEvents(FALSE);
+        Boolean isSameProcess = FALSE;
+        ProcessSerialNumber focusWindow;
+
+        /* This should stop us from blasting input out to other windows. */
+        GetFrontProcess(&focusWindow);
+        SameProcess(&eventWindow, &focusWindow, &isSameProcess);
+
+        if (!(isSameProcess))
+                return;
+
+        CGInhibitLocalEvents(TRUE);
+
+        CGPostMouseEvent(center, TRUE, 2, FALSE, TRUE);
+        usleep(seconds);
+        CGPostMouseEvent(center, TRUE, 2, FALSE, FALSE);
+
+        CGInhibitLocalEvents(FALSE);
 }
 
 
 - (void) go
 {
-	NSInteger i;
-	CGEventFlags flags = 0;
+        int i;
+        Boolean isSameProcess = FALSE;
+        ProcessSerialNumber focusWindow;
 
-	/*
-	ProcessSerialNumber focusWindow;
-	Boolean isSameProcess = FALSE;
-	
-	GetFrontProcess(&focusWindow);
-	SameProcess(&eventWindow, &focusWindow, &isSameProcess);
-	
-	if (!(isSameProcess))
-		return;
-	*/
-	
-	/* This function was depricated.  The new interface is complicated, and I think
-	 this may be the cause of failing to capture the "key press up" event.  For
-	 now I'm going to see how things work without this. */	
-	// CGInhibitLocalEvents(TRUE);
-	
-	if (downKeysCount)
-	{	
-	    for (i = 0; i < downKeysCount; i++)
-	    {
-			/* compensate for API bug with shift */
-			if (downKeys[i] == 56)
-			{
-				flags |= kCGEventFlagMaskShift;
-				continue;
-			}
-			
-			/* compensate for API bug with alt */
-			if (downKeys[i] == 58)
-			{
-				flags |= kCGEventFlagMaskAlternate;
-				continue;
-			}
-			
-			/* compensate for API bug with ctrl */
-			if (downKeys[i] == 59)
-			{
-				flags |= kCGEventFlagMaskControl;
-				continue;
-			}
+        /* This should stop us from blasting input out to other windows. */
+        GetFrontProcess(&focusWindow);
+        SameProcess(&eventWindow, &focusWindow, &isSameProcess);
 
-			CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
-			
-			if (source)
-			{
-				CGEventRef tmpEvent = CGEventCreateKeyboardEvent(source, (CGKeyCode)downKeys[i], true);
-			
-				if (tmpEvent)
-				{			
-					CGEventSetFlags(tmpEvent, flags);
-					CGEventPost(kCGHIDEventTap, tmpEvent);
-					//CGEventPostToPSN(&eventWindow, tmpEvent);
-					CFRelease(tmpEvent);
-				}
+        if (!(isSameProcess))
+                return;
 
-				CFRelease(source);
-			}
+        CGInhibitLocalEvents(TRUE);
 
-			flags = 0;
-	    }
-	}
-	
-	if (upKeysCount)
-	{
-	    for (i = 0; i < upKeysCount; i++)
-	    {
-			/* compensate for API bug with shift */
-			if (upKeys[i] == 56)
-			{
-				flags |= kCGEventFlagMaskShift;
-				continue;
-			}
-			
-			/* compensate for API bug with alt */
-			if (upKeys[i] == 58)
-			{
-				flags |= kCGEventFlagMaskAlternate;
-				continue;
-			}
-			
-			/* compensate for API bug with ctrl */
-			if (upKeys[i] == 59)
-			{
-				flags |= kCGEventFlagMaskControl;
-				continue;
-			}
-			
-			CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
-			
-			if (source)
-			{
-				CGEventRef tmpEvent = CGEventCreateKeyboardEvent(source, (CGKeyCode)upKeys[i], false);
-				
-				if (tmpEvent)
-				{		
-					CGEventSetFlags(tmpEvent, flags);
-					CGEventPost(kCGHIDEventTap, tmpEvent);
-					//CGEventPostToPSN(&eventWindow, tmpEvent);
-					CFRelease(tmpEvent);
-				}
+        if (downKeysCount)
+        {
+            for (i = 0; i < downKeysCount; i++)
+                CGPostKeyboardEvent(0, (CGKeyCode)downKeys[i], true);
+        }
 
-				CFRelease(source);
-			}
-			
-			flags = 0;
-	    }
-	}
-	
-	/* This function was depricated.  The new interface is complicated, and I think
-           this may be the cause of failing to capture the "key press up" event.  For
-           now I'm going to see how things work without this. */	
-	// CGInhibitLocalEvents(FALSE);
+        if (upKeysCount)
+        {
+            for (i = 0; i < upKeysCount; i++)
+                    CGPostKeyboardEvent(0, (CGKeyCode)upKeys[i], false);
+        }
+
+        CGInhibitLocalEvents(FALSE);
 }
 
 
