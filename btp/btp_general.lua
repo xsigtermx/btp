@@ -5577,29 +5577,29 @@ function btp_report_afk()
                 name = string.sub(name, 0, x - 1);
             end
 
-            if (bgStats[name] == nil) then
+            if (name ~= nil and bgStats[name] == nil) then
                 bgStats[name] = { };
             end
 
-            if (bgStats[name]["dd"] == nil) then
+            if (name ~= nil and bgStats[name]["dd"] == nil) then
                 bgStats[name]["dd"] = 0;
             end
 
-            if (bgStats[name]["hd"] == nil) then
+            if (name ~= nil and bgStats[name]["hd"] == nil) then
                 bgStats[name]["hd"] = 0;
             end
 
-            if (bgStats[name]["time"] == nil) then
+            if (name ~= nil and bgStats[name]["time"] == nil) then
                 bgStats[name]["time"] = GetTime();
             end
 
-            if (bgStats[name]["reported"] == nil) then
+            if (name ~= nil and bgStats[name]["reported"] == nil) then
                 bgStats[name]["reported"] = false;
             end
 
 	    -- always track current users stats
-            if (bgStats[name]["dd"] ~= damageDone or
-                bgStats[name]["hd"] ~= healingDone) then
+            if (name ~= nil and (bgStats[name]["dd"] ~= damageDone or
+                bgStats[name]["hd"] ~= healingDone)) then
                 --
                 -- Keep track of player stats
                 --
