@@ -89,6 +89,7 @@ herbTimer           = 0;
 lastStopMoving      = 0;
 lastBreakCC         = 0;
 lastFarmTime        = 0;
+lastDefendFlags     = 0;
 
 --
 -- Strings
@@ -1048,12 +1049,12 @@ end
 
 function btp_check_dist(target, dist)
     if(target == nil or dist == nil) then return false; end
-    -- btp_frame_debug("dist: " .. dist .. " target: " .. target);
+
     if (dontCheckDist) then
         return true;
     else
 	if(target ~= nil) then
-        return CheckInteractDistance(target, dist);
+		return CheckInteractDistance(target, dist);
 	else
 		return false;
 	end
@@ -5679,6 +5680,7 @@ function btp_bot()
     startName = "no one";
     noFollow = false;
     queueNow = false;
+    atFlag = false;
     unitid = "no one";
 
     hasBandageBuff, myBandageBuff,
@@ -5703,6 +5705,9 @@ function btp_bot()
       
     hasFreeCast, myFreeCast,
     numFreeCast = btp_check_buff("Holy_Resurrection", "player");
+
+    hasDefendFlags, myDefendFlags,
+    numDefendFlags = btp_check_buff("defendflags", "player");
 
     if (doTrade and tradeName) then
         PickupContainerItem(freeBag, freeSlot);
@@ -6226,7 +6231,6 @@ function btp_bot()
             SendAddonMessage("BTP", "btpexclude", "BATTLEGROUND");
         end
 
-        -- this is the bot follow code for pvp seems to have a bug
         if (pvpBot and followPlayer == "player") then
             partyOK = true;
 
@@ -6280,26 +6284,51 @@ function btp_bot()
         if (partyOK) then
             lastInParty = GetTime();
 
-            if (followPlayer == "player") then
-                noFollow = true;
-            end
-
             buffTexture = "foo";
             i = 1;
 
-	    if (btp_is_mounted_ground("player")) then  playerOnMount = true; end
-	    if (btp_is_mounted_flying("player")) then  playerOnFlyingMount = true; end
-	    if (btp_is_drinking("player")) then isDrinking = true; end
+	    if (btp_is_mounted_ground("player")) then
+                playerOnMount = true;
+            end
+
+	    if (btp_is_mounted_flying("player")) then
+                playerOnFlyingMount = true;
+            end
+
+	    if (btp_is_drinking("player")) then
+                isDrinking = true;
+            end
 
             if (btp_is_summoning_mount(followPlayer)) then 
                     btp_frame_debug(followPlayer .. " summoning mount");
                     targetOnMount = true; 
             end
-	    if (btp_is_mounted_ground(followPlayer)) then targetOnMount = true; end
-	    if (btp_is_mounted_flying(followPlayer)) then targetOnFlyingMount = true; end
+
+	    if (btp_is_mounted_ground(followPlayer)) then
+                targetOnMount = true;
+            end
+
+	    if (btp_is_mounted_flying(followPlayer)) then
+                targetOnFlyingMount = true;
+            end
+
+            if (followPlayer == "player") then
+                noFollow = true;
+            elseif (pvpBot and farmBG and hasDefendFlags and not targetOnMount and
+                    not targetOnFlyingMount and not playerOnMount and
+                    not playerOnFlyingMount and not isDrinking and
+                    not UnitAffectingCombat(followPlayer) and
+                    btp_check_dist(followPlayer, 2)) then
+                atFlag = true;
+
+                if ((GetTime() - lastDefendFlags) > 5) then
+                    lastDefendFlags = GetTime();
+                    FuckBlizzardMove("TURNLEFT");
+                end
+            end
 
             if (not btp_dont_follow(UnitName(followPlayer)) and
-                btpFollow and not stopMoving and
+                btpFollow and not stopMoving and not atFlag and
                 (GetTime() - lastMountTry) > 2 and
                 not forceDrink and (not isDrinking or
                 UnitMana("player") == UnitManaMax("player"))) then
