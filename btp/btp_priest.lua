@@ -882,7 +882,7 @@ end
 function btp_priest_heal_crit(cur_percent, cur_health, cur_player)
     -- bang out any critical heals
     if(cur_percent > BTP_PRIEST_THRESH_CRIT) then return false; end
-    btp_frame_debug("NEED CRIT " .. cur_player .. " " ..  UnitName(cur_player));
+    -- btp_frame_debug("NEED CRIT " .. cur_player .. " " ..  UnitName(cur_player));
 
     if(btp_priest_is_sol()) then 
         if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end;
@@ -916,7 +916,7 @@ function btp_priest_heal_large(cur_percent, cur_health, cur_player)
     -- check everyone else for a large heal
     if(cur_percent > BTP_PRIEST_THRESH_LARGE) then return false; end
 
-    btp_frame_debug("NEED LARGE " .. cur_player .. " " ..  UnitName(cur_player));
+    -- btp_frame_debug("NEED LARGE " .. cur_player .. " " ..  UnitName(cur_player));
 
     if(btp_priest_is_sol()) then 
         if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end;
@@ -954,7 +954,7 @@ function btp_priest_heal_medium(cur_percent, cur_health, cur_player)
     -- Check for medium heals
     if(cur_percent > BTP_PRIEST_THRESH_MEDIUM) then return false; end
 
-    btp_frame_debug("NEED MEDIUM " .. cur_player .. " " .. UnitName(cur_player));
+    -- btp_frame_debug("NEED MEDIUM " .. cur_player .. " " .. UnitName(cur_player));
 
     if(btp_priest_is_sol()) then 
         if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end;
@@ -992,7 +992,7 @@ end
 function btp_priest_heal_small(cur_percent, cur_health, cur_player)
     -- Check for small heals last
     if(cur_percent > BTP_PRIEST_THRESH_SMALL) then return false; end
-    btp_frame_debug("NEED SMALL " .. cur_player .. " " .. UnitName(cur_player));
+    -- btp_frame_debug("NEED SMALL " .. cur_player .. " " .. UnitName(cur_player));
     if(not btp_priest_is_renew(cur_player)) then
         if(btp_cast_spell_on_target("Chakra", "player")) then return true; end
         if(btp_cast_spell_on_target("Renew", cur_player)) then return true; end
