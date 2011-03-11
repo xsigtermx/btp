@@ -90,6 +90,7 @@ lastStopMoving      = 0;
 lastBreakCC         = 0;
 lastFarmTime        = 0;
 lastDefendFlags     = 0;
+lastJumpFollow      = 0;
 
 --
 -- Strings
@@ -6287,36 +6288,37 @@ function btp_bot()
             buffTexture = "foo";
             i = 1;
 
-	    if (btp_is_mounted_ground("player")) then
+            if (btp_is_mounted_ground("player")) then
                 playerOnMount = true;
             end
 
-	    if (btp_is_mounted_flying("player")) then
+            if (btp_is_mounted_flying("player")) then
                 playerOnFlyingMount = true;
             end
 
-	    if (btp_is_drinking("player")) then
+            if (btp_is_drinking("player")) then
                 isDrinking = true;
             end
 
             if (btp_is_summoning_mount(followPlayer)) then 
-                    btp_frame_debug(followPlayer .. " summoning mount");
-                    targetOnMount = true; 
+                btp_frame_debug(followPlayer .. " summoning mount");
+                targetOnMount = true; 
             end
 
-	    if (btp_is_mounted_ground(followPlayer)) then
-                targetOnMount = true;
+            if (btp_is_mounted_ground(followPlayer)) then
+               targetOnMount = true;
             end
 
-	    if (btp_is_mounted_flying(followPlayer)) then
+            if (btp_is_mounted_flying(followPlayer)) then
                 targetOnFlyingMount = true;
             end
 
             if (followPlayer == "player") then
                 noFollow = true;
-            elseif (pvpBot and farmBG and hasDefendFlags and not targetOnMount and
-                    not targetOnFlyingMount and not playerOnMount and
-                    not playerOnFlyingMount and not isDrinking and
+            elseif (pvpBot and farmBG and hasDefendFlags and
+                    not targetOnMount and not targetOnFlyingMount and
+                    not playerOnMount and not playerOnFlyingMount and
+                    not isDrinking and
                     not UnitAffectingCombat(followPlayer) and
                     btp_check_dist(followPlayer, 2)) then
                 atFlag = true;
@@ -6325,6 +6327,15 @@ function btp_bot()
                     lastDefendFlags = GetTime();
                     FuckBlizzardMove("TURNLEFT");
                 end
+            end
+
+            if (pvpBot and not UnitAffectingCombat(followPlayer) and
+                not UnitAffectingCombat("player") and
+                not btp_check_dist(followPlayer, 2) and
+                btp_check_dist(followPlayer, 4) and
+               (GetTime() - lastJumpFollow) > 2) then
+                    lastJumpFollow = GetTime();
+                    FuckBlizzardMove("JUMP");
             end
 
             if (not btp_dont_follow(UnitName(followPlayer)) and
