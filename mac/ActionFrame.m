@@ -159,21 +159,9 @@
 	if ([redHexValue compare: @"ff"] == NSOrderedSame &&
 		[greenHexValue compare: @"ff"] == NSOrderedSame &&
 		[blueHexValue compare: @"ff"] == NSOrderedSame)
-	{
-		[pixelColor release];
-		[redHexValue release];
-		[greenHexValue release];
-		[blueHexValue release];
 		return BTP_RETURN_OK;
-	}
 	else
-	{
-		[pixelColor release];
-		[redHexValue release];
-		[greenHexValue release];
-		[blueHexValue release];
 		return BTP_RETURN_FAIL;
-	}
 }
 
 
@@ -198,14 +186,7 @@
 	partTwo = [partOne stringByAppendingString: blueHexValue];
 	
 	[[colorMapping objectForKey: partTwo] go];
-	
-	[partOne release];
-	[partTwo release];
-	[pixelColor release];
-	[redHexValue release];
-	[greenHexValue release];
-	[blueHexValue release];
-	
+
 	return BTP_RETURN_OK;
 }
 
@@ -239,13 +220,6 @@
 	    [[colorMapping objectForKey: partTwo] go];
 	}
 
-	[partOne release];
-	[partTwo release];
-	[pixelColor release];
-	[redHexValue release];
-	[greenHexValue release];
-	[blueHexValue release];
-	
 	return BTP_RETURN_OK;
 }
 
@@ -681,8 +655,8 @@ rick_rolled:
 	
 	[self swizzleBitmap: bm];
 	*bitmap = bm;
-	
-	[mGLContext release];
+
+	[mGLContext autorelease];
 }
 
 

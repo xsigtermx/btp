@@ -253,11 +253,12 @@
 {
 	NSInteger loopCount = 0;
 	NSInteger farmCount = 0;
-	NSAutoreleasePool *thread_pool = [[NSAutoreleasePool alloc] init];
 	NSBitmapImageRep *bitmap;
 	
 	while (!(killRunLoop))
 	{
+		NSAutoreleasePool *thread_pool = [[NSAutoreleasePool alloc] init];
+		
 		if (loopPause == TRUE)
 		{
 			[loopPauseCond lock];
@@ -303,12 +304,13 @@
 			[paFrame doAction: bitmap];
 			[mpFrame doAction: bitmap];
 			[pptFrame doAction: bitmap];
-			
+
 			[event sendInput: [[self cleanFrameButton] stringValue]];
 		}
-		
-		[bitmap release];
-			
+
+		[bitmap autorelease];
+		[thread_pool drain];
+
 		loopCount += loopTime;
 		farmCount++;
 		
@@ -316,7 +318,6 @@
 	}
 	
 	runLoopClean = TRUE;
-	[thread_pool release];
 	
 	return;
 }
