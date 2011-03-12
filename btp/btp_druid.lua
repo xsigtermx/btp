@@ -391,6 +391,12 @@ function druid_heal()
         hasWildGrowth, myWildGrowth,
         numWildGrowth = btp_check_buff("Flourish", playerName);
 
+        --
+        -- Thorns check
+        --
+        hasThorns, myThorns,
+        numThorns = btp_check_buff("Thorns", nextPlayer);
+
         if ((raidHurtCount > 1 or partyHurtCount > 1) and
             not myWildGrowth and
             btp_cast_spell_on_target("Wild Growth", playerName)) then
@@ -431,6 +437,20 @@ function druid_heal()
             end
 
             lastTranquility = GetTime();
+            return true;
+        elseif (UnitAffectingCombat("player") and not myThorns and
+                UnitHealth(playerName)/UnitHealthMax(playerName) > 
+                DR_THRESH + DR_SCALAR/2 and
+                UnitThreatSituation(playerName) ~= nil and
+                UnitThreatSituation(playerName) == 3 and
+                btp_cast_spell_on_target("Thorns", playerName)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (UnitAffectingCombat("player") and not myThorns and
+                UnitHealth(playerName)/UnitHealthMax(playerName) > 
+                DR_THRESH + DR_SCALAR/2 and pvpBot and
+                btp_cast_spell_on_target("Thorns", playerName)) then
+            FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (UnitAffectingCombat("player") and not myRegrowth and
                 UnitHealth(playerName)/UnitHealthMax(playerName) <= 
@@ -492,7 +512,6 @@ function druid_heal()
 end
 
 function druid_buff()
-    noThorns = true;
     noMarkOfWild = true;
     hasWild = false;
     treeCount = 0;
@@ -549,32 +568,12 @@ function druid_buff()
     --
     hasGift, myGift, numGift = btp_check_buff("GiftoftheWild", "player");
 
-    --
-    -- Thorns check
-    --
-    hasThorns, myThorns, numThorns = btp_check_buff("Thorns", "player");
-
-    --
-    -- Imp FireArmor
-    --
-    hasFireArmor, myFireArmor,
-    numFireArmor = btp_check_buff("FireArmor", "player");
-
     if (hasMark or hasGift) then
         noMarkOfWild = false;
     end
 
-    if (hasFireArmor or hasThorns) then
-        noThorns = false;
-    end
-        
     if (noMarkOfWild and
         btp_cast_spell_on_target("Mark of the Wild", "player")) then
-        FuckBlizzardTargetUnit("playertarget");
-        return true;
-    end
-
-    if (noThorns and btp_cast_spell_on_target("Thorns", "player")) then
         FuckBlizzardTargetUnit("playertarget");
         return true;
     end
@@ -585,7 +584,6 @@ function druid_buff()
 
     for i = 1, GetNumRaidMembers() do
         nextPlayer = "raid" .. i;
-        noThorns = true;
         noMarkOfWild = true;
 
         if (UnitHealth(nextPlayer) >= 5 and
@@ -603,23 +601,8 @@ function druid_buff()
             numGift = btp_check_buff("GiftoftheWild", nextPlayer);
 
             --
-            -- Thorns check
-            --
-            hasThorns, myThorns,
-            numThorns = btp_check_buff("Thorns", nextPlayer);
-
-            --
-            -- Imp FireArmor
-            --
-            hasFireArmor, myFireArmor,
-            numFireArmor = btp_check_buff("FireArmor", nextPlayer);
-
             if (hasMark or hasGift) then
                 noMarkOfWild = false;
-            end
-
-            if (hasFireArmor or hasThorns) then
-                noThorns = false;
             end
 
             if (hasWild and noMarkOfWild and goodToBuff and not pvpBot and
@@ -633,19 +616,12 @@ function druid_buff()
                 FuckBlizzardTargetUnit("playertarget");
                 return true;
             end
-
-            if (noThorns and
-                btp_cast_spell_on_target("Thorns", nextPlayer)) then
-                FuckBlizzardTargetUnit("playertarget");
-                return true;
-            end
         end
     end
 
     if (GetNumRaidMembers() <= 0) then
         for i = 1, GetNumPartyMembers() do
             nextPlayer = "party" .. i;
-            noThorns = true;
             noMarkOfWild = true;
 
             if (UnitHealth(nextPlayer) >= 5 and
@@ -668,18 +644,8 @@ function druid_buff()
                 hasThorns, myThorns,
                 numThorns = btp_check_buff("Thorns", nextPlayer);
 
-                --
-                -- Imp FireArmor
-                --
-                hasFireArmor, myFireArmor,
-                numFireArmor = btp_check_buff("FireArmor", nextPlayer);
-
                 if (hasMark or hasGift) then
                     noMarkOfWild = false;
-                end
-
-                if (hasFireArmor or hasThorns) then
-                    noThorns = false;
                 end
 
                 if (hasWild and noMarkOfWild and goodToBuff and not pvpBot and

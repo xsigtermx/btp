@@ -6339,9 +6339,9 @@ function btp_bot()
             end
 
             if (pvpBot and not UnitAffectingCombat(followPlayer) and
-                not UnitAffectingCombat("player") and
+                not UnitAffectingCombat("player") and btpFollow and
                 not btp_check_dist(followPlayer, 2) and
-                btp_check_dist(followPlayer, 4) and
+                btp_check_dist(followPlayer, 4) and not isDrinking and
                (GetTime() - lastJumpFollow) > 2) then
                     lastJumpFollow = GetTime();
                     FuckBlizzardMove("JUMP");
