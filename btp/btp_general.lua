@@ -5430,7 +5430,13 @@ function btp_bot_new()
 end
 
 function btp_is_drinking(unitid)
-    return btp_check_buff("Drink", unitid);
+    --
+    -- Drinking Buff Check
+    --
+    hasDrinking, myDrinking,
+    numDrinking = btp_check_buff("Drink", unitid);
+
+    return hasDrinking;
 end
 
 -- would be nice
@@ -6310,7 +6316,6 @@ function btp_bot()
             end
 
             if (btp_is_summoning_mount(followPlayer)) then 
-                btp_frame_debug(followPlayer .. " summoning mount");
                 targetOnMount = true; 
             end
 
@@ -6342,6 +6347,7 @@ function btp_bot()
                 not UnitAffectingCombat("player") and btpFollow and
                 not btp_check_dist(followPlayer, 2) and
                 btp_check_dist(followPlayer, 4) and not isDrinking and
+                not btp_is_summoning_mount("player") and
                (GetTime() - lastJumpFollow) > 2) then
                     lastJumpFollow = GetTime();
                     FuckBlizzardMove("JUMP");
