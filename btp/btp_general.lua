@@ -4393,6 +4393,8 @@ function TradeItem(itemName, playerName)
         string.find(itemName, "Dew") or
         string.find(itemName, "Ethermead") or
         string.find(itemName, "Manna Biscuit") or
+        string.find(itemName, "Manna Cookie") or
+        string.find(itemName, "Manna Strudel") or
         string.find(itemName, "Star's Tears") or
         string.find(itemName, "Water"))) then
         isStack = true;
@@ -5428,7 +5430,13 @@ function btp_bot_new()
 end
 
 function btp_is_drinking(unitid)
-    return btp_check_buff("Drink", unitid);
+    --
+    -- Drinking Buff Check
+    --
+    hasDrinking, myDrinking,
+    numDrinking = btp_check_buff("Drink", unitid);
+
+    return hasDrinking;
 end
 
 -- would be nice
@@ -5978,6 +5986,13 @@ function btp_bot()
             end
 
             if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Cookie")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
                 "Mana Cake")) then
                 hasWater = true;
                 waterBag = bag;
@@ -6301,7 +6316,6 @@ function btp_bot()
             end
 
             if (btp_is_summoning_mount(followPlayer)) then 
-                btp_frame_debug(followPlayer .. " summoning mount");
                 targetOnMount = true; 
             end
 
@@ -6330,9 +6344,10 @@ function btp_bot()
             end
 
             if (pvpBot and not UnitAffectingCombat(followPlayer) and
-                not UnitAffectingCombat("player") and
+                not UnitAffectingCombat("player") and btpFollow and
                 not btp_check_dist(followPlayer, 2) and
-                btp_check_dist(followPlayer, 4) and
+                btp_check_dist(followPlayer, 4) and not isDrinking and
+                not btp_is_summoning_mount("player") and
                (GetTime() - lastJumpFollow) > 2) then
                     lastJumpFollow = GetTime();
                     FuckBlizzardMove("JUMP");

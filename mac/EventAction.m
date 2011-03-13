@@ -18,7 +18,7 @@
 //  along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 //
 //  Copyright 2009 Project DoD Inc. All rights reserved.
-//
+
 
 #import "EventAction.h"
 
@@ -88,7 +88,6 @@
         Boolean isSameProcess = FALSE;
         ProcessSerialNumber focusWindow;
 
-        /* This should stop us from blasting input out to other windows. */
         GetFrontProcess(&focusWindow);
         SameProcess(&eventWindow, &focusWindow, &isSameProcess);
 
@@ -111,6 +110,131 @@
 
         CGInhibitLocalEvents(FALSE);
 }
+
+
+/* TEST CODE
+- (void) go
+{
+	NSInteger i;
+	ProcessSerialNumber focusWindow;
+	Boolean isSameProcess = FALSE;
+	Boolean pressShift = FALSE;
+	Boolean pressAlt = FALSE;
+	Boolean pressControl = FALSE;
+
+	GetFrontProcess(&focusWindow);
+	SameProcess(&eventWindow, &focusWindow, &isSameProcess);
+	
+	if (!(isSameProcess))
+		return;
+	
+	CGInhibitLocalEvents(TRUE);
+	
+	if (downKeysCount)
+	{	
+	    for (i = 0; i < downKeysCount; i++)
+	    {
+			if (downKeys[i] == 56)
+			{
+				pressShift = TRUE;
+				NSLog(@"SHIFT DOWN");
+				//continue;
+			}
+			
+			if (downKeys[i] == 58)
+			{
+				pressAlt = TRUE;
+				NSLog(@"ALT DOWN");
+				continue;
+			}
+			
+			if (downKeys[i] == 59)
+			{
+				pressControl = TRUE;
+				NSLog(@"CTRL DOWN");
+				//continue;
+			}
+
+			NSLog(@"KEY DOWN: %d", downKeys[i]);
+			CGEventRef tmpEvent = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)downKeys[i], true);
+			
+		    if (tmpEvent)
+		    {
+				if (pressShift)
+					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskShift);
+				
+				if (pressAlt)
+					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskAlternate);
+				
+				if (pressControl)
+					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskControl);
+				
+				CGEventPost(kCGSessionEventTap, tmpEvent);
+				//CGEventPostToPSN(&eventWindow, tmpEvent);
+			    CFRelease(tmpEvent);
+		    }
+			
+			pressShift = FALSE;
+			pressAlt = FALSE;
+			pressControl = FALSE;
+	    }
+	}
+	
+	if (upKeysCount)
+	{
+	    for (i = 0; i < upKeysCount; i++)
+	    {
+			if (upKeys[i] == 56)
+			{
+				pressShift = TRUE;
+				NSLog(@"SHIFT UP");
+				//continue;
+			}
+				
+			if (upKeys[i] == 58)
+			{
+				pressAlt = TRUE;
+				NSLog(@"ALT UP");
+				//continue;
+			}
+				
+			if (upKeys[i] == 59)
+			{
+				pressControl = TRUE;
+				NSLog(@"CTRL UP");
+				//continue;
+			}
+				
+			NSLog(@"KEY UP: %d", upKeys[i]);
+			CGEventRef tmpEvent = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)upKeys[i], false);
+				
+			if (tmpEvent)
+			{
+				/*
+				if (pressShift)
+					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskShift);
+				
+				if (pressAlt)
+					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskAlternate);
+				
+				if (pressControl)
+					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskControl);
+				*/
+				
+				CGEventPost(kCGSessionEventTap, tmpEvent);
+				//CGEventPostToPSN(&eventWindow, tmpEvent);
+				CFRelease(tmpEvent);
+			}
+			
+			pressShift = FALSE;
+			pressAlt = FALSE;
+			pressControl = FALSE;
+	    }
+	}
+	
+	CGInhibitLocalEvents(FALSE);
+}
+*/
 
 
 - (void) addActionDown: (CGKeyCode) key
