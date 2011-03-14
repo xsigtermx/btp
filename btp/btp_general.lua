@@ -91,6 +91,7 @@ lastBreakCC         = 0;
 lastFarmTime        = 0;
 lastDefendFlags     = 0;
 lastJumpFollow      = 0;
+lastCheckAFK        = 0;
 
 --
 -- Strings
@@ -5568,7 +5569,10 @@ function btp_bot_dps(unit)
 end
 
 function btp_report_afk()
-    if (GetNumBattlefieldScores() > 0) then
+    if (GetNumBattlefieldScores() > 0 and
+       (GetTime() - lastCheckAFK) > 30) then
+        lastCheckAFK = GetTime();
+
         for index = 1, GetNumBattlefieldScores() do
             name, killingBlows, honorKills, deaths, honorGained,
             faction, rank, race, class, damageDone, healingDone,
@@ -5801,6 +5805,7 @@ function btp_bot()
 
     --
     -- This code does takes care of SendAddonMessage() commands.
+    -- It can also be moved into its own function to clean the mess up.
     --
     if (addonCmd) then
         if (doWarstomp and UnitClass("player") == "Druid" and
