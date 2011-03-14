@@ -56,6 +56,19 @@ function btp_priest_initialize()
     SlashCmdList["DPSMODE"] = btp_dps_mode_toggle;
     SLASH_DPSMODE1 = "/dps";
 
+    cb_array["Flash Heal"]              = function() 
+        btp_cb_priest_flash_heal("Flash Heal");
+    end
+    cb_array["Greater Heal"]            = function()
+        btp_cb_priest_greater_heal("Greater Heal");
+    end
+    cb_array["Binding Heal"]            = function()
+        btp_cb_priest_binding_heal("Binding Heal");
+    end
+    -- cb_array["Prayer of Healing"]       = btp_cb_priest_prayer_of_healing("Prayer of Healing");
+    -- cb_array["Holy Word: Sanctuary"]    = btp_cb_priest_holy_word_sanctuary("Holy Word: Sanctuary");
+    -- cb_array["Hymn of Hope"]            = btp_cb_priest_hymn_of_hope("Hymn of Hope");
+
 
 end
 
@@ -790,41 +803,37 @@ end
 
 -- i am hoping to speed up the heal function bye doing this.
 function btp_priest_heal_pvp_quick()
-BTP_PRIEST_THRESH_CRIT=.35
+BTP_PRIEST_THRESH_CRIT=.29
 BTP_PRIEST_THRESH_LARGE=.49
-BTP_PRIEST_THRESH_MEDIUM=.78
-BTP_PRIEST_THRESH_SMALL=.85
+BTP_PRIEST_THRESH_MEDIUM=.84
+BTP_PRIEST_THRESH_SMALL=.94
 BTP_PRIEST_THRESH_MANA=.15
 
     -- init
     ProphetKeyBindings();
+
+
+btp_frame_debug("btp_priest_heal_pvp_quick()");
+    if (current_cb ~= nil and current_cb()) then
+        return true;
+    end
+btp_frame_debug("btp_priest_heal_pvp_quick() post callback");
+    -- if stopMoving was set in a callback then 
+    if (stopMoving) then 
+        btp_frame_debug("STARTING");
+        stopMoving = false;
+    end
+
 
     -- Check the player
     local cur_health = UnitHealth("player");
     local cur_health_max = UnitHealthMax("player");
     local cur_class = UnitClass("player");
 
-    -- get our health status this is one pass
-    -- local lowest_target = btp_health_status(.99);
-    local lowest_percent, lowest_health, lowest_target = btp_health_status_quick();
+    -- if (btp_is_casting()) then return true; end
 
-    if(not lowest_percent or not lowest_health or not lowest_target 
-       or lowest_target == false or lowest_target == nil) then
---         btp_frame_debug("nothing to heal 2");
-        stopMoving = false;
-        return false;
-    end
-    -- local lowest_health = UnitHealth(lowest_target);
-    -- local lowest_health_max = UnitHealthMax(lowest_target);
-    -- local lowest_percent = (lowest_health / lowest_health_max);
-    -- local lowest_percent, lowest_health, lowest_target = btp_health_status_quick();
+    -- start moving unless something else tells us to stop
 
-    -- no one is hurt
-    if(not lowest_percent or lowest_percent == false) then
-        stopMoving = false;
-        return false;
-    end
-    
     -- blast out heals if we are in spirit form
     -- if(btp_priest_is_spirit()) then
     --     if(btp_priest_heal_crit(lowest_percent, lowest_health, lowest_target)) then return true; end;
@@ -833,48 +842,50 @@ BTP_PRIEST_THRESH_MANA=.15
     --     if(btp_priest_heal_small(lowest_percent, lowest_health, lowest_target)) then return true; end;
     -- end
 
-    -- check if we need to stop or start moving
-    if(lowest_percent < BTP_PRIEST_THRESH_LARGE) then
-        -- we only want to stop when we are close to the action
-        -- or when we are so low on health that we need a larger heal
-        if(btp_check_dist(lowest_target, 2)) then
-            -- stop moving
-            -- btp_frame_debug("STOP Moving");
-            stopMoving = true;
-            FuckBlizzardMove("TURNLEFT");
-        end
-    elseif(stopMoving) then
-        if((lowest_percent >= BTP_PRIEST_THRESH_MEDIUM)) then
-             -- btp_frame_debug("START Moving");
-            stopMoving = false;
-        end
-    end
+    -- use any items since they should not trigger cooldown
+--     if(SelfHeal(BTP_PRIEST_THRESH_CRIT, BTP_PRIEST_THRESH_MANA)) then
+--         return true;
+--     end
 
-    -- heal our self first
-    if(btp_priest_heal_self(lowest_percent, lowest_health, lowest_target)) then return true; end
+    -- fix once we have callbacks
+    -- decurse if needed
+--     if ((((GetTime() - lastDecurse) >= 3) or blockOnDecurse) and
+--         BTP_Decursive()) then                                   
+--         lastDecurse = GetTime();
+--         return true;            
+--     end
 
-    -- no one is hurt
-    if(not lowest_percent or lowest_percent == false) then
+    -- get our health status this is one pass
+    -- local lowest_target = btp_health_status(.99);
+    local lowest_percent, lowest_health, lowest_target = btp_health_status_quick();
+
+
+    if(not lowest_percent or not lowest_health or not lowest_target 
+       or lowest_target == false or lowest_target == nil) then
+        btp_frame_debug("nothing to heal 2");
         stopMoving = false;
         return false;
     end
+btp_frame_debug("btp_priest_heal_pvp_quick() post crit");
 
-    -- decurse if needed
-    if ((((GetTime() - lastDecurse) >= 5) or blockOnDecurse) and
-        BTP_Decursive()) then                                   
-        lastDecurse = GetTime();
-        return true;            
-    end
-
-    -- do our heals
+    -- do our crit and large heals first
     if(btp_priest_heal_crit(lowest_percent, lowest_health, lowest_target)) then return true; end;
+btp_frame_debug("btp_priest_heal_pvp_quick() post crit");
     if(btp_priest_heal_large(lowest_percent, lowest_health, lowest_target)) then return true; end;
+btp_frame_debug("btp_priest_heal_pvp_quick() post large");
     if(btp_priest_heal_medium(lowest_percent, lowest_health, lowest_target)) then return true; end;
-    if(btp_priest_heal_small(lowest_percent, lowest_health, lowest_target)) then return true; end;
+btp_frame_debug("btp_priest_heal_pvp_quick() post med");
 
-    if(BTP_Decursive()) then
-        return true;
-    end
+    -- heal our self second
+    if(btp_priest_heal_self(lowest_percent, lowest_health, lowest_target)) then return true; end
+btp_frame_debug("btp_priest_heal_pvp_quick() post self");
+
+    -- small heals after we heal ourself
+    if(btp_priest_heal_small(lowest_percent, lowest_health, lowest_target)) then return true; end;
+btp_frame_debug("btp_priest_heal_pvp_quick() post small");
+
+    if(BTP_Decursive()) then return true; end
+
     return false;
 end
 
@@ -901,12 +912,12 @@ function btp_priest_heal_crit(cur_percent, cur_health, cur_player)
             if(btp_cast_spell_on_target("Prayer of Mending", cur_player)) then return true; end
         end
 
-        if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end
+        if(btp_priest_bestheal(cur_player)) then return true; end
     else
         if(not btp_priest_is_renew(cur_player)) then
             if(btp_cast_spell_on_target("Renew", cur_player)) then return true; end
         end
-        if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end
+        if(btp_priest_bestheal(cur_player)) then return true; end
     end
     return false;
 end
@@ -931,20 +942,16 @@ function btp_priest_heal_large(cur_percent, cur_health, cur_player)
             if(btp_cast_spell_on_target("Power Word: Shield", cur_player)) then return true; end
         end
 
-        if(stopMoving) then
-            if(btp_cast_spell_on_target("Greater Heal", cur_player)) then return true; end
-        else
-            if(btp_cast_spell_on_target("Circle of Healing", cur_player)) then return true; end
-            if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end
-        end
+        if(btp_cast_spell_on_target("Circle of Healing", cur_player)) then return true; end
+        if(btp_priest_bestheal(cur_player)) then return true; end
     else
-        if(stopMoving) then
-            if(btp_cast_spell_on_target("Greater Heal", cur_player)) then return true; end
-        else
+        if(btp_is_moving()) then
             if(not btp_priest_is_renew(cur_player)) then
                 if(btp_cast_spell_on_target("Renew", cur_player)) then return true; end
             end
-            if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end
+            if(btp_priest_bestheal(cur_player)) then return true; end
+        else
+            if(btp_priest_bestheal(cur_player)) then return true; end
         end
     end
     return false;
@@ -961,6 +968,10 @@ function btp_priest_heal_medium(cur_percent, cur_health, cur_player)
     end
     if(UnitAffectingCombat(cur_player)) then
 
+        if(not btp_priest_is_pom(cur_player)) then
+            if(btp_cast_spell_on_target("Prayer of Mending", cur_player)) then return true; end
+        end
+
         if(not btp_priest_is_renew(cur_player)) then
             if(btp_cast_spell_on_target("Renew", cur_player)) then return true; end
         end
@@ -969,21 +980,13 @@ function btp_priest_heal_medium(cur_percent, cur_health, cur_player)
             if(btp_cast_spell_on_target("Power Word: Shield", cur_player)) then return true; end
         end
 
-        if(not btp_priest_is_pom(cur_player)) then
-            if(btp_cast_spell_on_target("Prayer of Mending", cur_player)) then return true; end
-        end
-
-        if(stopMoving) then
-            if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end
-        else
-            if(btp_cast_spell_on_target("Circle of Healing", cur_player)) then return true; end
-            if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end
-        end
+        if(btp_cast_spell_on_target("Circle of Healing", cur_player)) then return true; end
+        if(btp_priest_bestheal(cur_player)) then return true; end
     else
         if(not btp_priest_is_renew(cur_player)) then
             if(btp_cast_spell_on_target("Renew", cur_player)) then return true; end
         end
-        if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end
+        if(btp_priest_bestheal(cur_player)) then return true; end
     end
 
     return false;
@@ -993,14 +996,20 @@ function btp_priest_heal_small(cur_percent, cur_health, cur_player)
     -- Check for small heals last
     if(cur_percent > BTP_PRIEST_THRESH_SMALL) then return false; end
     -- btp_frame_debug("NEED SMALL " .. cur_player .. " " .. UnitName(cur_player));
+    if(btp_cast_spell_on_target("Chakra", "player")) then return true; end
+
+    if(not btp_priest_is_pom(cur_player)) then
+        if(btp_cast_spell_on_target("Prayer of Mending", cur_player)) then return true; end
+    end
+
     if(not btp_priest_is_renew(cur_player)) then
-        if(btp_cast_spell_on_target("Chakra", "player")) then return true; end
         if(btp_cast_spell_on_target("Renew", cur_player)) then return true; end
     end
-    if(btp_cast_spell_on_target("Flash Heal", cur_player)) then return true; end;
+
+    -- dont waste a powerful heal until they need it
+    -- if(btp_cast_spell_on_target("Heal", cur_player)) then return true; end
 end
 
--- heal ourself
 function btp_priest_heal_self(cur_percent, cur_health, cur_player)
     -- Check the player
     local my_health = UnitHealth("player");
@@ -1008,75 +1017,17 @@ function btp_priest_heal_self(cur_percent, cur_health, cur_player)
     local my_class = UnitClass("player");
     local my_percent = my_health/my_health_max;
 
-    -- use any items since they should not trigger cooldown
-    if(SelfHeal(BTP_PRIEST_THRESH_CRIT, BTP_PRIEST_THRESH_MANA)) then
-        return true;
-    end
-
     -- crit heal ourself
-    if(my_percent <= BTP_PRIEST_THRESH_CRIT and my_health > 2) then
-        if(btp_priest_is_sol()) then 
-            if(btp_cast_spell_on_target("Flash Heal", "player")) then return true; end;
-        end
-        if(btp_cast_spell_on_target("Desperate Prayer", "player")) then return true; end
+    if (btp_priest_heal_crit(my_percent, my_health, "player")) then return true; end
 
-        if(not btp_priest_is_pws()) then
-            if(btp_cast_spell_on_target("Power Word: Shield", "player")) then return true; end
-        end
-
-        if( not btp_priest_is_pom()) then
-            if(btp_cast_spell_on_target("Prayer of Mending", "player")) then return true; end
-        end
-        if(stopMoving) then
-            if(btp_cast_spell_on_target("Flash Heal", "player")) then return true; end
-        end
-        if(btp_cast_spell_on_target("Circle of Healing", "player")) then return true; end
-        if(btp_cast_spell_on_target("Flash Heal", "player")) then return true; end
+    -- try to fear people off of us
+    if(my_percent <= BTP_PRIEST_THRESH_SMALL and my_health > 2) then
+        if(btp_cast_spell("Psychic Scream")) then return true; end
     end
 
-    if(my_percent <= BTP_PRIEST_THRESH_MEDIUM and my_health > 2) then
-        if(cur_player ~= nil and stopMoving and UnitName(cur_player) ~= UnitName("player")) then
-            if(btp_cast_spell_on_target("Binding Heal", cur_player)) then return true; end;
-        end
-        -- no one else is hurt so target ourself
-        if(btp_priest_is_sol()) then 
-            if(btp_cast_spell_on_target("Flash Heal", "player")) then return true; end;
-        end
-
-        if(UnitAffectingCombat("player")) then
-            if(not btp_priest_is_pom()) then
-                if(btp_cast_spell_on_target("Prayer of Mending", "player")) then return true; end
-            end
-            if(btp_cast_spell("Psychic Scream")) then return true; end
-
-            if(not btp_priest_is_pws()) then
-                if(btp_cast_spell_on_target("Power Word: Shield", "player")) then return true; end
-            end
-
-        	if(btp_cast_spell_on_target("Chakra", "player")) then return true; end
-            if(not btp_priest_is_renew()) then
-                if(btp_cast_spell_on_target("Renew", "player")) then return true; end
-            end
-
-            if(stopMoving) then
-                if(btp_cast_spell_on_target("Flash Heal", "player")) then return true; end
-            else
-                if(btp_cast_spell_on_target("Circle of Healing", "player")) then return true; end
-                if(btp_cast_spell_on_target("Flash Heal", "player")) then return true; end
-            end
-        else
-            if(stopMoving) then
-                if(btp_cast_spell_on_target("Greater Heal", "player")) then return true; end
-            else
-        		if(btp_cast_spell_on_target("Chakra", "player")) then return true; end
-                if(not btp_priest_is_renew()) then
-                    if(btp_cast_spell_on_target("Renew", "player")) then return true; end
-                end
-                if(btp_cast_spell_on_target("Flash Heal", "player")) then return true; end
-            end
-        end
-    end
-    return false;
+    if (btp_priest_heal_large(my_percent, my_health, "player")) then return true; end
+    if (btp_priest_heal_medium(my_percent, my_health, "player")) then return true; end
+    if (btp_priest_heal_small(my_percent, my_health, "player")) then return true; end
 end
 
 function btp_priest_heal_pvp()
@@ -1380,6 +1331,47 @@ BTP_PRIEST_THRESH_MANA=.15
     return false;
 end
 
+function btp_priest_bestheal(unit)
+    if (not unit) then unit="target"; end
+
+    local my_health = UnitHealth("player");
+    local my_health_max = UnitHealthMax("player");
+    local my_class = UnitClass("player");
+    local my_percent = my_health/my_health_max;
+
+    -- dont bother trying to cast if we are moving
+    -- if (btp_is_moving()) then return false; end
+
+    btp_frame_debug("in btp_priest_bestheal()");
+    -- if we are hurt and our target is hurt
+    if(my_percent <= BTP_PRIEST_THRESH_MEDIUM and my_health > 2) then
+        if(unit ~= nil and (UnitName(unit) ~= UnitName("player"))) then
+            btp_fram_debug("unit: " .. unit .. " name: " .. UnitName(unit));
+            if(btp_cast_spell_on_target("Binding Heal", unit)) then  
+                btp_stop_moving(); 
+                return true; 
+            end;
+        end
+    end
+
+    -- we are not hurt so choose best heal spell
+    if (btp_priest_is_serendipity()) then
+        if(btp_cast_spell_on_target("Greater Heal", unit)) then btp_stop_moving(); return true; end
+    else
+        if(btp_cast_spell_on_target("Flash Heal", unit)) then btp_stop_moving(); return true; end;
+    end
+
+    -- might be low on mana so use old heal
+    return false;
+end
+
+function btp_stop_moving()
+    if (stopMoving) then return; end
+    btp_frame_debug("STOPPING");
+    stopMoving = true;
+    FuckBlizzardMove("TURNLEFT");
+end
+
 
 function btp_priest_heal_std()
     -- init
@@ -1679,5 +1671,71 @@ function btp_priest_is_my_dp(unit)
     has_swp, my_swp, num_swp = btp_check_debuff("DevouringPlague", unit);
     return my_swp;
 end
+
+
+-- CALLBACK FUNCTIONS
+function btp_cb_generic_cast_callback(spell_name)
+
+    --
+    -- First we get the Casting and channel information about the player
+    -- and use this to make sure the player is casting something.
+    --
+    cast_spell, cast_rank, cast_display_name, cast_icon, cast_start_time,
+    cast_end_time, cast_is_trade_skill = UnitCastingInfo("player");
+
+    btp_frame_debug("CALLBACK: " .. spell_name);
+
+    --
+    -- May just be beteen casts, so let it stand, otherwise we should
+    -- clear the callback if it's not the spell we expect.
+    --
+    if (cast_spell == nil) then
+        return false;
+    elseif (cast_spell ~= spell_name) then
+        --
+        -- Well we are not casting our spell, so we can clear the callback.
+        --
+        current_cb = nil;
+        return false;
+    end
+
+    return true;
+
+end
+
+function btp_cb_priest_flash_heal(spell_name)
+    -- check the generic stuff
+    if (not btp_cb_generic_cast_callback(spell_name)) then return false; end
+
+    if (UnitHealth(current_cb_target) >= (UnitHealthMax(current_cb_target) - 10)) then
+        FuckBlizzardByNameStrange("stopcasting");
+        current_cb = nil;
+        return false;
+    end
+
+    return true;
+end
+
+function btp_cb_priest_greater_heal(spell_name)
+    -- check the generic stuff
+    return btp_cb_priest_flash_heal(spell_name);
+end
+
+function btp_cb_priest_binding_heal(spell_name)
+    -- check the generic stuff
+    if (not btp_cb_generic_cast_callback(spell_name)) then return false; end
+
+    if (UnitHealth(current_cb_target) >= (UnitHealthMax(current_cb_target) - 10) and
+        UnitHealth("player") >= (UnitHelathMax("player") - 10)) then
+        FuckBlizzardByNameStrange("stopcasting");
+        current_cb = nil;
+        return false;
+    end
+
+    return true;
+end
+
+
+
 
 

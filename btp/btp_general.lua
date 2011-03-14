@@ -4673,6 +4673,7 @@ end
 
 function btp_set_cb(sname, tname)
         if (cb_array[sname] ~= nil) then
+            btp_frame_debug("setting callback to " .. sname);
             current_cb = cb_array[sname];
             current_cb_target = tname;
         end
@@ -4696,7 +4697,7 @@ function btp_cast_spell_on_target(sname, tname)
         end
 
         if (btp_can_cast(sname)) then
-                -- btp_frame_debug("Casting: " .. sname .. " On: " .. tname);
+                btp_frame_debug("Casting: " .. sname .. " On: " .. tname);
                 btp_set_cb(sname, tname);
 
                 if (tname ~= "target") then
