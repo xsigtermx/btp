@@ -1548,7 +1548,8 @@ function BTP_Decursive()
     end
 
     if (UnitClass("player") == "Druid") then
-        if ((hasCurseDebuff or hasPoisonDebuff) and
+        if ((hasCurseDebuff or hasPoisonDebuff or
+            (hasMagicDebuff and btp_has_talent("Nature's Cure"))) and
             btp_cast_spell_on_target("Remove Corruption", debuffPlayer)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
@@ -7806,7 +7807,7 @@ function btp_name_to_unit(name)
 end
 
 function btp_is_moving(unit)
-    if(not unit) then  unit = "player"; end
+    if(not unit) then unit = "player"; end
     if (GetUnitSpeed(unit)>0) then return true; end
     return false;
 end
@@ -7828,9 +7829,8 @@ function btp_do_bg_stuff()
     end
 
     if (farmBG and GetBattlefieldInstanceRunTime() == 0 and
-       (GetTime() - lastFarmTime) >= 60) then
-        -- Solo queue for the first available battleground
-        btp_frame_debug("Join BG");
+       (GetTime() - lastFarmTime) >= 30) then
+        -- btp_frame_debug("Join BG");
         JoinBattlefield(0);
         lastFarmTime = GetTime();
     end
@@ -7860,3 +7860,24 @@ function btp_do_bg_stuff()
     --
     btp_report_afk();
 end
+
+--
+-- True of false if a talent exists in the target's tree.
+-- This function only works on currently active talents
+--
+function btp_has_talent(talent_name)
+    for tab_index = 1, GetNumTalentTabs() do
+        for talent_index = 1, GetNumTalents() do
+            name, iconTexture, tier, column, rank, maxRank, isExceptional,
+            meetsPrereq, previewRank, meetsPreviewPrereq =
+            GetTalentInfo(tab_index, talent_index, false, false, nil);
+
+            if (name == talent_name and rank > 0) then
+                return true;
+            end
+        end
+    end
+
+    return false;
+end
+
