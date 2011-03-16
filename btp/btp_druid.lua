@@ -44,6 +44,7 @@ DRUID_DEF_TRINKET = "Scarab of the Infinite Cycle";
 --
 druidDestCount = 0;
 memberIDDR = 1;
+lastLBTarget = "player";
 
 lastEntanglingRoots = 0;
 lastNaturesGrasp = 0;
@@ -246,7 +247,10 @@ function druid_heal()
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
                 UnitAffectingCombat("player") and
+                (UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
+                DR_THRESH/2 or lastLBTarget == playerName) and
                 btp_cast_spell_on_target("Lifebloom", playerName)) then
+                lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (partyHurtCount > 1 and UnitAffectingCombat("player") and
@@ -425,7 +429,10 @@ function druid_heal()
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
                 UnitAffectingCombat("player") and
+                (UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
+                DR_THRESH + DR_SCALAR/2 or lastLBTarget == playerName) and
                 btp_cast_spell_on_target("Lifebloom", playerName)) then
+                lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (partyHurtCount > 3 and UnitAffectingCombat("player") and
