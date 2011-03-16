@@ -1088,8 +1088,7 @@ function BTP_Decursive()
                     if (debuffTexture and
                         not strfind(debuffTexture, "Cripple") and
                         debuffType and strfind(debuffType, "Magic") and
-                        not (UnitClass("player") == "Druid" or 
-                        UnitClass("player") == "Mage" or
+                        not (UnitClass("player") == "Mage" or
                         UnitClass("player") == "Shaman")) then
                         hasMagicDebuff = true;
                         debuffPlayer = "raidpet" .. i;
@@ -1159,8 +1158,7 @@ function BTP_Decursive()
 
                 if (debuffTexture and not strfind(debuffTexture, "Cripple") and
                     debuffType and strfind(debuffType, "Magic") and
-                    not (UnitClass("player") == "Druid" or 
-                    UnitClass("player") == "Mage" or
+                    not (UnitClass("player") == "Mage" or
                     UnitClass("player") == "Shaman")) then
                     hasMagicDebuff = true;
                     debuffPlayer = nextPlayer;
@@ -1248,8 +1246,7 @@ function BTP_Decursive()
                         if (debuffTexture and
                             not strfind(debuffTexture, "Cripple") and
                             debuffType and strfind(debuffType, "Magic") and
-                            not (UnitClass("player") == "Druid" or 
-                            UnitClass("player") == "Mage" or 
+                            not (UnitClass("player") == "Mage" or 
                             UnitClass("player") == "Shaman")) then
                             hasMagicDebuff = true;
                             debuffPlayer = "partypet" .. i;
@@ -1320,8 +1317,7 @@ function BTP_Decursive()
                     if (debuffTexture and
                         not strfind(debuffTexture, "Cripple") and
                         debuffType and strfind(debuffType, "Magic") and
-                        not (UnitClass("player") == "Druid" or 
-                        UnitClass("player") == "Mage" or
+                        not (UnitClass("player") == "Mage" or
                         UnitClass("player") == "Shaman")) then
                         hasMagicDebuff = true;
                         debuffPlayer = nextPlayer;
@@ -1403,8 +1399,7 @@ function BTP_Decursive()
 
         if (debuffTexture and not strfind(debuffTexture, "Cripple") and
             debuffType and strfind(debuffType, "Magic") and
-            not (UnitClass("player") == "Druid" or 
-            UnitClass("player") == "Mage" or
+            not (UnitClass("player") == "Mage" or
             UnitClass("player") == "Shaman")) then
             hasMagicDebuff = true;
             debuffPlayer = "pet";
@@ -1482,8 +1477,7 @@ function BTP_Decursive()
 
         if (debuffTexture and not strfind(debuffTexture, "Cripple") and
             debuffType and strfind(debuffType, "Magic") and
-            not (UnitClass("player") == "Druid" or 
-            UnitClass("player") == "Mage" or
+            not (UnitClass("player") == "Mage" or
             UnitClass("player") == "Shaman")) then
             hasMagicDebuff = true;
             debuffPlayer = "player";
