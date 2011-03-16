@@ -6354,6 +6354,7 @@ function btp_bot()
                 not btp_check_dist(followPlayer, 2) and
                 btp_check_dist(followPlayer, 4) and not isDrinking and
                 not btp_is_summoning_mount("player") and
+                not (targetOnMount and not playerOnMount) and
                (GetTime() - lastJumpFollow) > 2) then
                     lastJumpFollow = GetTime();
                     FuckBlizzardMove("JUMP");
