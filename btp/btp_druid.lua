@@ -247,8 +247,7 @@ function druid_heal()
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
                 UnitAffectingCombat("player") and (lastLBTarget == playerName or
-                (UnitExists(lastLBTarget) and
-                btp_check_dist(lastLBTarget, 1) and
+                (btp_check_dist(lastLBTarget, 1) and
                 UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
                 DR_THRESH/2)) and
                 btp_cast_spell_on_target("Lifebloom", playerName)) then
@@ -315,12 +314,12 @@ function druid_heal()
     for i = 1, GetNumRaidMembers() do
         nextPlayer = "raid" .. i;
         if (UnitAffectingCombat("player") and
-            UnitExists(nextPlayer) and UnitHealth(nextPlayer) <= 1 and
+            UnitExists(nextPlayer) == 1 and UnitHealth(nextPlayer) <= 1 and
             btp_check_dist(nextPlayer, 1) and
             btp_cast_spell_on_target("Rebirth", nextPlayer)) then
             return true;
         elseif (not UnitAffectingCombat("player") and
-                UnitExists(nextPlayer) and UnitHealth(nextPlayer) <= 1 and
+                UnitExists(nextPlayer) == 1 and UnitHealth(nextPlayer) <= 1 and
                 btp_check_dist(nextPlayer, 1) and
                 btp_cast_spell_on_target("Revive", nextPlayer)) then
             return true;
@@ -331,12 +330,13 @@ function druid_heal()
         for i = 1, GetNumPartyMembers() do
             nextPlayer = "party" .. i;
             if (UnitAffectingCombat("player") and
-                UnitExists(nextPlayer) and UnitHealth(nextPlayer) <= 1 and
+                UnitExists(nextPlayer) == 1 and UnitHealth(nextPlayer) <= 1 and
                 btp_check_dist(nextPlayer, 1) and
                 btp_cast_spell_on_target("Rebirth", nextPlayer)) then
                 return true;
             elseif (not UnitAffectingCombat("player") and
-                    UnitExists(nextPlayer) and UnitHealth(nextPlayer) <= 1 and
+                    UnitExists(nextPlayer) == 1 and
+                    UnitHealth(nextPlayer) <= 1 and
                     btp_check_dist(nextPlayer, 1) and
                     btp_cast_spell_on_target("Revive", nextPlayer)) then
                 return true;
@@ -431,8 +431,7 @@ function druid_heal()
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
                 UnitAffectingCombat("player") and (lastLBTarget == playerName or
-                (UnitExists(lastLBTarget) and
-                btp_check_dist(lastLBTarget, 1) and
+                (btp_check_dist(lastLBTarget, 1) and
                 UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
                 DR_THRESH + DR_SCALAR/2)) and
                 btp_cast_spell_on_target("Lifebloom", playerName)) then
