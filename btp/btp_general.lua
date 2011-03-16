@@ -7867,7 +7867,7 @@ end
 --
 function btp_has_talent(talent_name)
     for tab_index = 1, GetNumTalentTabs() do
-        for talent_index = 1, GetNumTalents() do
+        for talent_index = 1, GetNumTalents(tab_index, false,false) do
             name, iconTexture, tier, column, rank, maxRank, isExceptional,
             meetsPrereq, previewRank, meetsPreviewPrereq =
             GetTalentInfo(tab_index, talent_index, false, false, nil);
@@ -7880,4 +7880,3 @@ function btp_has_talent(talent_name)
 
     return false;
 end
-
