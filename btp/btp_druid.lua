@@ -247,8 +247,11 @@ function druid_heal()
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
                 UnitAffectingCombat("player") and
-                (UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
-                DR_THRESH/2 or lastLBTarget == playerName) and
+                (lastLBTarget == playerName or
+                (UnitExists(lastLBTarget) and UnitHealth(lastLBTarget) > 1 and
+                btp_check_dist(lastLBTarget, 1) and
+                UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
+                DR_THRESH/2)) and
                 btp_cast_spell_on_target("Lifebloom", playerName)) then
                 lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
@@ -429,8 +432,11 @@ function druid_heal()
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
                 UnitAffectingCombat("player") and
-                (UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
-                DR_THRESH + DR_SCALAR/2 or lastLBTarget == playerName) and
+                (lastLBTarget == playerName or
+                (UnitExists(lastLBTarget) and UnitHealth(lastLBTarget) > 1 and
+                btp_check_dist(lastLBTarget, 1) and
+                UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
+                DR_THRESH + DR_SCALAR/2))) and
                 btp_cast_spell_on_target("Lifebloom", playerName)) then
                 lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
