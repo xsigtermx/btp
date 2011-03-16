@@ -5780,186 +5780,32 @@ function btp_bot()
         botOff = false;
     end
 
-    local i = 1
-    while true do
-       local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
-       if not spellName then
-          do break end
-       end
-
-       if (strfind(spellName, "Swift Flight Form")) then
-           hasSwiftFlightFrom = true;
-       end
-
-       if (strfind(spellName, "Flight Form")) then
-           hasFlightFrom = true;
-       end
-
-       if (strfind(spellName, "Basic Campfire")) then
-           hasBasicCampfire = true;
-           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
-           if (duration - (GetTime() - start) > 0) then
-              basicCampfireNotReady = true;
-           end
-       end
-
-       i = i + 1
-    end
-
-    --
-    -- This code does takes care of SendAddonMessage() commands.
-    -- It can also be moved into its own function to clean the mess up.
-    --
-    if (addonCmd) then
-        if (doWarstomp and UnitClass("player") == "Druid" and
-            btp_cast_spell("War Stomp")) then
-            doWarstomp = false;
-            addonCmd = false;
-            return true;
-        elseif (doEntangleRoot and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doEntangleRoot = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Entangling Roots",
-                doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doEntangleRoot = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doTreeForm and UnitClass("player") == "Druid" and
-                btp_cast_spell("Tree of Life")) then
-            doTreeForm = false;
-            addonCmd = false;
-            return true;
-        elseif (doHibernate and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doHibernate = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Hibernate",
-                doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doHibernate = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doFaerieFire and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doFaerieFire = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Faerie Fire",
-                doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doFaerieFire = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doCyclone and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doCyclone = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Cyclone",
-                                         doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doCyclone = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doShackle and UnitClass("player") == "Priest" and
-                btp_cast_spell_on_target("Shackle Undead",
-                doAssistUnit .. "target")) then
-            FuckBlizzardTargetUnit("playertarget");
-            doShackle = false;
-            addonCmd = false;
-            return true;
-        elseif (doShadowWordPain and UnitClass("player") == "Priest" and
-                btp_cast_spell_on_target("Shadow Word: Pain",
-                doAssistUnit .. "target")) then
-            FuckBlizzardTargetUnit("playertarget");
-            doShadowWordPain = false;
-            addonCmd = false;
-            return true;
-        elseif (doShadowfiend and UnitClass("player") == "Priest" and
-                btp_cast_spell_on_target("Shadowfiend",
-                doAssistUnit .. "target")) then
-            FuckBlizzardTargetUnit("playertarget");
-            doShadowfiend = false;
-            addonCmd = false;
-            return true;
-        elseif (doPsychicScream and UnitClass("player") == "Priest" and
-                btp_cast_spell("Psychic Scream")) then
-            doPsychicScream = false;
-            addonCmd = false;
-            return true;
-        elseif (doLightwell and UnitClass("player") == "Priest" and
-                btp_cast_spell("Lightwell")) then
-            doLightwell = false;
-            addonCmd = false;
-            return true;
-        elseif (doCC and btp_cc()) then
-            doCC = false;
-            addonCmd = false;
-            return true;
-        elseif (reloadUI) then
-            reloadUI = false;
-            addonCmd = false;
-            ReloadUI();
-            return true;
-        else
-            if (UnitClass == "Druid" and
-               ((doCyclone and btp_can_cast("Cyclone")) or
-                (doWarstomp and btp_can_cast("War Stomp")) or
-                (doEntangleRoot and btp_can_cast("Entangling Roots")) or
-                (doTreeForm and btp_can_cast("Tree of Life")) or
-                (doHibernate and btp_can_cast("Hiberbate")) or
-                (doCC and btp_cc()) or
-                (doFaerieFire and btp_can_cast("Faerie Fire")))) then
-                return false;
-            elseif (UnitClass == "Priest" and
-                   ((doShackle and btp_can_cast("Shackle Undead")) or
-                    (doPsychicScream and btp_can_cast("Psychic Scream")) or
-                    (doShadowWordPain and btp_can_cast("Shadow Word: Pain")) or
-                    (doShadowfiend and btp_can_cast("Shadowfiend")) or
-                    (doCC and btp_cc()) or
-                    (doLightwell and btp_can_cast("Lightwell")))) then
-                return false;
-            elseif (UnitClass == "Druid" and
-                   (doShackle or doPsychicScream or doShadowWordPain or
-                    doLightwell)) then
-                doShackle = false;
-                doPsychicScream = false;
-                doShadowWordPain = false;
-                doLightwell = false;
-                addonCmd = false;
-            elseif (UnitClass == "Priest" and
-               (doCyclone or doWarstomp or doEntangleRoot or doTreeForm or
-                doHibernate or doFaerieFire)) then
-                doCyclone = false;
-                doWarstomp = false;
-                doEntangleRoot = false;
-                doTreeForm = false;
-                doHibernate = false;
-                doFaerieFire = false;
-                addonCmd = false;
-            end
-        end
-    end
+-- XXX
+--     local i = 1
+--    while true do
+--       local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
+--       if not spellName then
+--          do break end
+--       end
+--
+--       if (strfind(spellName, "Swift Flight Form")) then
+--           hasSwiftFlightFrom = true;
+--       end
+--
+--       if (strfind(spellName, "Flight Form")) then
+--           hasFlightFrom = true;
+--       end
+--
+--       if (strfind(spellName, "Basic Campfire")) then
+--           hasBasicCampfire = true;
+--           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
+--           if (duration - (GetTime() - start) > 0) then
+--              basicCampfireNotReady = true;
+--           end
+--       end
+--
+--       i = i + 1
+--    end
 
     local bag = 4
     while (bag >= 0) do
@@ -6189,57 +6035,57 @@ function btp_bot()
             end
         end
 
-        for i = 1, GetNumRaidMembers() do
-            nextPlayer = "raid" .. i;
-
-            for j = 0, GetNumGuildMembers(true) do
-                name, rank, rankIndex, level, class, zone, note, officernote,
-                online, status = GetGuildRosterInfo(j);
-
-                if (manualFollow) then
-                    name = manualFollowName;
-                end
-                       
-                if (name and UnitName(nextPlayer) and
-                    name == UnitName(nextPlayer) and
-                    UnitName("player") ~= UnitName(nextPlayer)) then
-
-                   if (not btp_dont_follow(name) and
-                       CheckInteractDistance(nextPlayer, 4)) then
-                       followPlayer = nextPlayer;
-                   end
-
-                   partyOK = true;
-                end
-            end
-        end
-
-        if (GetNumRaidMembers() <= 0) then
-            for i = 1, GetNumPartyMembers() do
-                nextPlayer = "party" .. i;
-
-                for j = 0, GetNumGuildMembers(true) do
-                    name, rank, rankIndex, level, class, zone, note,
-                    officernote, online, status = GetGuildRosterInfo(j);
-
-                    if (manualFollow) then
-                        name = manualFollowName;
-                    end
-
-                    if (name and UnitName(nextPlayer) and
-                        name == UnitName(nextPlayer) and
-                        UnitName("player") ~= UnitName(nextPlayer)) then
-
-                       if (not btp_dont_follow(name) and
-                           CheckInteractDistance(nextPlayer, 4)) then
-                           followPlayer = nextPlayer;
-                       end
-
-                       partyOK = true;
-                    end
-                end
-            end
-        end
+--          for i = 1, GetNumRaidMembers() do
+--              nextPlayer = "raid" .. i;
+--  
+--              for j = 0, GetNumGuildMembers(true) do
+--                  name, rank, rankIndex, level, class, zone, note, officernote,
+--                  online, status = GetGuildRosterInfo(j);
+--  
+--                  if (manualFollow) then
+--                      name = manualFollowName;
+--                  end
+--                         
+--                  if (name and UnitName(nextPlayer) and
+--                      name == UnitName(nextPlayer) and
+--                      UnitName("player") ~= UnitName(nextPlayer)) then
+--  
+--                     if (not btp_dont_follow(name) and
+--                         CheckInteractDistance(nextPlayer, 4)) then
+--                         followPlayer = nextPlayer;
+--                     end
+--  
+--                     partyOK = true;
+--                  end
+--              end
+--          end
+--  
+--          if (GetNumRaidMembers() <= 0) then
+--              for i = 1, GetNumPartyMembers() do
+--                  nextPlayer = "party" .. i;
+--  
+--                  for j = 0, GetNumGuildMembers(true) do
+--                      name, rank, rankIndex, level, class, zone, note,
+--                      officernote, online, status = GetGuildRosterInfo(j);
+--  
+--                      if (manualFollow) then
+--                          name = manualFollowName;
+--                      end
+--  
+--                      if (name and UnitName(nextPlayer) and
+--                          name == UnitName(nextPlayer) and
+--                          UnitName("player") ~= UnitName(nextPlayer)) then
+--  
+--                         if (not btp_dont_follow(name) and
+--                             CheckInteractDistance(nextPlayer, 4)) then
+--                             followPlayer = nextPlayer;
+--                         end
+--  
+--                         partyOK = true;
+--                      end
+--                  end
+--              end
+--          end
 
         if (pvpBot and GetNumBattlefieldScores() > 0 and
            (GetTime() - lastExcludeBroadcast) > 60) then
