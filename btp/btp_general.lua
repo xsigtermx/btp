@@ -6351,7 +6351,6 @@ function btp_bot()
 
             if (pvpBot and not UnitAffectingCombat(followPlayer) and
                 not UnitAffectingCombat("player") and btpFollow and
-                not (targetOnMount and not playerOnMount) and
                 not btp_check_dist(followPlayer, 2) and
                 btp_check_dist(followPlayer, 4) and not isDrinking and
                 not btp_is_summoning_mount("player") and
