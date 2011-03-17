@@ -180,6 +180,17 @@ function druid_heal()
     playerName, partyHurtCount, raidHurtCount,
     raidSubgroupHurtCount = btp_health_status(DR_THRESH);
 
+    --
+    -- Tree Form has changed and we should now pick the times we want to use it.
+    -- This should mean we never use it unless we're in combat, and more than
+    -- one person is hurt at this level. 
+    --
+    if (UnitAffectingCombat("player") and not btp_druid_istree() and
+       (raidHurtCount > 1 or partyHurtCount > 1) and
+        btp_cast_spell("Tree of Life")) then
+        return true;
+    end
+
     if (playerName) then
         --
         -- Bandage Debuff check
@@ -306,7 +317,7 @@ function druid_heal()
     end
 
     --
-    -- This is because people in raids need a res, and not matter what
+    -- This is because people in raids need a res, and no matter what
     -- anyone says, the people that are critical should be healed first.
     -- Nevertheless, if the user just needs a helpful heal then we should
     -- battle res anyone that needs one first.
@@ -349,6 +360,17 @@ function druid_heal()
     --
     playerName, partyHurtCount, raidHurtCount,
     raidSubgroupHurtCount = btp_health_status(DR_THRESH+DR_SCALAR, btpRaidHeal);
+
+    --
+    -- Tree Form has changed and we should now pick the times we want to use it.
+    -- This should mean we never use it unless we're in combat, and more than
+    -- two people are hurt at this level. 
+    --
+    if (UnitAffectingCombat("player") and not btp_druid_istree() and
+       (raidHurtCount > 2 or partyHurtCount > 2) and
+        btp_cast_spell("Tree of Life")) then
+        return true;
+    end
 
     --
     -- This should let us only heal people that _need_ to be healed when
@@ -510,11 +532,6 @@ function druid_heal()
     end
 
     if (BTP_Decursive()) then
-        return true;
-    end
-
-    if (UnitAffectingCombat("player") and not btp_druid_istree() and
-        btp_cast_spell("Tree of Life")) then
         return true;
     end
 
