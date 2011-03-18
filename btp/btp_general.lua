@@ -2604,7 +2604,7 @@ function btp_invite()
         name, rank, rankIndex, level, class, zone, note, officernote,
         online, status = GetGuildRosterInfo(i);
 
-        if (level == 70) then
+        if (level == 85) then
             InviteUnit(name);
         end
     end
