@@ -210,7 +210,6 @@
 				
 			if (tmpEvent)
 			{
-				/*
 				if (pressShift)
 					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskShift);
 				
@@ -219,7 +218,7 @@
 				
 				if (pressControl)
 					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskControl);
-				*/
+
 				
 				CGEventPost(kCGSessionEventTap, tmpEvent);
 				//CGEventPostToPSN(&eventWindow, tmpEvent);

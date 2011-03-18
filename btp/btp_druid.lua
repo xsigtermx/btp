@@ -357,6 +357,7 @@ function druid_heal()
     --
     if (UnitAffectingCombat("player") and not btp_druid_istree() and
        (raidHurtCount > 1 or partyHurtCount > 1) and
+        UnitMana("player")/UnitManaMax("player") > .75 and
         btp_cast_spell("Tree of Life")) then
         return true;
     end

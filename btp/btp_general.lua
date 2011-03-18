@@ -6035,57 +6035,57 @@ function btp_bot()
             end
         end
 
---          for i = 1, GetNumRaidMembers() do
---              nextPlayer = "raid" .. i;
---  
---              for j = 0, GetNumGuildMembers(true) do
---                  name, rank, rankIndex, level, class, zone, note, officernote,
---                  online, status = GetGuildRosterInfo(j);
---  
---                  if (manualFollow) then
---                      name = manualFollowName;
---                  end
---                         
---                  if (name and UnitName(nextPlayer) and
---                      name == UnitName(nextPlayer) and
---                      UnitName("player") ~= UnitName(nextPlayer)) then
---  
---                     if (not btp_dont_follow(name) and
---                         CheckInteractDistance(nextPlayer, 4)) then
---                         followPlayer = nextPlayer;
---                     end
---  
---                     partyOK = true;
---                  end
---              end
---          end
---  
---          if (GetNumRaidMembers() <= 0) then
---              for i = 1, GetNumPartyMembers() do
---                  nextPlayer = "party" .. i;
---  
---                  for j = 0, GetNumGuildMembers(true) do
---                      name, rank, rankIndex, level, class, zone, note,
---                      officernote, online, status = GetGuildRosterInfo(j);
---  
---                      if (manualFollow) then
---                          name = manualFollowName;
---                      end
---  
---                      if (name and UnitName(nextPlayer) and
---                          name == UnitName(nextPlayer) and
---                          UnitName("player") ~= UnitName(nextPlayer)) then
---  
---                         if (not btp_dont_follow(name) and
---                             CheckInteractDistance(nextPlayer, 4)) then
---                             followPlayer = nextPlayer;
---                         end
---  
---                         partyOK = true;
---                      end
---                  end
---              end
---          end
+        for i = 1, GetNumRaidMembers() do
+            nextPlayer = "raid" .. i;
+
+            for j = 0, GetNumGuildMembers(true) do
+                name, rank, rankIndex, level, class, zone, note, officernote,
+                online, status = GetGuildRosterInfo(j);
+
+                if (manualFollow) then
+                    name = manualFollowName;
+                end
+                       
+                if (name and UnitName(nextPlayer) and
+                    name == UnitName(nextPlayer) and
+                    UnitName("player") ~= UnitName(nextPlayer)) then
+
+                   if (not btp_dont_follow(name) and
+                       CheckInteractDistance(nextPlayer, 4)) then
+                       followPlayer = nextPlayer;
+                   end
+
+                   partyOK = true;
+                end
+            end
+        end
+
+        if (GetNumRaidMembers() <= 0) then
+            for i = 1, GetNumPartyMembers() do
+                nextPlayer = "party" .. i;
+
+                for j = 0, GetNumGuildMembers(true) do
+                    name, rank, rankIndex, level, class, zone, note,
+                    officernote, online, status = GetGuildRosterInfo(j);
+
+                    if (manualFollow) then
+                        name = manualFollowName;
+                    end
+
+                    if (name and UnitName(nextPlayer) and
+                        name == UnitName(nextPlayer) and
+                        UnitName("player") ~= UnitName(nextPlayer)) then
+
+                       if (not btp_dont_follow(name) and
+                           CheckInteractDistance(nextPlayer, 4)) then
+                           followPlayer = nextPlayer;
+                       end
+
+                       partyOK = true;
+                    end
+                end
+            end
+        end
 
         if (pvpBot and GetNumBattlefieldScores() > 0 and
            (GetTime() - lastExcludeBroadcast) > 60) then
