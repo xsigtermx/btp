@@ -4388,9 +4388,11 @@ function TradeItem(itemName, playerName)
         string.find(itemName, "Juice") or
         string.find(itemName, "Dew") or
         string.find(itemName, "Ethermead") or
+        string.find(itemName, "Manna Lollipop") or
         string.find(itemName, "Manna Biscuit") or
         string.find(itemName, "Manna Cookie") or
         string.find(itemName, "Manna Strudel") or
+        string.find(itemName, "Manna Pie") or
         string.find(itemName, "Star's Tears") or
         string.find(itemName, "Water"))) then
         isStack = true;
@@ -5832,6 +5834,13 @@ function btp_bot()
             end
 
             if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Lollipop")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
                 "Mana Cookie")) then
                 hasWater = true;
                 waterBag = bag;
@@ -5847,6 +5856,13 @@ function btp_bot()
 
             if (string.find(GetContainerItemLink(bag,slot),
                 "Mana Strudel")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Pie")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;

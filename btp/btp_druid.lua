@@ -69,6 +69,7 @@ function btp_druid_initialize()
     cb_array["Healing Touch"]      = btp_cb_druid_healing_touch;
     cb_array["Nourish"]            = btp_cb_druid_nourish;
     cb_array["Tranquility"]        = btp_cb_druid_tranquility;
+    cb_array["Rebirth"]            = btp_cb_druid_rebirth;
 end
 
 function druid_heal()
@@ -216,8 +217,9 @@ function druid_heal()
             btp_cast_spell_on_target("Wild Growth", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (partyHurtCount > 1 and UnitAffectingCombat("player") and
-                not pvpBot and btp_cast_spell("Tranquility")) then
+        elseif ((partyHurtCount > 1 or raidHurtCount > 1) and
+                UnitAffectingCombat("player") and
+                btp_cast_spell("Tranquility")) then
 
             if (not stopMoving and pvpBot and farmBG) then
                 stopMoving = true;
@@ -231,7 +233,7 @@ function druid_heal()
                 btp_cast_spell_on_target("Swiftmend", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (not myRegrowth and not pvpBot and
+        elseif (not myRegrowth and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
             if (not stopMoving and pvpBot and farmBG) then
@@ -254,16 +256,6 @@ function druid_heal()
             lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (partyHurtCount > 1 and UnitAffectingCombat("player") and
-                btp_cast_spell("Tranquility")) then
-
-            if (not stopMoving and pvpBot and farmBG) then
-                stopMoving = true;
-                FuckBlizzardMove("TURNLEFT");
-            end
-
-            lastTranquility = GetTime();
-            return true;
         elseif (not myRegrowth and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
@@ -275,6 +267,7 @@ function druid_heal()
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (UnitAffectingCombat("player") and not hasClearCasting and
+               (myRegrowth or myRejuvenation) and
                 btp_cast_spell_on_target("Nourish", playerName)) then
 
             if (not stopMoving and pvpBot and farmBG) then
@@ -317,8 +310,14 @@ function druid_heal()
             UnitExists(nextPlayer) == 1 and UnitHealth(nextPlayer) <= 1 and
             btp_check_dist(nextPlayer, 1) and
             btp_cast_spell_on_target("Rebirth", nextPlayer)) then
+
+            if (not stopMoving and pvpBot and farmBG) then
+                stopMoving = true;
+                FuckBlizzardMove("TURNLEFT");
+            end
+
             return true;
-        elseif (not UnitAffectingCombat("player") and
+        elseif (not pvpBot and not UnitAffectingCombat("player") and
                 UnitExists(nextPlayer) == 1 and UnitHealth(nextPlayer) <= 1 and
                 btp_check_dist(nextPlayer, 1) and
                 btp_cast_spell_on_target("Revive", nextPlayer)) then
@@ -333,8 +332,14 @@ function druid_heal()
                 UnitExists(nextPlayer) == 1 and UnitHealth(nextPlayer) <= 1 and
                 btp_check_dist(nextPlayer, 1) and
                 btp_cast_spell_on_target("Rebirth", nextPlayer)) then
+
+                if (not stopMoving and pvpBot and farmBG) then
+                    stopMoving = true;
+                    FuckBlizzardMove("TURNLEFT");
+                end
+
                 return true;
-            elseif (not UnitAffectingCombat("player") and
+            elseif (not pvpBot and not UnitAffectingCombat("player") and
                     UnitExists(nextPlayer) == 1 and
                     UnitHealth(nextPlayer) <= 1 and
                     btp_check_dist(nextPlayer, 1) and
@@ -420,8 +425,9 @@ function druid_heal()
             btp_cast_spell_on_target("Wild Growth", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (partyHurtCount > 3 and UnitAffectingCombat("player") and
-                not pvpBot and btp_cast_spell("Tranquility")) then
+        elseif ((partyHurtCount > 3 or raidHurtCount > 3) and
+                UnitAffectingCombat("player") and
+                btp_cast_spell("Tranquility")) then
 
             if (not stopMoving and pvpBot and farmBG) then
                 stopMoving = true;
@@ -488,7 +494,7 @@ function druid_heal()
             return true;
         elseif (UnitAffectingCombat("player") and not hasClearCasting and
                 UnitHealth(playerName)/UnitHealthMax(playerName) <= 
-                DR_THRESH + DR_SCALAR/2 and
+                DR_THRESH + DR_SCALAR/2 and (myRegrowth or myRejuvenation) and
                 btp_cast_spell_on_target("Nourish", playerName)) then
 
             if (not stopMoving and pvpBot and farmBG) then
@@ -943,3 +949,50 @@ function btp_cb_druid_tranquility()
     --
     return true;
 end
+
+function btp_cb_druid_rebirth()
+    --
+    -- First we get the Casting and channel information about the player
+    -- and use this to make sure the player is casting something.
+    --
+    cast_spell, cast_rank, cast_display_name, cast_icon, cast_start_time,
+    cast_end_time, cast_is_trade_skill = UnitCastingInfo("player");
+
+    --
+    -- May just be beteen casts, so let it stand, otherwise we should
+    -- clear the callback if it's not the spell we expect.
+    --
+    if (cast_spell == nil) then
+        return false;
+    elseif (cast_spell ~= "Rebirth") then
+        --
+        -- Well we are not casting our spell, so we can clear the callback.
+        --
+        current_cb = nil;
+        return false;
+    end
+
+    --
+    -- This is the second case where we clear the callback.  All the above
+    -- code should stay the same; however, everything below this line will
+    -- be very different based on the type of spell and what we expect to
+    -- do with the callback.
+    --
+
+    if (UnitHealth(current_cb_target) > 1 or
+       (((cast_start_time - GetTime()) <= 1) and
+        not btp_dist_check(current_cb_target, 1))) then
+        --
+        -- We will use the IPT target box because we never use this,
+        -- and we may get to do some back-to-back stop cast and cast
+        -- something else action.  If this doesn't work well, then we
+        -- should try to make this return true.
+        --
+        FuckBlizzardByNameStrange("stopcasting");
+        current_cb = nil;
+        return false;
+    end
+
+    return true;
+end
+
