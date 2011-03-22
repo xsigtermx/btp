@@ -2599,6 +2599,10 @@ function btp_general_chat_msg_guild()
     end
 end
 
+--
+-- Invites all lvl 85 players in the guild.  Does not work like the
+-- whisper command 'btpinvite'.
+--
 function btp_invite()
     for i = 0, GetNumGuildMembers(true) do
         name, rank, rankIndex, level, class, zone, note, officernote,
@@ -5679,10 +5683,6 @@ function btp_bot()
     targetOnFlyingMount = false;
     isDrinking = false;
     castingBandage = false;
-    hasSwiftFlightForm = false;
-    hasFlightForm = false;
-    hasBasicCampfire = false;
-    basicCampfireNotReady = false;
     shadowTrance = false;
     canCurse = true;
     canInst = true;
@@ -5781,33 +5781,6 @@ function btp_bot()
 --         btp_frame_set_color_hex("Casting Bar", "FF0000");
         botOff = false;
     end
-
--- XXX
---     local i = 1
---    while true do
---       local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
---       if not spellName then
---          do break end
---       end
---
---       if (strfind(spellName, "Swift Flight Form")) then
---           hasSwiftFlightFrom = true;
---       end
---
---       if (strfind(spellName, "Flight Form")) then
---           hasFlightFrom = true;
---       end
---
---       if (strfind(spellName, "Basic Campfire")) then
---           hasBasicCampfire = true;
---           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
---           if (duration - (GetTime() - start) > 0) then
---              basicCampfireNotReady = true;
---           end
---       end
---
---       i = i + 1
---    end
 
     local bag = 4
     while (bag >= 0) do
@@ -6238,9 +6211,6 @@ function btp_bot()
             if (okayMount and targetOnMount) then
                 if (hasFastMount) then
                     CallCompanion("MOUNT", mountSlotFast);
-                elseif (btp_cast_spell("Running Wild")) then
-                    okayMount = false;
-                    return true;
                 elseif (hasMount) then
                     CallCompanion("MOUNT", mountSlot);
                 end
@@ -6297,20 +6267,20 @@ function btp_bot()
                         FuckBlizzardMove("TURNLEFT");
                         lastMountTry = GetTime();
                         okayMount = true;
-                    elseif (btp_can_cast("Running Wild")) then
+                    elseif (btp_cast_spell("Running Wild")) then
                         FuckBlizzardMove("TURNLEFT");
                         lastMountTry = GetTime();
-                        okayMount = true;
+                        return true;
                     end
                 else
                     if (btp_druid_istree()) then
                         FuckBlizzardByNameAlt("Tree of Life");
                     end
 
-                    if (hasSwiftFlightFrom) then
-                        FuckBlizzardByName("Swift Flight Form");
-                    elseif (hasFlightFrom) then
-                        FuckBlizzardByName("Flight Form");
+                    if (btp_cast_spell("Swift Flight Form")) then
+                        return true;
+                    elseif (btp_cast_spell("Flight Form")) then
+                        return true;
                     elseif (hasFastFlyingMount) then
                         FuckBlizzardMove("TURNLEFT");
                         lastMountTry = GetTime();
@@ -6323,7 +6293,7 @@ function btp_bot()
                 end
             elseif (not (targetOnMount or targetOnFlyingMount) and
                    (playerOnMount or playerOnFlyingMount) and
-                   (GetTime() - lastMountCheck) >= 5) then
+                   (GetTime() - lastMountCheck) >= 2) then
                 --
                 -- Dismount
                 --
@@ -6331,10 +6301,10 @@ function btp_bot()
                 Dismount();
 
                 if (btp_druid_isbird()) then
-                    if (hasSwiftFlightFrom) then
-                        FuckBlizzardByName("Swift Flight Form");
-                    elseif (hasFlightFrom) then
-                        FuckBlizzardByName("Flight Form");
+                    if (btp_cast_spell("Swift Flight Form")) then
+                        return true;
+                    elseif (btp_cast_spell("Flight Form")) then
+                        return true;
                     end
                 end
             elseif (bootyCall) then
@@ -6521,18 +6491,18 @@ function btp_bot()
             AcceptGroup();
         end
 
-        if (not dontBeg and hasBasicCampfire and not basicCampfireNotReady) then
-            FuckBlizzardByName("Basic Campfire");
+        if (not dontBeg and btp_cast_spell("Basic Campfire")) then
             HoboBeg();
+            return true;
         elseif (not dontBeg) then
             if (UnitClass("player") == "Druid") then
                 druid_buff();
             elseif (UnitClass("player") == "Priest") then
                 PriestBuff();
             elseif (UnitClass("player") == "Mage") then
-		if(not mageisDrinking) then
-		btp_mage_waterbreak();
-		end
+                if (not mageisDrinking) then
+                    btp_mage_waterbreak();
+                end
             end
 
             if ((GetTime() - lastQuestTrade) >= 7) then
