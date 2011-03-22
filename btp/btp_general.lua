@@ -171,6 +171,7 @@ party_status    = { };
 fuckBlizMapping = { };
 keyToColor      = { };
 targetToColor   = { };
+guild_members   = { };
 anoyMessage     = { "Hey can you leave me alone?  I am busy.",
                     "Look, I don't feel like talking right now.",
                     "Enough, I just want to play.",
@@ -5932,7 +5933,6 @@ function btp_bot()
     --
     -- Just Load these because we need the data in memory.
     --
-    GuildRoster();
     SetMapToCurrentZone();
 
     --
@@ -6027,17 +6027,34 @@ function btp_bot()
         for i = 1, GetNumRaidMembers() do
             nextPlayer = "raid" .. i;
 
-            for j = 0, GetNumGuildMembers(true) do
-                name, rank, rankIndex, level, class, zone, note, officernote,
-                online, status = GetGuildRosterInfo(j);
-
-                if (manualFollow) then
-                    name = manualFollowName;
-                end
-                       
-                if (name and UnitName(nextPlayer) and
-                    name == UnitName(nextPlayer) and
+            if (manualFollow and
+                manualFollowName == UnitName(nextPlayer) and
+                CheckInteractDistance(nextPlayer, 4)) then
+                followPlayer = nextPlayer;
+                partyOK = true;
+            elseif (btp_is_guild_member(UnitName(nextPlayer)) and
                     UnitName("player") ~= UnitName(nextPlayer)) then
+
+               if (not btp_dont_follow(name) and
+                   CheckInteractDistance(nextPlayer, 4)) then
+                   followPlayer = nextPlayer;
+               end
+
+               partyOK = true;
+            end
+        end
+
+        if (GetNumRaidMembers() <= 0) then
+            for i = 1, GetNumPartyMembers() do
+                nextPlayer = "party" .. i;
+
+                if (manualFollow and
+                    manualFollowName == UnitName(nextPlayer) and
+                    CheckInteractDistance(nextPlayer, 4)) then
+                    followPlayer = nextPlayer;
+                    partyOK = true;
+                elseif (btp_is_guild_member(UnitName(nextPlayer)) and
+                        UnitName("player") ~= UnitName(nextPlayer)) then
 
                    if (not btp_dont_follow(name) and
                        CheckInteractDistance(nextPlayer, 4)) then
@@ -6049,43 +6066,21 @@ function btp_bot()
             end
         end
 
-        if (GetNumRaidMembers() <= 0) then
-            for i = 1, GetNumPartyMembers() do
-                nextPlayer = "party" .. i;
-
-                for j = 0, GetNumGuildMembers(true) do
-                    name, rank, rankIndex, level, class, zone, note,
-                    officernote, online, status = GetGuildRosterInfo(j);
-
-                    if (manualFollow) then
-                        name = manualFollowName;
-                    end
-
-                    if (name and UnitName(nextPlayer) and
-                        name == UnitName(nextPlayer) and
-                        UnitName("player") ~= UnitName(nextPlayer)) then
-
-                       if (not btp_dont_follow(name) and
-                           CheckInteractDistance(nextPlayer, 4)) then
-                           followPlayer = nextPlayer;
-                       end
-
-                       partyOK = true;
-                    end
-                end
-            end
-        end
-
         if (pvpBot and GetNumBattlefieldScores() > 0 and
            (GetTime() - lastExcludeBroadcast) > 60) then
             lastExcludeBroadcast = GetTime();
             SendAddonMessage("BTP", "btpexclude", "BATTLEGROUND");
         end
 
+        --
+        -- Choose the next person to follow if there is no guild member
+        -- around.  A bunch of stuff happens here, but notice the priority
+        -- on those people that have done more damage.
+        --
         if (pvpBot and followPlayer == "player") then
             partyOK = true;
+            bestDamage = 0;
 
-	    bestDamage = 0;
             for i = GetNumRaidMembers() - 1, 1, -1 do
                 nextPlayer = "raid" .. i;
 
@@ -7689,7 +7684,7 @@ function btp_do_bg_stuff()
 end
 
 --
--- True of false if a talent exists in the target's tree.
+-- true of false if a talent exists in the target's tree.
 -- This function only works on currently active talents
 --
 function btp_has_talent(talent_name)
@@ -7703,6 +7698,43 @@ function btp_has_talent(talent_name)
                 return true;
             end
         end
+    end
+
+    return false;
+end
+
+--
+-- true of false if a UnitName() exists in the guild roster.
+--
+function btp_is_guild_member(unit_name)
+    if (not unit_name) then
+        return false;
+    end
+
+    --
+    -- This while loop hack it so load the GuildRoster() until
+    -- it populates.  Once this has happened we should no longer
+    -- need to reload the guild roster info.  That is, we want to
+    -- cache the guild roster into a hash table in memory for fast
+    -- lookup later.  This is causing pain in the client.
+    --
+    while (guild_members[UnitName("player")] == nil) do
+        GuildRoster();
+        for i = 0, GetNumGuildMembers(true) do
+            name, rank, rankIndex, level, class, zone, note, officernote,
+            online, status = GetGuildRosterInfo(i);
+
+            if (name) then
+                guild_members[name] = true;
+            end
+        end
+    end
+
+    --
+    -- Check our cache to see if that name is in the guild
+    --
+    if (guild_members[unit_name]) then
+        return true;
     end
 
     return false;
