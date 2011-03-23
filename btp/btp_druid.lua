@@ -704,15 +704,23 @@ function druid_dps()
     ProphetKeyBindings();
 
     --
-    -- Thorns check
+    -- Moonfire check
     --
     hasMoonfire, myMoonfire,
     numMoonfire = btp_check_debuff("StarFall", "target");
+
+    --
+    -- Insect Swarm check
+    --
+    hasInsectSwarm, myInsectSwarm,
+    numInsectSwarm = btp_check_debuff("InsectSwarm", "target");
 
     if (SelfHeal(DR_THRESH, DR_MANA/3)) then
         --
         -- doing a self heal here (heathstones, potions, etc)
         --
+    elseif (not myInsectSwarm and btp_cast_spell("Insect Swarm")) then
+        return true;
     elseif (not myMoonfire and btp_cast_spell("Moonfire")) then
         return true;
     elseif (UnitHealth("player")/UnitHealthMax("player") == 1 and
