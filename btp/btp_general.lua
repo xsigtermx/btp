@@ -4677,6 +4677,9 @@ function btp_set_cb(sname, tname)
             btp_frame_debug("setting callback to " .. sname);
             current_cb = cb_array[sname];
             current_cb_target = tname;
+        -- `else
+        --     current_cb = nil
+        ----    current_cb_target = nil;
         end
 end
 

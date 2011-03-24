@@ -813,16 +813,11 @@ BTP_PRIEST_THRESH_MANA=.15
     ProphetKeyBindings();
 
 
-btp_frame_debug("btp_priest_heal_pvp_quick()");
     if (current_cb ~= nil and current_cb()) then
         return true;
     end
-btp_frame_debug("btp_priest_heal_pvp_quick() post callback");
-    -- if stopMoving was set in a callback then 
-    if (stopMoving) then 
-        btp_frame_debug("STARTING");
-        stopMoving = false;
-    end
+    -- only place we stop moving is in a callback so start back up
+    btp_start_moving();
 
 
     -- Check the player
@@ -862,27 +857,21 @@ btp_frame_debug("btp_priest_heal_pvp_quick() post callback");
 
     if(not lowest_percent or not lowest_health or not lowest_target 
        or lowest_target == false or lowest_target == nil) then
-        btp_frame_debug("nothing to heal 2");
+        -- btp_frame_debug("nothing to heal 2");
         stopMoving = false;
         return false;
     end
-btp_frame_debug("btp_priest_heal_pvp_quick() post crit");
 
     -- do our crit and large heals first
     if(btp_priest_heal_crit(lowest_percent, lowest_health, lowest_target)) then return true; end;
-btp_frame_debug("btp_priest_heal_pvp_quick() post crit");
     if(btp_priest_heal_large(lowest_percent, lowest_health, lowest_target)) then return true; end;
-btp_frame_debug("btp_priest_heal_pvp_quick() post large");
     if(btp_priest_heal_medium(lowest_percent, lowest_health, lowest_target)) then return true; end;
-btp_frame_debug("btp_priest_heal_pvp_quick() post med");
 
     -- heal our self second
     if(btp_priest_heal_self(lowest_percent, lowest_health, lowest_target)) then return true; end
-btp_frame_debug("btp_priest_heal_pvp_quick() post self");
 
     -- small heals after we heal ourself
     if(btp_priest_heal_small(lowest_percent, lowest_health, lowest_target)) then return true; end;
-btp_frame_debug("btp_priest_heal_pvp_quick() post small");
 
     if(BTP_Decursive()) then return true; end
 
@@ -1342,11 +1331,10 @@ function btp_priest_bestheal(unit)
     -- dont bother trying to cast if we are moving
     -- if (btp_is_moving()) then return false; end
 
-    btp_frame_debug("in btp_priest_bestheal()");
     -- if we are hurt and our target is hurt
     if(my_percent <= BTP_PRIEST_THRESH_MEDIUM and my_health > 2) then
         if(unit ~= nil and (UnitName(unit) ~= UnitName("player"))) then
-            btp_fram_debug("unit: " .. unit .. " name: " .. UnitName(unit));
+            btp_frame_debug("unit: " .. unit .. " name: " .. UnitName(unit));
             if(btp_cast_spell_on_target("Binding Heal", unit)) then  
                 btp_stop_moving(); 
                 return true; 
@@ -1370,6 +1358,15 @@ function btp_stop_moving()
     btp_frame_debug("STOPPING");
     stopMoving = true;
     FuckBlizzardMove("TURNLEFT");
+    return stopMoving;
+end
+
+function btp_start_moving()
+    if (stopMoving) then 
+        btp_frame_debug("STARTING");
+        stopMoving = false;
+    end
+    return stopMoving;
 end
 
 
@@ -1684,17 +1681,21 @@ function btp_cb_generic_cast_callback(spell_name)
     cast_end_time, cast_is_trade_skill = UnitCastingInfo("player");
 
     btp_frame_debug("CALLBACK: " .. spell_name);
+    if (cast_spell ~= nil) then btp_fraem_debug("cast_spell: " .. cast_spell); end
 
     --
     -- May just be beteen casts, so let it stand, otherwise we should
     -- clear the callback if it's not the spell we expect.
     --
     if (cast_spell == nil) then
+        btp_frame_debug("got nil spellcast");
         return false;
     elseif (cast_spell ~= spell_name) then
+    
         --
         -- Well we are not casting our spell, so we can clear the callback.
         --
+        btp_frame_debug("RESET calling different spell: " .. cast_spell .. " NOT: " .. spell_name);
         current_cb = nil;
         return false;
     end
@@ -1705,6 +1706,10 @@ end
 
 function btp_cb_priest_flash_heal(spell_name)
     -- check the generic stuff
+    if (btp_is_moving()) then 
+        -- stopMoving = true
+    end
+
     if (not btp_cb_generic_cast_callback(spell_name)) then return false; end
 
     if (UnitHealth(current_cb_target) >= (UnitHealthMax(current_cb_target) - 10)) then
