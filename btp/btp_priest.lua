@@ -565,7 +565,7 @@ function btp_priest_dps_new(unit)
     if (not btp_priest_is_pws())  then
         if(btp_cast_spell("Power Word: Shield")) then return true; end
     end
-	btp_frame_debug("hummm");
+	  -- btp_frame_debug("hummm");
 
 
     -- check if our health is low if so heal ourself
@@ -1334,7 +1334,7 @@ function btp_priest_bestheal(unit)
     -- if we are hurt and our target is hurt
     if(my_percent <= BTP_PRIEST_THRESH_MEDIUM and my_health > 2) then
         if(unit ~= nil and (UnitName(unit) ~= UnitName("player"))) then
-            btp_frame_debug("unit: " .. unit .. " name: " .. UnitName(unit));
+            -- btp_frame_debug("unit: " .. unit .. " name: " .. UnitName(unit));
             if(btp_cast_spell_on_target("Binding Heal", unit)) then  
                 btp_stop_moving(); 
                 return true; 
@@ -1355,7 +1355,7 @@ end
 
 function btp_stop_moving()
     if (stopMoving) then return; end
-    btp_frame_debug("STOPPING");
+    -- btp_frame_debug("STOPPING");
     stopMoving = true;
     FuckBlizzardMove("TURNLEFT");
     return stopMoving;
@@ -1363,7 +1363,7 @@ end
 
 function btp_start_moving()
     if (stopMoving) then 
-        btp_frame_debug("STARTING");
+        -- btp_frame_debug("STARTING");
         stopMoving = false;
     end
     return stopMoving;
@@ -1680,22 +1680,24 @@ function btp_cb_generic_cast_callback(spell_name)
     cast_spell, cast_rank, cast_display_name, cast_icon, cast_start_time,
     cast_end_time, cast_is_trade_skill = UnitCastingInfo("player");
 
-    btp_frame_debug("CALLBACK: " .. spell_name);
-    if (cast_spell ~= nil) then btp_fraem_debug("cast_spell: " .. cast_spell); end
+    -- btp_frame_debug("CALLBACK: " .. spell_name);
+    if (cast_spell ~= nil) then
+        -- btp_frame_debug("cast_spell: " .. cast_spell);
+    end
 
     --
     -- May just be beteen casts, so let it stand, otherwise we should
     -- clear the callback if it's not the spell we expect.
     --
     if (cast_spell == nil) then
-        btp_frame_debug("got nil spellcast");
+        -- btp_frame_debug("got nil spellcast");
         return false;
     elseif (cast_spell ~= spell_name) then
     
         --
         -- Well we are not casting our spell, so we can clear the callback.
         --
-        btp_frame_debug("RESET calling different spell: " .. cast_spell .. " NOT: " .. spell_name);
+        -- btp_frame_debug("RESET calling different spell: " .. cast_spell .. " NOT: " .. spell_name);
         current_cb = nil;
         return false;
     end
