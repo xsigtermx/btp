@@ -171,6 +171,7 @@ party_status    = { };
 fuckBlizMapping = { };
 keyToColor      = { };
 targetToColor   = { };
+guild_members   = { };
 anoyMessage     = { "Hey can you leave me alone?  I am busy.",
                     "Look, I don't feel like talking right now.",
                     "Enough, I just want to play.",
@@ -1088,8 +1089,7 @@ function BTP_Decursive()
                     if (debuffTexture and
                         not strfind(debuffTexture, "Cripple") and
                         debuffType and strfind(debuffType, "Magic") and
-                        not (UnitClass("player") == "Druid" or 
-                        UnitClass("player") == "Mage" or
+                        not (UnitClass("player") == "Mage" or
                         UnitClass("player") == "Shaman")) then
                         hasMagicDebuff = true;
                         debuffPlayer = "raidpet" .. i;
@@ -1159,8 +1159,7 @@ function BTP_Decursive()
 
                 if (debuffTexture and not strfind(debuffTexture, "Cripple") and
                     debuffType and strfind(debuffType, "Magic") and
-                    not (UnitClass("player") == "Druid" or 
-                    UnitClass("player") == "Mage" or
+                    not (UnitClass("player") == "Mage" or
                     UnitClass("player") == "Shaman")) then
                     hasMagicDebuff = true;
                     debuffPlayer = nextPlayer;
@@ -1248,8 +1247,7 @@ function BTP_Decursive()
                         if (debuffTexture and
                             not strfind(debuffTexture, "Cripple") and
                             debuffType and strfind(debuffType, "Magic") and
-                            not (UnitClass("player") == "Druid" or 
-                            UnitClass("player") == "Mage" or 
+                            not (UnitClass("player") == "Mage" or 
                             UnitClass("player") == "Shaman")) then
                             hasMagicDebuff = true;
                             debuffPlayer = "partypet" .. i;
@@ -1320,8 +1318,7 @@ function BTP_Decursive()
                     if (debuffTexture and
                         not strfind(debuffTexture, "Cripple") and
                         debuffType and strfind(debuffType, "Magic") and
-                        not (UnitClass("player") == "Druid" or 
-                        UnitClass("player") == "Mage" or
+                        not (UnitClass("player") == "Mage" or
                         UnitClass("player") == "Shaman")) then
                         hasMagicDebuff = true;
                         debuffPlayer = nextPlayer;
@@ -1403,8 +1400,7 @@ function BTP_Decursive()
 
         if (debuffTexture and not strfind(debuffTexture, "Cripple") and
             debuffType and strfind(debuffType, "Magic") and
-            not (UnitClass("player") == "Druid" or 
-            UnitClass("player") == "Mage" or
+            not (UnitClass("player") == "Mage" or
             UnitClass("player") == "Shaman")) then
             hasMagicDebuff = true;
             debuffPlayer = "pet";
@@ -1482,8 +1478,7 @@ function BTP_Decursive()
 
         if (debuffTexture and not strfind(debuffTexture, "Cripple") and
             debuffType and strfind(debuffType, "Magic") and
-            not (UnitClass("player") == "Druid" or 
-            UnitClass("player") == "Mage" or
+            not (UnitClass("player") == "Mage" or
             UnitClass("player") == "Shaman")) then
             hasMagicDebuff = true;
             debuffPlayer = "player";
@@ -1548,7 +1543,8 @@ function BTP_Decursive()
     end
 
     if (UnitClass("player") == "Druid") then
-        if ((hasCurseDebuff or hasPoisonDebuff) and
+        if ((hasCurseDebuff or hasPoisonDebuff or
+            (hasMagicDebuff and btp_has_talent("Nature's Cure"))) and
             btp_cast_spell_on_target("Remove Corruption", debuffPlayer)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
@@ -2604,12 +2600,16 @@ function btp_general_chat_msg_guild()
     end
 end
 
+--
+-- Invites all lvl 85 players in the guild.  Does not work like the
+-- whisper command 'btpinvite'.
+--
 function btp_invite()
     for i = 0, GetNumGuildMembers(true) do
         name, rank, rankIndex, level, class, zone, note, officernote,
         online, status = GetGuildRosterInfo(i);
 
-        if (level == 70) then
+        if (level == 85) then
             InviteUnit(name);
         end
     end
@@ -4393,9 +4393,11 @@ function TradeItem(itemName, playerName)
         string.find(itemName, "Juice") or
         string.find(itemName, "Dew") or
         string.find(itemName, "Ethermead") or
+        string.find(itemName, "Manna Lollipop") or
         string.find(itemName, "Manna Biscuit") or
         string.find(itemName, "Manna Cookie") or
         string.find(itemName, "Manna Strudel") or
+        string.find(itemName, "Manna Pie") or
         string.find(itemName, "Star's Tears") or
         string.find(itemName, "Water"))) then
         isStack = true;
@@ -5686,10 +5688,6 @@ function btp_bot()
     targetOnFlyingMount = false;
     isDrinking = false;
     castingBandage = false;
-    hasSwiftFlightForm = false;
-    hasFlightForm = false;
-    hasBasicCampfire = false;
-    basicCampfireNotReady = false;
     shadowTrance = false;
     canCurse = true;
     canInst = true;
@@ -5789,187 +5787,6 @@ function btp_bot()
         botOff = false;
     end
 
-    local i = 1
-    while true do
-       local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL);
-       if not spellName then
-          do break end
-       end
-
-       if (strfind(spellName, "Swift Flight Form")) then
-           hasSwiftFlightFrom = true;
-       end
-
-       if (strfind(spellName, "Flight Form")) then
-           hasFlightFrom = true;
-       end
-
-       if (strfind(spellName, "Basic Campfire")) then
-           hasBasicCampfire = true;
-           start, duration = GetSpellCooldown(i, BOOKTYPE_SPELL);
-           if (duration - (GetTime() - start) > 0) then
-              basicCampfireNotReady = true;
-           end
-       end
-
-       i = i + 1
-    end
-
-    --
-    -- This code does takes care of SendAddonMessage() commands.
-    -- It can also be moved into its own function to clean the mess up.
-    --
-    if (addonCmd) then
-        if (doWarstomp and UnitClass("player") == "Druid" and
-            btp_cast_spell("War Stomp")) then
-            doWarstomp = false;
-            addonCmd = false;
-            return true;
-        elseif (doEntangleRoot and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doEntangleRoot = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Entangling Roots",
-                doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doEntangleRoot = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doTreeForm and UnitClass("player") == "Druid" and
-                btp_cast_spell("Tree of Life")) then
-            doTreeForm = false;
-            addonCmd = false;
-            return true;
-        elseif (doHibernate and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doHibernate = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Hibernate",
-                doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doHibernate = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doFaerieFire and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doFaerieFire = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Faerie Fire",
-                doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doFaerieFire = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doCyclone and UnitClass("player") == "Druid") then
-
-            if (btp_druid_istree()) then
-                doCyclone = false;
-                addonCmd = false;
-                return false;
-            end
-
-            if (btp_cast_spell_on_target("Cyclone",
-                                         doAssistUnit .. "target")) then
-                FuckBlizzardTargetUnit("playertarget");
-                doCyclone = false;
-                addonCmd = false;
-                return true;
-            end
-        elseif (doShackle and UnitClass("player") == "Priest" and
-                btp_cast_spell_on_target("Shackle Undead",
-                doAssistUnit .. "target")) then
-            FuckBlizzardTargetUnit("playertarget");
-            doShackle = false;
-            addonCmd = false;
-            return true;
-        elseif (doShadowWordPain and UnitClass("player") == "Priest" and
-                btp_cast_spell_on_target("Shadow Word: Pain",
-                doAssistUnit .. "target")) then
-            FuckBlizzardTargetUnit("playertarget");
-            doShadowWordPain = false;
-            addonCmd = false;
-            return true;
-        elseif (doShadowfiend and UnitClass("player") == "Priest" and
-                btp_cast_spell_on_target("Shadowfiend",
-                doAssistUnit .. "target")) then
-            FuckBlizzardTargetUnit("playertarget");
-            doShadowfiend = false;
-            addonCmd = false;
-            return true;
-        elseif (doPsychicScream and UnitClass("player") == "Priest" and
-                btp_cast_spell("Psychic Scream")) then
-            doPsychicScream = false;
-            addonCmd = false;
-            return true;
-        elseif (doLightwell and UnitClass("player") == "Priest" and
-                btp_cast_spell("Lightwell")) then
-            doLightwell = false;
-            addonCmd = false;
-            return true;
-        elseif (doCC and btp_cc()) then
-            doCC = false;
-            addonCmd = false;
-            return true;
-        elseif (reloadUI) then
-            reloadUI = false;
-            addonCmd = false;
-            ReloadUI();
-            return true;
-        else
-            if (UnitClass == "Druid" and
-               ((doCyclone and btp_can_cast("Cyclone")) or
-                (doWarstomp and btp_can_cast("War Stomp")) or
-                (doEntangleRoot and btp_can_cast("Entangling Roots")) or
-                (doTreeForm and btp_can_cast("Tree of Life")) or
-                (doHibernate and btp_can_cast("Hiberbate")) or
-                (doCC and btp_cc()) or
-                (doFaerieFire and btp_can_cast("Faerie Fire")))) then
-                return false;
-            elseif (UnitClass == "Priest" and
-                   ((doShackle and btp_can_cast("Shackle Undead")) or
-                    (doPsychicScream and btp_can_cast("Psychic Scream")) or
-                    (doShadowWordPain and btp_can_cast("Shadow Word: Pain")) or
-                    (doShadowfiend and btp_can_cast("Shadowfiend")) or
-                    (doCC and btp_cc()) or
-                    (doLightwell and btp_can_cast("Lightwell")))) then
-                return false;
-            elseif (UnitClass == "Druid" and
-                   (doShackle or doPsychicScream or doShadowWordPain or
-                    doLightwell)) then
-                doShackle = false;
-                doPsychicScream = false;
-                doShadowWordPain = false;
-                doLightwell = false;
-                addonCmd = false;
-            elseif (UnitClass == "Priest" and
-               (doCyclone or doWarstomp or doEntangleRoot or doTreeForm or
-                doHibernate or doFaerieFire)) then
-                doCyclone = false;
-                doWarstomp = false;
-                doEntangleRoot = false;
-                doTreeForm = false;
-                doHibernate = false;
-                doFaerieFire = false;
-                addonCmd = false;
-            end
-        end
-    end
-
     local bag = 4
     while (bag >= 0) do
       for slot=1,GetContainerNumSlots(bag) do
@@ -5995,6 +5812,13 @@ function btp_bot()
             end
 
             if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Lollipop")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
                 "Mana Cookie")) then
                 hasWater = true;
                 waterBag = bag;
@@ -6010,6 +5834,13 @@ function btp_bot()
 
             if (string.find(GetContainerItemLink(bag,slot),
                 "Mana Strudel")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Pie")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
@@ -6106,7 +5937,6 @@ function btp_bot()
     --
     -- Just Load these because we need the data in memory.
     --
-    GuildRoster();
     SetMapToCurrentZone();
 
     --
@@ -6201,17 +6031,34 @@ function btp_bot()
         for i = 1, GetNumRaidMembers() do
             nextPlayer = "raid" .. i;
 
-            for j = 0, GetNumGuildMembers(true) do
-                name, rank, rankIndex, level, class, zone, note, officernote,
-                online, status = GetGuildRosterInfo(j);
-
-                if (manualFollow) then
-                    name = manualFollowName;
-                end
-                       
-                if (name and UnitName(nextPlayer) and
-                    name == UnitName(nextPlayer) and
+            if (manualFollow and
+                manualFollowName == UnitName(nextPlayer) and
+                CheckInteractDistance(nextPlayer, 4)) then
+                followPlayer = nextPlayer;
+                partyOK = true;
+            elseif (btp_is_guild_member(UnitName(nextPlayer)) and
                     UnitName("player") ~= UnitName(nextPlayer)) then
+
+               if (not btp_dont_follow(name) and
+                   CheckInteractDistance(nextPlayer, 4)) then
+                   followPlayer = nextPlayer;
+               end
+
+               partyOK = true;
+            end
+        end
+
+        if (GetNumRaidMembers() <= 0) then
+            for i = 1, GetNumPartyMembers() do
+                nextPlayer = "party" .. i;
+
+                if (manualFollow and
+                    manualFollowName == UnitName(nextPlayer) and
+                    CheckInteractDistance(nextPlayer, 4)) then
+                    followPlayer = nextPlayer;
+                    partyOK = true;
+                elseif (btp_is_guild_member(UnitName(nextPlayer)) and
+                        UnitName("player") ~= UnitName(nextPlayer)) then
 
                    if (not btp_dont_follow(name) and
                        CheckInteractDistance(nextPlayer, 4)) then
@@ -6223,43 +6070,21 @@ function btp_bot()
             end
         end
 
-        if (GetNumRaidMembers() <= 0) then
-            for i = 1, GetNumPartyMembers() do
-                nextPlayer = "party" .. i;
-
-                for j = 0, GetNumGuildMembers(true) do
-                    name, rank, rankIndex, level, class, zone, note,
-                    officernote, online, status = GetGuildRosterInfo(j);
-
-                    if (manualFollow) then
-                        name = manualFollowName;
-                    end
-
-                    if (name and UnitName(nextPlayer) and
-                        name == UnitName(nextPlayer) and
-                        UnitName("player") ~= UnitName(nextPlayer)) then
-
-                       if (not btp_dont_follow(name) and
-                           CheckInteractDistance(nextPlayer, 4)) then
-                           followPlayer = nextPlayer;
-                       end
-
-                       partyOK = true;
-                    end
-                end
-            end
-        end
-
         if (pvpBot and GetNumBattlefieldScores() > 0 and
            (GetTime() - lastExcludeBroadcast) > 60) then
             lastExcludeBroadcast = GetTime();
             SendAddonMessage("BTP", "btpexclude", "BATTLEGROUND");
         end
 
+        --
+        -- Choose the next person to follow if there is no guild member
+        -- around.  A bunch of stuff happens here, but notice the priority
+        -- on those people that have done more damage.
+        --
         if (pvpBot and followPlayer == "player") then
             partyOK = true;
+            bestDamage = 0;
 
-	    bestDamage = 0;
             for i = GetNumRaidMembers() - 1, 1, -1 do
                 nextPlayer = "raid" .. i;
 
@@ -6357,6 +6182,7 @@ function btp_bot()
                 not btp_check_dist(followPlayer, 2) and
                 btp_check_dist(followPlayer, 4) and not isDrinking and
                 not btp_is_summoning_mount("player") and
+                not (targetOnMount and not playerOnMount) and
                (GetTime() - lastJumpFollow) > 2) then
                     lastJumpFollow = GetTime();
                     FuckBlizzardMove("JUMP");
@@ -6384,9 +6210,6 @@ function btp_bot()
             if (okayMount and targetOnMount) then
                 if (hasFastMount) then
                     CallCompanion("MOUNT", mountSlotFast);
-                elseif (btp_cast_spell("Running Wild")) then
-                    okayMount = false;
-                    return true;
                 elseif (hasMount) then
                     CallCompanion("MOUNT", mountSlot);
                 end
@@ -6443,20 +6266,20 @@ function btp_bot()
                         FuckBlizzardMove("TURNLEFT");
                         lastMountTry = GetTime();
                         okayMount = true;
-                    elseif (btp_can_cast("Running Wild")) then
+                    elseif (btp_cast_spell("Running Wild")) then
                         FuckBlizzardMove("TURNLEFT");
                         lastMountTry = GetTime();
-                        okayMount = true;
+                        return true;
                     end
                 else
                     if (btp_druid_istree()) then
                         FuckBlizzardByNameAlt("Tree of Life");
                     end
 
-                    if (hasSwiftFlightFrom) then
-                        FuckBlizzardByName("Swift Flight Form");
-                    elseif (hasFlightFrom) then
-                        FuckBlizzardByName("Flight Form");
+                    if (btp_cast_spell("Swift Flight Form")) then
+                        return true;
+                    elseif (btp_cast_spell("Flight Form")) then
+                        return true;
                     elseif (hasFastFlyingMount) then
                         FuckBlizzardMove("TURNLEFT");
                         lastMountTry = GetTime();
@@ -6469,7 +6292,7 @@ function btp_bot()
                 end
             elseif (not (targetOnMount or targetOnFlyingMount) and
                    (playerOnMount or playerOnFlyingMount) and
-                   (GetTime() - lastMountCheck) >= 5) then
+                   (GetTime() - lastMountCheck) >= 2) then
                 --
                 -- Dismount
                 --
@@ -6477,10 +6300,10 @@ function btp_bot()
                 Dismount();
 
                 if (btp_druid_isbird()) then
-                    if (hasSwiftFlightFrom) then
-                        FuckBlizzardByName("Swift Flight Form");
-                    elseif (hasFlightFrom) then
-                        FuckBlizzardByName("Flight Form");
+                    if (btp_cast_spell("Swift Flight Form")) then
+                        return true;
+                    elseif (btp_cast_spell("Flight Form")) then
+                        return true;
                     end
                 end
             elseif (bootyCall) then
@@ -6667,18 +6490,18 @@ function btp_bot()
             AcceptGroup();
         end
 
-        if (not dontBeg and hasBasicCampfire and not basicCampfireNotReady) then
-            FuckBlizzardByName("Basic Campfire");
+        if (not dontBeg and btp_cast_spell("Basic Campfire")) then
             HoboBeg();
+            return true;
         elseif (not dontBeg) then
             if (UnitClass("player") == "Druid") then
                 druid_buff();
             elseif (UnitClass("player") == "Priest") then
                 PriestBuff();
             elseif (UnitClass("player") == "Mage") then
-		if(not mageisDrinking) then
-		btp_mage_waterbreak();
-		end
+                if (not mageisDrinking) then
+                    btp_mage_waterbreak();
+                end
             end
 
             if ((GetTime() - lastQuestTrade) >= 7) then
@@ -7810,7 +7633,7 @@ function btp_name_to_unit(name)
 end
 
 function btp_is_moving(unit)
-    if(not unit) then  unit = "player"; end
+    if(not unit) then unit = "player"; end
     if (GetUnitSpeed(unit)>0) then return true; end
     return false;
 end
@@ -7832,9 +7655,8 @@ function btp_do_bg_stuff()
     end
 
     if (farmBG and GetBattlefieldInstanceRunTime() == 0 and
-       (GetTime() - lastFarmTime) >= 60) then
-        -- Solo queue for the first available battleground
-        btp_frame_debug("Join BG");
+       (GetTime() - lastFarmTime) >= 30) then
+        -- btp_frame_debug("Join BG");
         JoinBattlefield(0);
         lastFarmTime = GetTime();
     end
@@ -7863,4 +7685,61 @@ function btp_do_bg_stuff()
     -- Make AFK douche bags go bye bye.
     --
     btp_report_afk();
+end
+
+--
+-- true of false if a talent exists in the target's tree.
+-- This function only works on currently active talents
+--
+function btp_has_talent(talent_name)
+    for tab_index = 1, GetNumTalentTabs() do
+        for talent_index = 1, GetNumTalents(tab_index, false,false) do
+            name, iconTexture, tier, column, rank, maxRank, isExceptional,
+            meetsPrereq, previewRank, meetsPreviewPrereq =
+            GetTalentInfo(tab_index, talent_index, false, false, nil);
+
+            if (name == talent_name and rank > 0) then
+                return true;
+            end
+        end
+    end
+
+    return false;
+end
+
+--
+-- true of false if a UnitName() exists in the guild roster.
+--
+function btp_is_guild_member(unit_name)
+    if (not unit_name) then
+        return false;
+    end
+
+    --
+    -- This while loop hack it so load the GuildRoster() until
+    -- it populates.  Once this has happened we should no longer
+    -- need to reload the guild roster info.  That is, we want to
+    -- cache the guild roster into a hash table in memory for fast
+    -- lookup later.  This is causing pain in the client.
+    --
+    while (guild_members[UnitName("player")] == nil) do
+        GuildRoster();
+        for i = 0, GetNumGuildMembers(true) do
+            name, rank, rankIndex, level, class, zone, note, officernote,
+            online, status = GetGuildRosterInfo(i);
+
+            if (name) then
+                guild_members[name] = true;
+            end
+        end
+    end
+
+    --
+    -- Check our cache to see if that name is in the guild
+    --
+    if (guild_members[unit_name]) then
+        return true;
+    end
+
+    return false;
 end
