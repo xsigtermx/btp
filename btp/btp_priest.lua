@@ -57,13 +57,13 @@ function btp_priest_initialize()
     SLASH_DPSMODE1 = "/dps";
 
     cb_array["Flash Heal"]              = function() 
-        btp_cb_priest_flash_heal("Flash Heal");
+        return btp_cb_priest_flash_heal("Flash Heal");
     end
     cb_array["Greater Heal"]            = function()
-        btp_cb_priest_greater_heal("Greater Heal");
+        return btp_cb_priest_greater_heal("Greater Heal");
     end
     cb_array["Binding Heal"]            = function()
-        btp_cb_priest_binding_heal("Binding Heal");
+        return btp_cb_priest_binding_heal("Binding Heal");
     end
     -- cb_array["Prayer of Healing"]       = btp_cb_priest_prayer_of_healing("Prayer of Healing");
     -- cb_array["Holy Word: Sanctuary"]    = btp_cb_priest_holy_word_sanctuary("Holy Word: Sanctuary");
@@ -1679,9 +1679,6 @@ function btp_cb_generic_cast_callback(spell_name)
     --
     cast_spell, cast_rank, cast_display_name, cast_icon, cast_start_time,
     cast_end_time, cast_is_trade_skill = UnitCastingInfo("player");
-
-    btp_frame_debug("CALLBACK: " .. spell_name);
-    if (cast_spell ~= nil) then btp_fraem_debug("cast_spell: " .. cast_spell); end
 
     --
     -- May just be beteen casts, so let it stand, otherwise we should
