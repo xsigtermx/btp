@@ -6029,8 +6029,7 @@ function btp_bot()
             nextPlayer = "raid" .. i;
 
             if (manualFollow and
-                manualFollowName == UnitName(nextPlayer) and
-                CheckInteractDistance(nextPlayer, 4)) then
+                manualFollowName == UnitName(nextPlayer)) then
                 followPlayer = nextPlayer;
                 partyOK = true;
             elseif (btp_is_guild_member(UnitName(nextPlayer)) and
@@ -6050,8 +6049,7 @@ function btp_bot()
                 nextPlayer = "party" .. i;
 
                 if (manualFollow and
-                    manualFollowName == UnitName(nextPlayer) and
-                    CheckInteractDistance(nextPlayer, 4)) then
+                    manualFollowName == UnitName(nextPlayer)) then
                     followPlayer = nextPlayer;
                     partyOK = true;
                 elseif (btp_is_guild_member(UnitName(nextPlayer)) and
