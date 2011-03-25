@@ -256,16 +256,6 @@ function druid_heal()
             lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (not myRegrowth and
-                btp_cast_spell_on_target("Regrowth", playerName)) then
-
-            if (not stopMoving and pvpBot and farmBG) then
-                stopMoving = true;
-                FuckBlizzardMove("TURNLEFT");
-            end
-
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
         elseif (UnitAffectingCombat("player") and not hasClearCasting and
                (myRegrowth or myRejuvenation) and
                 btp_cast_spell_on_target("Nourish", playerName)) then
