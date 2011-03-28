@@ -88,7 +88,7 @@ chatterCount        = 0;
 herbTimer           = 0;
 lastStopMoving      = 0;
 lastBreakCC         = 0;
-lastFarmTime        = 0;
+lastFarmBGTime        = 0;
 lastDefendFlags     = 0;
 lastJumpFollow      = 0;
 lastCheckAFK        = 0;
@@ -120,6 +120,7 @@ lastZone          = nil;
 manualFollow      = false;
 pvpBot            = false;
 farmBG            = false;
+farmDungeon       = false;
 reloadUI          = false;
 dontHearth        = false;
 dontRelease       = false;
@@ -262,6 +263,8 @@ function btp_general_initialize()
     SLASH_BTPPVP1 = "/btppvp";
     SlashCmdList["BTPFARMBG"] = BTP_Farm_BG;
     SLASH_BTPFARMBG1 = "/btpfarmbg";
+    SlashCmdList["BTPFARMDUNGEON"] = BTP_Farm_Dungeon;
+    SLASH_BTPFARMDUNGEON1 = "/btpfarmdungeon";
     SlashCmdList["FUNTRNK"] = FunTrink;
     SLASH_FUNTRNK1 = "/funtrink";
     SlashCmdList["DONTBEG"] = DontBeg;
@@ -3059,7 +3062,16 @@ function btp_general_chat_msg_whisper()
                     SendChatMessage("Now in BG farm mode.",
                                     "WHISPER", nil, arg2);
                 else
-                    SendChatMessage("Now in non-farm mode.",
+                    SendChatMessage("Now in non-bg-farm mode.",
+                                    "WHISPER", nil, arg2);
+                end
+            elseif (string.sub(arg1, 0, 14) == "btpfarmdungeon") then
+                BTP_Farm_Dungeon();
+                if (farmDungeon) then
+                    SendChatMessage("Now in Dungeon farm mode.",
+                                    "WHISPER", nil, arg2);
+                else
+                    SendChatMessage("Now in non-dungeon-farm mode.",
                                     "WHISPER", nil, arg2);
                 end
             elseif (string.sub(arg1, 0, 9) == "btpinvite") then
@@ -3369,6 +3381,16 @@ function BTP_Farm_BG()
     else
         farmBG = true;
         btp_frame_debug("BOT -- Now in BG Farm mode.");
+    end
+end
+
+function BTP_Farm_Dungeon()
+    if (farmDungeon) then
+        farmDungeon = false;
+        btp_frame_debug("BOT -- Now in normal mode.");
+    else
+        farmDungeon = true;
+        btp_frame_debug("BOT -- Now in Dungeon Farm mode.");
     end
 end
 
@@ -4396,6 +4418,8 @@ function TradeItem(itemName, playerName)
         string.find(itemName, "Manna Lollipop") or
         string.find(itemName, "Manna Biscuit") or
         string.find(itemName, "Manna Cookie") or
+        string.find(itemName, "Manna Cake") or
+        string.find(itemName, "Manna Brownie") or
         string.find(itemName, "Manna Strudel") or
         string.find(itemName, "Manna Pie") or
         string.find(itemName, "Star's Tears") or
@@ -5774,7 +5798,7 @@ function btp_bot()
     end
 
     if (not LoggingChat()) then
-      DEFAULT_CHAT_FRAME:AddMessage("Chat is not being logged - starting it!");
+      btp_frame_debug("Chat is not being logged - starting it!");
       LoggingChat(1);
     end
 
@@ -5817,6 +5841,13 @@ function btp_bot()
 
             if (string.find(GetContainerItemLink(bag,slot),
                 "Mana Cookie")) then
+                hasWater = true;
+                waterBag = bag;
+                waterSlot = slot;
+            end
+
+            if (string.find(GetContainerItemLink(bag,slot),
+                "Mana Brownie")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
@@ -5939,12 +5970,12 @@ function btp_bot()
     --
     -- Trying to move some of the bot code around BGs out of this HUGE function.
     --
-    btp_do_bg_stuff();
+    btp_do_dungeon_stuff();
 
     --
-    -- This is useful in raids
+    -- Trying to move some of the bot code around BGs out of this HUGE function.
     --
-    ConfirmReadyCheck(1);
+    btp_do_bg_stuff();
 
     --
     -- Free action here will do nothing unless we have a debuff, and
@@ -6030,17 +6061,22 @@ function btp_bot()
 
             if (manualFollow and
                 manualFollowName == UnitName(nextPlayer)) then
-                followPlayer = nextPlayer;
+
+                if (CheckInteractDistance(nextPlayer, 4)) then
+                    followPlayer = nextPlayer;
+                end
+
                 partyOK = true;
+                break;
             elseif (btp_is_guild_member(UnitName(nextPlayer)) and
                     UnitName("player") ~= UnitName(nextPlayer)) then
 
-               if (not btp_dont_follow(name) and
-                   CheckInteractDistance(nextPlayer, 4)) then
-                   followPlayer = nextPlayer;
-               end
+                if (not btp_dont_follow(name) and
+                    CheckInteractDistance(nextPlayer, 4)) then
+                    followPlayer = nextPlayer;
+                end
 
-               partyOK = true;
+                partyOK = true;
             end
         end
 
@@ -6050,8 +6086,13 @@ function btp_bot()
 
                 if (manualFollow and
                     manualFollowName == UnitName(nextPlayer)) then
-                    followPlayer = nextPlayer;
+
+                    if (CheckInteractDistance(nextPlayer, 4)) then
+                        followPlayer = nextPlayer;
+                    end
+
                     partyOK = true;
+                    break;
                 elseif (btp_is_guild_member(UnitName(nextPlayer)) and
                         UnitName("player") ~= UnitName(nextPlayer)) then
 
@@ -6063,12 +6104,6 @@ function btp_bot()
                    partyOK = true;
                 end
             end
-        end
-
-        if (pvpBot and GetNumBattlefieldScores() > 0 and
-           (GetTime() - lastExcludeBroadcast) > 60) then
-            lastExcludeBroadcast = GetTime();
-            SendAddonMessage("BTP", "btpexclude", "BATTLEGROUND");
         end
 
         --
@@ -6085,13 +6120,26 @@ function btp_bot()
 
                 if (CheckInteractDistance(nextPlayer, 4) and
                     not btp_dont_follow(UnitName(nextPlayer)) and
-                    bgStats[UnitName(nextPlayer)] ~= nil and
-                    bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage and
+                   ((bgStats[UnitName(nextPlayer)] ~= nil and
+                    bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage) or
+                   (farmDungeon and
+                   (UnitGroupRolesAssigned(nextPlayer) == "DAMAGER" or
+                    UnitGroupRolesAssigned(nextPlayer) == "HEALER" or
+                    UnitGroupRolesAssigned(nextPlayer) == "TANK"))) and
                    ((UnitHealth("player") < 2 and UnitHealth(nextPlayer) < 2) or
                    (UnitHealth("player") >= 2 and
                    UnitHealth(nextPlayer) >= 2))) then
-                    bestDamage = bgStats[UnitName(nextPlayer)]["dd"];
+
+                    if (bgStats[UnitName(nextPlayer)] ~= nil) then
+                        bestDamage = bgStats[UnitName(nextPlayer)]["dd"];
+                    end
+
                     followPlayer = nextPlayer;
+
+                    if (farmDungeon and
+                        UnitGroupRolesAssigned(nextPlayer) == "TANK") then
+                        break;
+                    end
                 end
             end
 
@@ -6101,14 +6149,27 @@ function btp_bot()
 
                     if (CheckInteractDistance(nextPlayer, 4) and
                         not btp_dont_follow(UnitName(nextPlayer)) and
-                        bgStats[UnitName(nextPlayer)] ~= nil and
-                        bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage and
+                       ((bgStats[UnitName(nextPlayer)] ~= nil and
+                        bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage) or
+                        (farmDungeon and
+                        (UnitGroupRolesAssigned(nextPlayer) == "DAMAGER" or
+                         UnitGroupRolesAssigned(nextPlayer) == "HEALER" or
+                         UnitGroupRolesAssigned(nextPlayer) == "TANK"))) and
                        ((UnitHealth("player") < 2 and
                          UnitHealth(nextPlayer) < 2) or
                        (UnitHealth("player") >= 2 and
                         UnitHealth(nextPlayer) >= 2))) then
-                        bestDamage = bgStats[UnitName(nextPlayer)]["dd"];
+
+                        if (bgStats[UnitName(nextPlayer)] ~= nil) then
+                            bestDamage = bgStats[UnitName(nextPlayer)]["dd"];
+                        end
+
                         followPlayer = nextPlayer;
+
+                        if (farmDungeon and
+                            UnitGroupRolesAssigned(nextPlayer) == "TANK") then
+                            break;
+                        end
                     end
                 end
             end
@@ -6158,10 +6219,9 @@ function btp_bot()
 
             if (followPlayer == "player") then
                 noFollow = true;
-            elseif (pvpBot and farmBG and hasDefendFlags and
-                    not targetOnMount and not targetOnFlyingMount and
-                    not playerOnMount and not playerOnFlyingMount and
-                    not isDrinking and
+            elseif (pvpBot and hasDefendFlags and not targetOnMount and
+                    not targetOnFlyingMount and not playerOnMount and
+                    not playerOnFlyingMount and not isDrinking and
                     not UnitAffectingCombat(followPlayer) and
                     btp_check_dist(followPlayer, 2)) then
                 atFlag = true;
@@ -6187,7 +6247,9 @@ function btp_bot()
                 btpFollow and not stopMoving and not atFlag and
                 (GetTime() - lastMountTry) > 2 and
                 not forceDrink and (not isDrinking or
-                UnitMana("player") == UnitManaMax("player"))) then
+                UnitMana("player") == UnitManaMax("player") or
+               (farmDungeon and CheckInteractDistance(followPlayer, 4) and
+                not CheckInteractDistance(followPlayer, 2)))) then
 
                 FollowUnit(followPlayer);
 
@@ -6231,9 +6293,14 @@ function btp_bot()
                     UnitMana("player") > 0 and UnitHealth("player") > 2 and
                     not isDrinking and not targetOnMount and
                     not UnitAffectingCombat("player")) then
-                lastBotWater = GetTime();
-                okayDrink = true;
-                FuckBlizzardMove("TURNLEFT");
+                if (farmDungeon and CheckInteractDistance(followPlayer, 4) and
+                    not CheckInteractDistance(followPlayer, 2)) then
+                    -- We are lagging, do not drink
+                else
+                    lastBotWater = GetTime();
+                    okayDrink = true;
+                    FuckBlizzardMove("TURNLEFT");
+                end
             elseif (hasWater and forceDrink and
                    (GetTime() - lastBotWater) >= 3) then
                 forceDrink = false;
@@ -6348,13 +6415,17 @@ function btp_bot()
                 lastDice = GetTime();
                 for Rollid=0, 256 do
                     if (lootMode == "greed") then
-                        RollOnLoot(Rollid, 1);
+                        RollOnLoot(Rollid, 2);
+                        ConfirmLootRoll(Rollid, 2);
                     elseif (lootMode == "need") then
                         RollOnLoot(Rollid, 1);
+                        ConfirmLootRoll(Rollid, 1);
                     elseif (lootMode == "wait") then
                         -- DO NOTHING
                     else
+                        -- Default action is to pass
                         RollOnLoot(Rollid, 0);
+                        ConfirmLootRoll(Rollid, 0);
                     end
                 end
             elseif ((GetTime() - lastQuestTrade) >= 7) then
@@ -6370,6 +6441,7 @@ function btp_bot()
             elseif (not dontPop and UnitHealth("player") < 2 and 
                    (GetTime() - envRes) >= 11) then
                 envRes = GetTime();
+                AcceptResurrect();
                 RetrieveCorpse();
             elseif ((hasFreeCast or hasPreperation or
                    ((GetTime() - lastBuff) >= 5)) and
@@ -6403,12 +6475,13 @@ function btp_bot()
                     not (playerOnMount or playerOnFlyingMount or
                          isDrinking)) then
                     	btp_priest_heal();
-			if(DPS_MODE_ON == true and UnitAffectingCombat(followPlayer)
-				and UnitMana("player")/UnitManaMax("player") > .35
-				and UnitAffectingCombat("player")) then
-    				DPS_ASSIST_TARGET = followPlayer .. "target";
-				btp_priest_dps(DPS_ASSIST_TARGET);
-			end
+                      if (DPS_MODE_ON == true and
+                          UnitAffectingCombat(followPlayer) and
+                          UnitMana("player")/UnitManaMax("player") > .35 and
+                          UnitAffectingCombat("player")) then
+                          DPS_ASSIST_TARGET = followPlayer .. "target";
+                             btp_priest_dps(DPS_ASSIST_TARGET);
+                      end
                 elseif (UnitClass("player") == "Druid" and
                         not (playerOnMount or playerOnFlyingMount or
                              isDrinking)) then
@@ -7633,6 +7706,42 @@ function btp_is_moving(unit)
     return false;
 end
 
+function btp_do_dungeon_stuff()
+    --
+    -- This is useful in raids
+    --
+    ConfirmReadyCheck(true);
+
+    --
+    -- This is useful for LFG ready check
+    --
+    AcceptProposal();
+    CompleteLFGRoleCheck(true);
+
+    mode, submode = GetLFGMode();
+
+    if (farmDungeon and (mode == nil or mode == 'abandonedInDungeon') and
+       (GetTime() - lastFarmBGTime) >= 30 and
+        UnitIsDeadOrGhost("player") == nil) then
+        ShowUIPanel(LFDParentFrame);
+        SetLFGDungeon(LFDQueueFrame.type);
+        JoinLFG();
+        HideUIPanel(LFDParentFrame);
+        lastFarmBGTime = GetTime();
+    elseif (farmDungeon and mode == 'lfgparty' and
+            IsPartyLeader() and GetNumPartyMembers() < 4 and
+           (GetTime() - lastFarmBGTime) >= 30) then
+        LeaveParty();
+        LeaveLFG();
+        lastFarmBGTime = GetTime();
+    else
+        -- Just testing for now, but we will need to know the bots role
+        -- if we go with this code.  For now healer is hard-coded.
+        SetLFGRoles(false, false, true, false);
+    end
+
+end
+
 function btp_do_bg_stuff()
     RequestBattlefieldScoreData();
 
@@ -7645,15 +7754,15 @@ function btp_do_bg_stuff()
             --
             -- hack to stop us from queueing for BG again.
             --
-            lastFarmTime = GetTime();
+            lastFarmBGTime = GetTime();
         end
     end
 
     if (farmBG and GetBattlefieldInstanceRunTime() == 0 and
-       (GetTime() - lastFarmTime) >= 30) then
+       (GetTime() - lastFarmBGTime) >= 30) then
         -- btp_frame_debug("Join BG");
         JoinBattlefield(0);
-        lastFarmTime = GetTime();
+        lastFarmBGTime = GetTime();
     end
 
     --
@@ -7680,6 +7789,15 @@ function btp_do_bg_stuff()
     -- Make AFK douche bags go bye bye.
     --
     btp_report_afk();
+
+    --
+    -- alert other bots we are one too.
+    --
+    if (pvpBot and GetNumBattlefieldScores() > 0 and
+       (GetTime() - lastExcludeBroadcast) > 60) then
+        lastExcludeBroadcast = GetTime();
+        SendAddonMessage("BTP", "btpexclude", "BATTLEGROUND");
+    end
 end
 
 --

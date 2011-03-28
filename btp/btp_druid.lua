@@ -151,12 +151,12 @@ function druid_heal()
             btp_name_to_unit(iTarget))) then
         FuckBlizzardTargetUnit("playertarget");
         return true;
-    elseif (UnitAffectingCombat("player") and
+    elseif (pvpBot and UnitAffectingCombat("player") and
             UnitHealth("player")/UnitHealthMax("player") <=
            (DR_THRESH + DR_SCALAR) and UnitHealth("player") > 1 and
             btp_cast_spell("Barkskin")) then
         return true;
-    elseif (UnitAffectingCombat("player") and
+    elseif (pvpBot and UnitAffectingCombat("player") and
             not btp_check_buff("StoneClawTotem", "player") and
             UnitHealth("player")/UnitHealthMax("player") <=
            (DR_THRESH + DR_SCALAR) and UnitHealth("player") > 1 and
@@ -221,7 +221,7 @@ function druid_heal()
                 UnitAffectingCombat("player") and
                 btp_cast_spell("Tranquility")) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
@@ -236,7 +236,7 @@ function druid_heal()
         elseif (not myRegrowth and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
@@ -260,7 +260,7 @@ function druid_heal()
                (myRegrowth or myRejuvenation) and
                 btp_cast_spell_on_target("Nourish", playerName)) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
@@ -270,7 +270,7 @@ function druid_heal()
         elseif (UnitAffectingCombat("player") and
                 btp_cast_spell_on_target("Healing Touch", playerName)) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
@@ -301,13 +301,14 @@ function druid_heal()
             btp_check_dist(nextPlayer, 1) and
             btp_cast_spell_on_target("Rebirth", nextPlayer)) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
 
             return true;
-        elseif (not pvpBot and not UnitAffectingCombat("player") and
+        elseif ((not pvpBot or farmDungeon) and
+                not UnitAffectingCombat("player") and
                 UnitExists(nextPlayer) == 1 and UnitHealth(nextPlayer) <= 1 and
                 btp_check_dist(nextPlayer, 1) and
                 btp_cast_spell_on_target("Revive", nextPlayer)) then
@@ -323,13 +324,14 @@ function druid_heal()
                 btp_check_dist(nextPlayer, 1) and
                 btp_cast_spell_on_target("Rebirth", nextPlayer)) then
 
-                if (not stopMoving and pvpBot and farmBG) then
+                if (not stopMoving and pvpBot) then
                     stopMoving = true;
                     FuckBlizzardMove("TURNLEFT");
                 end
 
                 return true;
-            elseif (not pvpBot and not UnitAffectingCombat("player") and
+            elseif ((not pvpBot or farmDungeon) and
+                    not UnitAffectingCombat("player") and
                     UnitExists(nextPlayer) == 1 and
                     UnitHealth(nextPlayer) <= 1 and
                     btp_check_dist(nextPlayer, 1) and
@@ -420,7 +422,7 @@ function druid_heal()
                 UnitAffectingCombat("player") and
                 btp_cast_spell("Tranquility")) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
@@ -450,14 +452,14 @@ function druid_heal()
         elseif (partyHurtCount > 3 and UnitAffectingCombat("player") and
                 btp_cast_spell("Tranquility")) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
 
             lastTranquility = GetTime();
             return true;
-        elseif (UnitAffectingCombat("player") and not myThorns and
+        elseif (UnitAffectingCombat("player") and not hasThorns and
                 UnitHealth(playerName)/UnitHealthMax(playerName) > 
                 DR_THRESH + DR_SCALAR/2 and
                 UnitThreatSituation(playerName) ~= nil and
@@ -465,7 +467,7 @@ function druid_heal()
                 btp_cast_spell_on_target("Thorns", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (UnitAffectingCombat("player") and not myThorns and
+        elseif (UnitAffectingCombat("player") and not hasThorns and
                 UnitHealth(playerName)/UnitHealthMax(playerName) > 
                 DR_THRESH + DR_SCALAR/2 and pvpBot and
                 btp_cast_spell_on_target("Thorns", playerName)) then
@@ -476,7 +478,7 @@ function druid_heal()
                 DR_THRESH + DR_SCALAR/2 and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
@@ -488,7 +490,7 @@ function druid_heal()
                 DR_THRESH + DR_SCALAR/2 and (myRegrowth or myRejuvenation) and
                 btp_cast_spell_on_target("Nourish", playerName)) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
@@ -500,7 +502,7 @@ function druid_heal()
                 DR_THRESH + DR_SCALAR/2 and
                 btp_cast_spell_on_target("Healing Touch", playerName)) then
 
-            if (not stopMoving and pvpBot and farmBG) then
+            if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
