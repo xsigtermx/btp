@@ -88,10 +88,11 @@ chatterCount        = 0;
 herbTimer           = 0;
 lastStopMoving      = 0;
 lastBreakCC         = 0;
-lastFarmBGTime        = 0;
+lastFarmBGTime      = 0;
 lastDefendFlags     = 0;
 lastJumpFollow      = 0;
 lastCheckAFK        = 0;
+lastFollowTime      = 0;
 
 --
 -- Strings
@@ -6252,6 +6253,7 @@ function btp_bot()
                 not CheckInteractDistance(followPlayer, 2)))) then
 
                 FollowUnit(followPlayer);
+                lastFollowTime = GetTime();
 
                 if (CheckInteractDistance(followPlayer, 4) and
                     followPlayer ~= "player") then
@@ -7722,14 +7724,17 @@ function btp_do_dungeon_stuff()
 
     if (farmDungeon and (mode == nil or mode == 'abandonedInDungeon') and
        (GetTime() - lastFarmBGTime) >= 30 and
+        not UnitHasLFGDeserter("player") and
+        not UnitHasLFGRandomCooldown("player") and
         UnitIsDeadOrGhost("player") == nil) then
         ShowUIPanel(LFDParentFrame);
         SetLFGDungeon(LFDQueueFrame.type);
         JoinLFG();
         HideUIPanel(LFDParentFrame);
         lastFarmBGTime = GetTime();
-    elseif (farmDungeon and mode == 'lfgparty' and
-            IsPartyLeader() and GetNumPartyMembers() < 4 and
+    elseif (farmDungeon and not farmBG and mode == 'lfgparty' and
+            IsPartyLeader() and GetNumPartyMembers() > 0 and
+            GetNumPartyMembers() < 3 and
            (GetTime() - lastFarmBGTime) >= 30) then
         LeaveParty();
         LeaveLFG();
@@ -7740,6 +7745,29 @@ function btp_do_dungeon_stuff()
         SetLFGRoles(false, false, true, false);
     end
 
+    if (farmDungeon and not farmBG and mode == 'lfgparty' and
+        GetNumPartyMembers() > 0 and GetNumPartyMembers() < 4 and
+       (GetTime() - lastFollowTime) >= 120) then
+        LeaveParty();
+        LeaveLFG();
+        lastFollowTime = GetTime();
+    end
+
+    if (farmDungeon and mode == nil and (UnitHasLFGDeserter("player") or
+        UnitHasLFGRandomCooldown("player"))) then
+        -- farmBG instead
+        farmBG = true;
+        btpRaidHeal = false;
+        dontRelease = false;
+        dontHearth = false;
+        lootMode = "pass";
+    elseif (farmDungeon and GetBattlefieldInstanceRunTime() == 0) then
+        farmBG = false;
+        btpRaidHeal = true;
+        dontRelease = true;
+        dontHearth = true;
+        lootMode = "greed";
+    end
 end
 
 function btp_do_bg_stuff()
