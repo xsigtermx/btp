@@ -84,49 +84,39 @@
 
 - (void) go
 {
-        int i;
-        Boolean isSameProcess = FALSE;
-        ProcessSerialNumber focusWindow;
+		int i;
+		pid_t process_pid;
+		AXUIElementRef window;
 
-        GetFrontProcess(&focusWindow);
-        SameProcess(&eventWindow, &focusWindow, &isSameProcess);
-
-        if (!(isSameProcess))
-                return;
-
-        CGInhibitLocalEvents(TRUE);
+		//CGInhibitLocalEvents(TRUE);
+	
+		GetProcessPID(&eventWindow, &process_pid);
+		window = AXUIElementCreateApplication(process_pid);
 
         if (downKeysCount)
         {
             for (i = 0; i < downKeysCount; i++)
-                CGPostKeyboardEvent(0, (CGKeyCode)downKeys[i], true);
+				AXUIElementPostKeyboardEvent(window, 0, (CGKeyCode)downKeys[i], true);
         }
 
         if (upKeysCount)
         {
             for (i = 0; i < upKeysCount; i++)
-                    CGPostKeyboardEvent(0, (CGKeyCode)upKeys[i], false);
+				AXUIElementPostKeyboardEvent(window, 0, (CGKeyCode)upKeys[i], false);
         }
 
-        CGInhibitLocalEvents(FALSE);
+        //CGInhibitLocalEvents(FALSE);
 }
 
 
-/* TEST CODE
+
+/* This is the say the API _should_ work, but does not.
 - (void) go
 {
 	NSInteger i;
-	ProcessSerialNumber focusWindow;
-	Boolean isSameProcess = FALSE;
 	Boolean pressShift = FALSE;
 	Boolean pressAlt = FALSE;
 	Boolean pressControl = FALSE;
-
-	GetFrontProcess(&focusWindow);
-	SameProcess(&eventWindow, &focusWindow, &isSameProcess);
-	
-	if (!(isSameProcess))
-		return;
 	
 	CGInhibitLocalEvents(TRUE);
 	
@@ -137,40 +127,48 @@
 			if (downKeys[i] == 56)
 			{
 				pressShift = TRUE;
-				NSLog(@"SHIFT DOWN");
-				//continue;
+				continue;
 			}
-			
+
 			if (downKeys[i] == 58)
 			{
 				pressAlt = TRUE;
-				NSLog(@"ALT DOWN");
 				continue;
 			}
 			
 			if (downKeys[i] == 59)
 			{
 				pressControl = TRUE;
-				NSLog(@"CTRL DOWN");
-				//continue;
+				continue;
 			}
-
-			NSLog(@"KEY DOWN: %d", downKeys[i]);
+			
 			CGEventRef tmpEvent = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)downKeys[i], true);
 			
 		    if (tmpEvent)
 		    {
+				CGEventSetFlags(tmpEvent, 0);
+				
 				if (pressShift)
+				{
+					NSLog(@"SHIFT DOWN");
 					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskShift);
+				}
 				
 				if (pressAlt)
+				{
+					NSLog(@"ALT DOWN");
 					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskAlternate);
+				}
 				
 				if (pressControl)
+				{
+					NSLog(@"CTRL DOWN");
 					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskControl);
+				}
 				
-				CGEventPost(kCGSessionEventTap, tmpEvent);
-				//CGEventPostToPSN(&eventWindow, tmpEvent);
+				//CGEventPost(kCGSessionEventTap, tmpEvent);
+				NSLog(@"KEY DOWN: %d", downKeys[i]);
+				CGEventPostToPSN(&eventWindow, tmpEvent);
 			    CFRelease(tmpEvent);
 		    }
 			
@@ -187,29 +185,27 @@
 			if (upKeys[i] == 56)
 			{
 				pressShift = TRUE;
-				NSLog(@"SHIFT UP");
-				//continue;
+				continue;
 			}
 				
 			if (upKeys[i] == 58)
 			{
 				pressAlt = TRUE;
-				NSLog(@"ALT UP");
-				//continue;
+				continue;
 			}
 				
 			if (upKeys[i] == 59)
 			{
 				pressControl = TRUE;
-				NSLog(@"CTRL UP");
-				//continue;
-			}
-				
-			NSLog(@"KEY UP: %d", upKeys[i]);
+				continue;
+			}				
+
 			CGEventRef tmpEvent = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)upKeys[i], false);
 				
 			if (tmpEvent)
 			{
+				CGEventSetFlags(tmpEvent, 0);
+				
 				if (pressShift)
 					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskShift);
 				
@@ -220,21 +216,21 @@
 					CGEventSetFlags(tmpEvent, CGEventGetFlags(tmpEvent) | kCGEventFlagMaskControl);
 
 				
-				CGEventPost(kCGSessionEventTap, tmpEvent);
-				//CGEventPostToPSN(&eventWindow, tmpEvent);
+				//CGEventPost(kCGSessionEventTap, tmpEvent);
+				CGEventPostToPSN(&eventWindow, tmpEvent);
 				CFRelease(tmpEvent);
 			}
 			
 			pressShift = FALSE;
 			pressAlt = FALSE;
 			pressControl = FALSE;
+
 	    }
 	}
 	
 	CGInhibitLocalEvents(FALSE);
 }
 */
-
 
 - (void) addActionDown: (CGKeyCode) key
 {
