@@ -93,6 +93,7 @@ lastDefendFlags     = 0;
 lastJumpFollow      = 0;
 lastCheckAFK        = 0;
 lastFollowTime      = 0;
+instanceTime        = 0;
 
 --
 -- Strings
@@ -7710,6 +7711,13 @@ end
 
 function btp_do_dungeon_stuff()
     --
+    -- Clock how long we've been in the instance.
+    --
+    if (IsInInstance() == nil) then
+        instanceTime = GetTime();
+    end
+
+    --
     -- This is useful in raids
     --
     ConfirmReadyCheck(true);
@@ -7734,7 +7742,8 @@ function btp_do_dungeon_stuff()
         lastFarmBGTime = GetTime();
     elseif (farmDungeon and not farmBG and mode == 'lfgparty' and
             GetNumPartyMembers() > 0 and GetNumPartyMembers() < 3 and
-           (GetTime() - lastFarmBGTime) >= 30) then
+           (GetTime() - lastFarmBGTime) > 30 and
+           (GetTime() - instanceTime) > 60) then
         btp_frame_debug("Leaving LFG system: party falling apart.");
         LeaveParty();
         LeaveLFG();
@@ -7743,7 +7752,7 @@ function btp_do_dungeon_stuff()
 
     if (farmDungeon and not farmBG and mode == 'lfgparty' and
         GetNumPartyMembers() > 0 and GetNumPartyMembers() < 4 and
-       (GetTime() - lastFollowTime) >= 120) then
+       (GetTime() - lastFollowTime) > 120) then
         btp_frame_debug("Leaving LFG system: no one to follow.");
         LeaveParty();
         LeaveLFG();
