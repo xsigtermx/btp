@@ -7733,21 +7733,18 @@ function btp_do_dungeon_stuff()
         HideUIPanel(LFDParentFrame);
         lastFarmBGTime = GetTime();
     elseif (farmDungeon and not farmBG and mode == 'lfgparty' and
-            IsPartyLeader() and GetNumPartyMembers() > 0 and
-            GetNumPartyMembers() < 3 and
+            GetNumPartyMembers() > 0 and GetNumPartyMembers() < 3 and
            (GetTime() - lastFarmBGTime) >= 30) then
+        btp_frame_debug("Leaving LFG system: party falling apart.");
         LeaveParty();
         LeaveLFG();
         lastFarmBGTime = GetTime();
-    else
-        -- Just testing for now, but we will need to know the bots role
-        -- if we go with this code.  For now healer is hard-coded.
-        SetLFGRoles(false, false, true, false);
     end
 
     if (farmDungeon and not farmBG and mode == 'lfgparty' and
         GetNumPartyMembers() > 0 and GetNumPartyMembers() < 4 and
        (GetTime() - lastFollowTime) >= 120) then
+        btp_frame_debug("Leaving LFG system: no one to follow.");
         LeaveParty();
         LeaveLFG();
         lastFollowTime = GetTime();
