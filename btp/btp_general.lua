@@ -6254,11 +6254,11 @@ function btp_bot()
                 not CheckInteractDistance(followPlayer, 2)))) then
 
                 FollowUnit(followPlayer);
-                lastFollowTime = GetTime();
 
                 if (CheckInteractDistance(followPlayer, 4) and
                     followPlayer ~= "player") then
                     bootyCall = false;
+                    lastFollowTime = GetTime();
                 end
             end
 

@@ -148,8 +148,8 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 323120104;
-			PBXWorkspaceStateSaveDate = 323120104;
+			PBXPerProjectTemplateStateSaveDate = 323216064;
+			PBXWorkspaceStateSaveDate = 323216064;
 		};
 		perUserProjectItems = {
 			346597051005963300B71EE1 /* PBXTextBookmark */ = 346597051005963300B71EE1 /* PBXTextBookmark */;
@@ -161,9 +161,9 @@
 			3492DB3D1343A54300AD6EF4 /* PBXTextBookmark */ = 3492DB3D1343A54300AD6EF4 /* PBXTextBookmark */;
 			3492DB5F1343B3B600AD6EF4 /* PBXTextBookmark */ = 3492DB5F1343B3B600AD6EF4 /* PBXTextBookmark */;
 			3492DB601343B3B600AD6EF4 /* PBXTextBookmark */ = 3492DB601343B3B600AD6EF4 /* PBXTextBookmark */;
-			3492DB611343B3B600AD6EF4 /* PBXTextBookmark */ = 3492DB611343B3B600AD6EF4 /* PBXTextBookmark */;
 			3492DB6E1343DBDE00AD6EF4 /* PBXTextBookmark */ = 3492DB6E1343DBDE00AD6EF4 /* PBXTextBookmark */;
 			34CE7CB00F9D23A000E867AA /* PlistBookmark */ = 34CE7CB00F9D23A000E867AA /* PlistBookmark */;
+			34CE91A91343E2D6005FCDD2 /* PBXTextBookmark */ = 34CE91A91343E2D6005FCDD2 /* PBXTextBookmark */;
 			34E461A20F91BD8D004E665C /* PBXTextBookmark */ = 34E461A20F91BD8D004E665C /* PBXTextBookmark */;
 			34E461A30F91BD8D004E665C /* PBXTextBookmark */ = 34E461A30F91BD8D004E665C /* PBXTextBookmark */;
 			34E461A60F91BD8D004E665C /* PBXTextBookmark */ = 34E461A60F91BD8D004E665C /* PBXTextBookmark */;
@@ -259,9 +259,9 @@
 	};
 	344346580F77553D005671D9 /* EventAction.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1129, 4095}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1129, 4056}}";
 			sepNavSelRange = "{2524, 0}";
-			sepNavVisRange = "{1411, 1468}";
+			sepNavVisRange = "{1450, 1429}";
 		};
 	};
 	346597051005963300B71EE1 /* PBXTextBookmark */ = {
@@ -394,16 +394,6 @@
 		vrLen = 1603;
 		vrLoc = 16830;
 	};
-	3492DB611343B3B600AD6EF4 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 344346580F77553D005671D9 /* EventAction.m */;
-		name = "EventAction.m: 91";
-		rLen = 0;
-		rLoc = 2019;
-		rType = 0;
-		vrLen = 1750;
-		vrLoc = 4989;
-	};
 	3492DB6E1343DBDE00AD6EF4 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 344346580F77553D005671D9 /* EventAction.m */;
@@ -425,6 +415,16 @@
 		name = "/Users/godsflaw/src/wow-btp/branches/godsflaw/mac/Info.plist";
 		rLen = 0;
 		rLoc = 2147483647;
+	};
+	34CE91A91343E2D6005FCDD2 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 344346580F77553D005671D9 /* EventAction.m */;
+		name = "EventAction.m: 108";
+		rLen = 0;
+		rLoc = 2524;
+		rType = 0;
+		vrLen = 1429;
+		vrLoc = 1450;
 	};
 	34E461A20F91BD8D004E665C /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
