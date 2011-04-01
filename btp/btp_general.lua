@@ -7763,16 +7763,12 @@ function btp_do_dungeon_stuff()
         UnitHasLFGRandomCooldown("player"))) then
         -- farmBG instead
         farmBG = true;
-        btpRaidHeal = false;
         dontRelease = false;
         dontHearth = false;
-        lootMode = "pass";
     elseif (farmDungeon and GetBattlefieldInstanceRunTime() == 0) then
         farmBG = false;
-        btpRaidHeal = true;
         dontRelease = true;
         dontHearth = true;
-        lootMode = "greed";
     end
 end
 
