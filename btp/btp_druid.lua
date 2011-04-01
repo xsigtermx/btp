@@ -248,10 +248,18 @@ function druid_heal()
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
+                UnitAffectingCombat("player") and
+                UnitThreatSituation(playerName) ~= nil and
+                UnitThreatSituation(playerName) == 3 and
+                btp_cast_spell_on_target("Lifebloom", playerName)) then
+            lastLBTarget = playerName;
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
                 UnitAffectingCombat("player") and (lastLBTarget == playerName or
                 not btp_check_dist(lastLBTarget, 1) or
                 UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
-                DR_THRESH/2) and
+                DR_THRESH + DR_SCALAR/2) and
                 btp_cast_spell_on_target("Lifebloom", playerName)) then
             lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
@@ -438,6 +446,14 @@ function druid_heal()
             return true;
         elseif (not myRejuvenation and
                 btp_cast_spell_on_target("Rejuvenation", playerName)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
+                UnitAffectingCombat("player") and
+                UnitThreatSituation(playerName) ~= nil and
+                UnitThreatSituation(playerName) == 3 and
+                btp_cast_spell_on_target("Lifebloom", playerName)) then
+            lastLBTarget = playerName;
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
