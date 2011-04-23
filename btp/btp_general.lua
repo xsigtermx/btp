@@ -7752,7 +7752,7 @@ function btp_do_dungeon_stuff()
 
     if (farmDungeon and not farmBG and mode == 'lfgparty' and
         GetNumPartyMembers() > 0 and GetNumPartyMembers() < 4 and
-       (GetTime() - lastFollowTime) > 120) then
+       (GetTime() - lastFollowTime) > 120 and btpFollow) then
         btp_frame_debug("Leaving LFG system: no one to follow.");
         LeaveParty();
         LeaveLFG();
