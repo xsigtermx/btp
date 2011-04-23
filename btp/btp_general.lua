@@ -4500,7 +4500,7 @@ PRIORITY_G = { };
 
 -- function to add and remove priorities
 function btp_heal_priority_add(pname)
-        if (pname == nil) then
+        if (not pname) then
             PRIORITY_G[pcount] = string.lower(UnitName("target"));
         else
             PRIORITY_G[pcount] = string.lower(pname);
