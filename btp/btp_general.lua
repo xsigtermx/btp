@@ -4501,6 +4501,7 @@ PRIORITY_G = { };
 -- function to add and remove priorities
 function btp_heal_priority_add(pname)
         if (pname == "target") then
+            pname = string.lower(UnitName("target"));
             PRIORITY_G[pcount] = string.lower(UnitName("target"));
         else
             PRIORITY_G[pcount] = string.lower(pname);
