@@ -108,6 +108,15 @@ function druid_heal()
     hasClearCasting, myClearCasting,
     numClearCasting = btp_check_buff("ManaBurn", "player");
 
+    --
+    -- Nature's Swiftness check
+    --
+    hasNaturesSwiftness, myNaturesSwiftness,
+    numNaturesSwiftness = btp_check_buff("RavenForm", "player");
+
+    --
+    -- Bandage Check check
+    --
     hasBandageBuff, myBandageBuff,
     numBandageBuff = btp_check_buff("Holy_Heal", bandageTarget);
 
@@ -154,8 +163,8 @@ function druid_heal()
     elseif (pvpBot and UnitAffectingCombat("player") and
             UnitHealth("player")/UnitHealthMax("player") <=
            (DR_THRESH + DR_SCALAR) and UnitHealth("player") > 1 and
-            btp_cast_spell("Barkskin")) then
-        return true;
+            btp_cast_spell_alt("Barkskin")) then
+        -- This has no global cooldown
     elseif (pvpBot and UnitAffectingCombat("player") and
             not btp_check_buff("StoneClawTotem", "player") and
             UnitHealth("player")/UnitHealthMax("player") <=
@@ -170,16 +179,24 @@ function druid_heal()
         return true;
     end
 
-    if (not hasClearCasting and
-        btp_cast_spell("Nature's Swiftness")) then
-        return true;
-    end
-
     --
     -- Check for large heals
     --
     playerName, partyHurtCount, raidHurtCount,
     raidSubgroupHurtCount = btp_health_status(DR_THRESH);
+
+    --
+    -- Tree Form has changed and we should now pick the times we want to use it.
+    -- This should mean we never use it unless we're in combat, and more than
+    -- two people are hurt at this level. 
+    --
+    if (UnitAffectingCombat("player") and not btp_druid_istree() and
+       ((raidHurtCount and raidHurtCount > 1) or
+        (partyHurtCount and partyHurtCount > 1)) and
+        UnitMana("player")/UnitManaMax("player") > .25 and
+        btp_cast_spell("Tree of Life")) then
+        return true;
+    end
 
     if (playerName) then
         --
@@ -218,7 +235,7 @@ function druid_heal()
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif ((partyHurtCount > 1 or raidHurtCount > 1) and
-                UnitAffectingCombat("player") and
+                UnitAffectingCombat("player") and not btp_druid_istree() and
                 btp_cast_spell("Tranquility")) then
 
             if (not stopMoving and pvpBot) then
@@ -233,6 +250,28 @@ function druid_heal()
                 btp_cast_spell_on_target("Swiftmend", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
+        elseif (UnitAffectingCombat("player") and not hasClearCasting and
+               (btp_cast_spell_alt("Nature's Swiftness") or
+                hasNaturesSwiftness) and
+                btp_cast_spell_on_target("Healing Touch", playerName)) then
+
+            if (not stopMoving and pvpBot) then
+                stopMoving = true;
+                FuckBlizzardMove("TURNLEFT");
+            end
+
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (UnitAffectingCombat("player") and hasClearCasting and
+                btp_cast_spell_on_target("Healing Touch", playerName)) then
+
+            if (not stopMoving and pvpBot) then
+                stopMoving = true;
+                FuckBlizzardMove("TURNLEFT");
+            end
+
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
         elseif (not myRegrowth and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
@@ -243,29 +282,23 @@ function druid_heal()
 
             FuckBlizzardTargetUnit("playertarget");
             return true;
+        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
+                UnitAffectingCombat("player") and (lastLBTarget == playerName or
+                UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
+                DR_THRESH + DR_SCALAR/2 or btp_druid_istree()) and
+                ((UnitThreatSituation(playerName) ~= nil and
+                UnitThreatSituation(playerName) == 3) or pvpBot or
+                btp_druid_istree()) and
+                btp_cast_spell_on_target("Lifebloom", playerName)) then
+            lastLBTarget = playerName;
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
         elseif (not myRejuvenation and
                 btp_cast_spell_on_target("Rejuvenation", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
-                UnitAffectingCombat("player") and
-                UnitThreatSituation(playerName) ~= nil and
-                UnitThreatSituation(playerName) == 3 and
-                btp_cast_spell_on_target("Lifebloom", playerName)) then
-            lastLBTarget = playerName;
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
-        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
-                UnitAffectingCombat("player") and (lastLBTarget == playerName or
-                not btp_check_dist(lastLBTarget, 1) or
-                UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
-                DR_THRESH + DR_SCALAR/2) and
-                btp_cast_spell_on_target("Lifebloom", playerName)) then
-            lastLBTarget = playerName;
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
         elseif (UnitAffectingCombat("player") and not hasClearCasting and
-               (myRegrowth or myRejuvenation) and
+               (myRegrowth or myRejuvenation or myLifebloom) and
                 btp_cast_spell_on_target("Nourish", playerName)) then
 
             if (not stopMoving and pvpBot) then
@@ -427,7 +460,7 @@ function druid_heal()
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif ((partyHurtCount > 3 or raidHurtCount > 3) and
-                UnitAffectingCombat("player") and
+                UnitAffectingCombat("player") and not btp_druid_istree() and
                 btp_cast_spell("Tranquility")) then
 
             if (not stopMoving and pvpBot) then
@@ -444,36 +477,16 @@ function druid_heal()
                 btp_cast_spell_on_target("Swiftmend", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (not myRejuvenation and
-                btp_cast_spell_on_target("Rejuvenation", playerName)) then
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
-        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
-                UnitAffectingCombat("player") and
-                UnitThreatSituation(playerName) ~= nil and
-                UnitThreatSituation(playerName) == 3 and
-                btp_cast_spell_on_target("Lifebloom", playerName)) then
-            lastLBTarget = playerName;
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
-        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
-                UnitAffectingCombat("player") and (lastLBTarget == playerName or
-                not btp_check_dist(lastLBTarget, 1) or
-                UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
-                DR_THRESH + DR_SCALAR/2) and
-                btp_cast_spell_on_target("Lifebloom", playerName)) then
-            lastLBTarget = playerName;
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
-        elseif (partyHurtCount > 3 and UnitAffectingCombat("player") and
-                btp_cast_spell("Tranquility")) then
+        elseif (UnitAffectingCombat("player") and not myRegrowth and
+                hasClearCasting and
+                btp_cast_spell_on_target("Regrowth", playerName)) then
 
             if (not stopMoving and pvpBot) then
                 stopMoving = true;
                 FuckBlizzardMove("TURNLEFT");
             end
 
-            lastTranquility = GetTime();
+            FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (UnitAffectingCombat("player") and not hasThorns and
                 UnitHealth(playerName)/UnitHealthMax(playerName) > 
@@ -489,9 +502,24 @@ function druid_heal()
                 btp_cast_spell_on_target("Thorns", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
+        elseif ((not myLifebloom or (myLifebloom and numLifebloom < 3)) and
+                UnitAffectingCombat("player") and (lastLBTarget == playerName or
+                UnitHealth(lastLBTarget)/UnitHealthMax(lastLBTarget) >
+                DR_THRESH + DR_SCALAR/2 or btp_druid_istree()) and
+                ((UnitThreatSituation(playerName) ~= nil and
+                UnitThreatSituation(playerName) == 3) or pvpBot or
+                btp_druid_istree()) and
+                btp_cast_spell_on_target("Lifebloom", playerName)) then
+            lastLBTarget = playerName;
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+        elseif (not myRejuvenation and
+                btp_cast_spell_on_target("Rejuvenation", playerName)) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
         elseif (UnitAffectingCombat("player") and not myRegrowth and
                 UnitHealth(playerName)/UnitHealthMax(playerName) <= 
-                DR_THRESH + DR_SCALAR/2 and
+                DR_THRESH + DR_SCALAR/3 and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
             if (not stopMoving and pvpBot) then
@@ -501,22 +529,9 @@ function druid_heal()
 
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (UnitAffectingCombat("player") and not hasClearCasting and
-                UnitHealth(playerName)/UnitHealthMax(playerName) <= 
-                DR_THRESH + DR_SCALAR/2 and (myRegrowth or myRejuvenation) and
-                btp_cast_spell_on_target("Nourish", playerName)) then
-
-            if (not stopMoving and pvpBot) then
-                stopMoving = true;
-                FuckBlizzardMove("TURNLEFT");
-            end
-
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
         elseif (UnitAffectingCombat("player") and
-                UnitHealth(playerName)/UnitHealthMax(playerName) <= 
-                DR_THRESH + DR_SCALAR/2 and
-                btp_cast_spell_on_target("Healing Touch", playerName)) then
+               (myRegrowth or myRejuvenation or myLifebloom) and
+                btp_cast_spell_on_target("Nourish", playerName)) then
 
             if (not stopMoving and pvpBot) then
                 stopMoving = true;

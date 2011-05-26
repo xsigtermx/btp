@@ -5502,6 +5502,7 @@ function btp_icon_is_mount_ground(icon)
         strfind(icon, "PolarBear") or
         strfind(icon, "Raptor") or
         strfind(icon, "raptor") or
+        strfind(icon, "runningwild") or
         strfind(icon, "Mount_Raven") or
         strfind(icon, "Swiftness") or
         strfind(icon, "Tiger") or
@@ -7871,7 +7872,7 @@ function btp_is_guild_member(unit_name)
     -- cache the guild roster into a hash table in memory for fast
     -- lookup later.  This is causing pain in the client.
     --
-    while (guild_members[UnitName("player")] == nil) do
+    while (IsInGuild() and guild_members[UnitName("player")] == nil) do
         GuildRoster();
         for i = 0, GetNumGuildMembers(true) do
             name, rank, rankIndex, level, class, zone, note, officernote,
