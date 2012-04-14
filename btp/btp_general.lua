@@ -4623,7 +4623,7 @@ function btp_check_buff(buff, unit)
         buffStealable = UnitBuff(unit, i);
         if (buffTexture and buffMine == "player" and
             strfind(buffTexture, buff)) then
-            return true, true, buffApplications;
+            return true, true, buffApplications, (buffTime - GetTime());
         elseif (buffTexture and strfind(buffTexture, buff)) then
             hasBuff = true;
             stackNum = stackNum + buffApplications;
@@ -4633,9 +4633,9 @@ function btp_check_buff(buff, unit)
     end
 
     if (hasBuff) then
-        return true, false, stackNum;
+        return true, false, stackNum, (buffTime - GetTime());
     else
-        return false, false, 0;
+        return false, false, 0, 0;
     end
 end
 
@@ -4690,7 +4690,7 @@ function btp_check_debuff(buff, unit)
 
         if (debuffTexture and debuffMine == "player" and
             strfind(debuffTexture, buff)) then
-            return true, true, debuffApplications;
+            return true, true, debuffApplications, (debuffTimeLeft - GetTime());
         elseif (debuffTexture and strfind(debuffTexture, buff)) then
             hasDebuff = true;
             stackNum = stackNum + debuffApplications;
@@ -4700,9 +4700,9 @@ function btp_check_debuff(buff, unit)
     end
 
     if (hasDebuff) then
-        return true, false, stackNum;
+        return true, false, stackNum, (debuffTimeLeft - GetTime());
     else
-        return false, false, 0;
+        return false, false, 0, 0;
     end
 end
 
@@ -5097,7 +5097,7 @@ function btp_health_status(thresh, raidHeal)
     end
 
     if(PRIORITY_ONLY) then
-        return false;
+        return false, 0, 0, 0;
     end
 
     -- Now that we are done checking our priorities check
