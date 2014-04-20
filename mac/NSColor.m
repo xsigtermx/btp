@@ -45,9 +45,9 @@
 		blueIntValue=blueFloatValue*255.99999f;
 		
 		// Convert the numbers to hex strings
-		*redHexValue = [NSString stringWithFormat: @"%02x", redIntValue];
-		*greenHexValue = [NSString stringWithFormat: @"%02x", greenIntValue];
-		*blueHexValue = [NSString stringWithFormat: @"%02x", blueIntValue];
+		*redHexValue = [NSString stringWithFormat: @"%02lx", (long)redIntValue];
+		*greenHexValue = [NSString stringWithFormat: @"%02lx", (long)greenIntValue];
+		*blueHexValue = [NSString stringWithFormat: @"%02lx", (long)blueIntValue];
 	}
 	
 	return;

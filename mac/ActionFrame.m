@@ -20,6 +20,11 @@
 //  Copyright 2009 Project DoD Inc. All rights reserved.
 //
 
+#import "OpenGL/gl.h"
+#import "OpenGL/glu.h"
+#import "OpenGL/glext.h"
+#import "GLUT/glut.h"
+
 #import "ActionFrame.h"
 #import "NSColor.h"
 
