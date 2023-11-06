@@ -26,6 +26,5 @@ btp_rogue.xml
 btp_shaman.xml
 btp_warlock.xml
 btp_warrior.xml
-btp_node_data.xml
 btp_chatter.xml
 btp_frame.xml

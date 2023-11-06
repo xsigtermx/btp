@@ -21,9 +21,9 @@ function btp_rogue_initialize()
     btp_frame_debug("Rogue INIT");
 
     SlashCmdList["ROGUEH"] = rogue_heal;
-    SLASH_DRUIDH1 = "/rh";
+    SLASH_ROGUEH1 = "/rh";
     SlashCmdList["ROGUED"] = rogue_dps;
-    SLASH_DRUIDD1 = "/rd";
+    SLASH_ROGUED1 = "/rd";
 end
 
 function rogue_heal()
@@ -31,5 +31,14 @@ function rogue_heal()
 end
 
 function rogue_dps()
-    btp_frame_debug("Rogue Heal");
+    if (current_cb ~= nil and current_cb()) then
+        return true;
+    end
+
+    Trinkets();
+    ProphetKeyBindings();
+
+    btp_cast_spell("Sinister Strike");
+
+    return true;
 end

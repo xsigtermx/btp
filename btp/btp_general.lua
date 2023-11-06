@@ -609,8 +609,8 @@ function FuckBlizUseInventoryItem(itemID)
 end
 
 function FuckBlizUseContainerItem(bag, slot)
-    if (GetContainerItemLink(bag, slot)) then
-        itemName = string.gsub(GetContainerItemLink(bag, slot),
+    if (C_Container.GetContainerItemLink(bag, slot)) then
+        itemName = string.gsub(C_Container.GetContainerItemLink(bag, slot),
                                "^.-%[(.*)%].*", "%1");
         btp_frame_set_color_hex("CA", keyToColor[fuckBlizMapping[itemName]]);
         btp_frame_set_color_hex("IT", "FFFFFF");
@@ -1481,11 +1481,11 @@ function ProphetKeyBindings()
             end
 
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
                    itemName, itemLink, itemRarity, itemLevel, itemMinLevel,
                    itemType, itemSubType, itemStackCount, itemEquipLoc,
-                   invTexture = GetItemInfo(GetContainerItemLink(bag,slot));
+                   invTexture = GetItemInfo(C_Container.GetContainerItemLink(bag,slot));
 
                    if ((itemType == "Consumable" or
                        (itemType == "Trade Goods" and
@@ -1879,13 +1879,6 @@ end
 function btp_general_resurrect_request()
     if (not botOff and event == "RESURRECT_REQUEST") then
         AcceptResurrect();
-    end
-end
-
-function btp_general_cursor_update()
-    if (scanForLoot) then
-        okayClick = true;
-        scanForLoot = false;
     end
 end
 
@@ -2554,9 +2547,9 @@ function btp_general_chat_msg_whisper()
                     TradeItem(string.sub(arg1, 16), arg2);
                 elseif (string.sub(string.sub(arg1, 9), 0, 5) == "drink") then
                     for bag=0,4 do
-                      for slot=1,GetContainerNumSlots(bag) do
-                        if (GetContainerItemLink(bag,slot) and
-                            GetContainerItemLink(bag,slot) ==
+                      for slot=1,C_Container.GetContainerNumSlots(bag) do
+                        if (C_Container.GetContainerItemLink(bag,slot) and
+                            C_Container.GetContainerItemLink(bag,slot) ==
                             string.sub(arg1, 16)) then
                             FuckBlizUseContainerItem(bag,slot);
                             return true;
@@ -2565,12 +2558,12 @@ function btp_general_chat_msg_whisper()
                     end
                 else
                     for bag=0,4 do
-                      for slot=1,GetContainerNumSlots(bag) do
-                        if (GetContainerItemLink(bag,slot)) then
+                      for slot=1,C_Container.GetContainerNumSlots(bag) do
+                        if (C_Container.GetContainerItemLink(bag,slot)) then
                            itemName, itemLink, itemRarity, itemLevel,
                            itemMinLevel, itemType, itemSubType, itemStackCount,
                            itemEquipLoc, invTexture = 
-                           GetItemInfo(GetContainerItemLink(bag,slot));
+                           GetItemInfo(C_Container.GetContainerItemLink(bag,slot));
                    
                            if (itemType == "Consumable") then
                                SendChatMessage(itemLink, "WHISPER",
@@ -3034,10 +3027,10 @@ function SelfHeal(healthThresh, manaThresh)
     healthPotionSlot = 1;
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-          if (string.find(GetContainerItemLink(bag,slot), "Healthstone")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot), "Healthstone")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasHealthStone = true;
                   healthStoneBag = bag;
@@ -3051,11 +3044,11 @@ function SelfHeal(healthThresh, manaThresh)
            
     if (IsActiveBattlefieldArena() == nil) then
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot)) then
-              if (string.find(GetContainerItemLink(bag,slot),
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot)) then
+              if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                                    "Mana Potion")) then
-                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                   if (duration - (GetTime() - start) <= 0) then
                       hasManaPotion = true;
                       manaPotionBag = bag;
@@ -3068,11 +3061,11 @@ function SelfHeal(healthThresh, manaThresh)
         end
 
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot)) then
-              if (string.find(GetContainerItemLink(bag,slot),
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot)) then
+              if (string.find(C_Container.GetContainerItemLink(bag,slot),
                   "Healing Potion")) then
-                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                   if (duration - (GetTime() - start) <= 0) then
                       hasHealthPotion = true;
                       healthPotionBag = bag;
@@ -3088,11 +3081,11 @@ function SelfHeal(healthThresh, manaThresh)
     if (GetNumBattlefieldScores() > 0 and
         IsActiveBattlefieldArena() == nil) then
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot)) then
-              if (string.find(GetContainerItemLink(bag,slot),
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot)) then
+              if (string.find(C_Container.GetContainerItemLink(bag,slot),
                   "Mana Draught")) then
-                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                   if (duration - (GetTime() - start) <= 0) then
                       hasManaPotion = true;
                       manaPotionBag = bag;
@@ -3105,11 +3098,11 @@ function SelfHeal(healthThresh, manaThresh)
         end
 
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot)) then
-              if (string.find(GetContainerItemLink(bag,slot),
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot)) then
+              if (string.find(C_Container.GetContainerItemLink(bag,slot),
                   "Healing Draught")) then
-                  start, duration, enable = GetContainerItemCooldown(bag, slot);
+                  start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                   if (duration - (GetTime() - start) <= 0) then
                       hasHealthPotion = true;
                       healthPotionBag = bag;
@@ -3520,136 +3513,136 @@ function Trinkets()
 
     local bag = 4
     while (bag >= 0) do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-            if (string.find(GetContainerItemLink(bag,slot),
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Frostwolf Battle Standard")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 0) then
                     hasFrostBattleStandard = true;
                     battleFrostStandardBag = bag;
                     battleFrostStandardSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Horde Battle Standard") or
-                string.find(GetContainerItemLink(bag,slot),
+                string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Alliance Battle Standard")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 0) then
                     hasBattleStandard = true;
                     battleStandardBag = bag;
                     battleStandardSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot), DEF_TRINKET)) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), DEF_TRINKET)) then
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasDefTrink = true;
                     defTrinkBag = bag;
                     defTrinkSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Six Demon Bag")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasDemon = true;
                     demonBag = bag;
                     demonSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Mark of Resolution")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasMark = true;
                     markBag = bag;
                     markSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Orb of Deception")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasDeception = true;
                     deceptionBag = bag;
                     deceptionSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Barov Peasant Caller")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasBarov = true;
                     barovBag = bag;
                     barovSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Defiler's Talisman")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasDefTali = true;
                     defTaliBag = bag;
                     defTaliSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot), "Lifestone")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Lifestone")) then
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasLifestone = true;
                     lifestoneBag = bag;
                     lifestoneSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Burst of Knowledge")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasBurst = true;
                     burstBag = bag;
                     burstSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Smokey's Lighter")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasLighter = true;
                     lighterBag = bag;
                     lighterSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Linken's Boomerang")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasBoom = true;
                     boomBag = bag;
                     boomSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Cannonball Runner")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasCannon = true;
                     cannonBag = bag;
                     cannonSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot), "Prismcharm")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Prismcharm")) then
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasPrism = true;
                     prismBag = bag;
                     prismSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Charm of Alacrity")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasAlacrity = true;
                     alacrityBag = bag;
@@ -3663,90 +3656,90 @@ function Trinkets()
             -- trinkets.  If you do not have any don't worry, just put on
             -- a normal trinket that does + to stats in its place.
             --
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Icon of the Silver Crescent")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasCrescent = true;
                     crescentBag = bag;
                     crescentSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Xi'ri's Gift")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasXiris = true;
                     xirisBag = bag;
                     xirisSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Lower City Prayerbook")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasPrayer = true;
                     prayerBag = bag;
                     prayerSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Draconic Infused Emblem")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasDrakk = true;
                     drakkBag = bag;
                     drakkSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Scryer's Bloodgem")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasBloodgem = true;
                     bloodgemBag = bag;
                     bloodgemSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Vengeance of the Illidari")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasIllidari = true;
                     illidariBag = bag;
                     illidariSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Ancient Crystal Talisman")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasCrystal = true;
                     crystalBag = bag;
                     crystalSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Ancient Draenei Arcane Relic")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasDraenei = true;
                     draeneiBag = bag;
                     draeneiSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Terokkar Tablet of Vim")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasVim = true;
                     vimBag = bag;
                     vimSlot = slot;
                 end
             end
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Starkiller's Bauble")) then
-                start, duration, enable = GetContainerItemCooldown(bag, slot);
+                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
                 if (duration - (GetTime() - start) <= 30) then
                     hasStark = true;
                     starkBag = bag;
@@ -4053,9 +4046,9 @@ function TradeItem(itemName, playerName)
     end
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-          if (GetContainerItemLink(bag,slot) == itemName) then
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (C_Container.GetContainerItemLink(bag,slot) == itemName) then
               itemBag = bag;
               itemSlot = slot;
           end
@@ -4318,6 +4311,8 @@ function btp_cast_spell_alt(sname)
 end
 
 function btp_cast_spell_on_target(sname, tname)
+        -- btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
+
         if (not sname or not tname) then
             return false;
         end
@@ -5414,115 +5409,115 @@ function btp_bot()
 
     local bag = 4
     while (bag >= 0) do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
 
-            if (string.find(GetContainerItemLink(bag,slot), "Hearthstone")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Hearthstone")) then
                 hasHearthStone = true;
                 hearthBag = bag;
                 hearthSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot), "Milk")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Milk")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Mana Biscuit")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Mana Lollipop")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Mana Cookie")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Mana Brownie")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Mana Cake")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Mana Strudel")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Mana Pie")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot), "Tea")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Tea")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot), "Nectar")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Nectar")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot), "Juice")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Juice")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot), "Dew")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Dew")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot), "Ethermead")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Ethermead")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Manna Biscuit")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot),
+            if (string.find(C_Container.GetContainerItemLink(bag,slot),
                 "Star's Tears")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
             end
 
-            if (string.find(GetContainerItemLink(bag,slot), "Water")) then
+            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Water")) then
                 hasWater = true;
                 waterBag = bag;
                 waterSlot = slot;
@@ -5597,12 +5592,12 @@ function btp_bot()
 
         local bag = 4
         while (bag >= 0) do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot)) then
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot)) then
                 --
                 -- XXX: Add new alcohol
                 --
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Conjured Glacier Water")) then
                     hasWater = true;
                     waterBag = bag;
@@ -6186,54 +6181,54 @@ function btp_bot()
         hasWater = false;
         local bag = 4
         while (bag >= 0) do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot)) then
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot)) then
                 --
                 -- XXX: Add new alcohol
                 --
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Bottle of Pinot Noir")) then
                     hasWater = true;
                     waterBag = bag;
                     waterSlot = slot;
                 end
 
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Flask of Port")) then
                     hasWater = true;
                     waterBag = bag;
                     waterSlot = slot;
                 end
 
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Skin of Dwarven Stout")) then
                     hasWater = true;
                     waterBag = bag;
                     waterSlot = slot;
                 end
 
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Flagon of Mead")) then
                     hasWater = true;
                     waterBag = bag;
                     waterSlot = slot;
                 end
 
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Jug of Bourbon")) then
                     hasWater = true;
                     waterBag = bag;
                     waterSlot = slot;
                 end
 
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Darkmoon Special Reserve")) then
                     hasWater = true;
                     waterBag = bag;
                     waterSlot = slot;
                 end
 
-                if (string.find(GetContainerItemLink(bag,slot),
+                if (string.find(C_Container.GetContainerItemLink(bag,slot),
                                 "Cenarion Spirits")) then
                     hasWater = true;
                     waterBag = bag;
@@ -6282,11 +6277,11 @@ function btp_free_action()
     end
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot) and
-            string.find(GetContainerItemLink(bag,slot),
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot) and
+            string.find(C_Container.GetContainerItemLink(bag,slot),
                         "Living Action Potion")) then
-            start, duration, enable = GetContainerItemCooldown(bag, slot);
+            start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
             if (duration - (GetTime() - start) <= 0) then
                 hasLivingAction = true;
             end
@@ -6313,9 +6308,9 @@ function btp_free_action()
     elseif (btp_is_impaired("player") and hasLivingAction and
            (GetTime() - lastBreakCC) > 1) then
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot) and
-                string.find(GetContainerItemLink(bag,slot),
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot) and
+                string.find(C_Container.GetContainerItemLink(bag,slot),
                             "Living Action Potion")) then
                 FuckBlizUseContainerItem(bag,slot);
                 lastBreakCC = GetTime();
@@ -6489,65 +6484,65 @@ function DrinkPotion()
     hasFrostProtect = false;
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-          if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot), "Stoneshield")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasPhysicalProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Shadow Protection")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Shadow Protection")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasShadowProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Fire Protection")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Fire Protection")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasFireProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Holy Protection")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Holy Protection")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasHolyProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Nature Protection")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasNatureProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Arcane Protection")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasArcaneProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Magic Resistance")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasMagicProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Free Action")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasFreeAction = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasInvulnerability = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Catseye Elixir")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Catseye Elixir")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasStealthDetect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Poison Resistance")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Poison Resistance")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasPoisonProtect = true;
               end
-          elseif (string.find(GetContainerItemLink(bag,slot), "Frost Protection")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+          elseif (string.find(C_Container.GetContainerItemLink(bag,slot), "Frost Protection")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasFrostProtect = true;
               end
@@ -6559,9 +6554,9 @@ function DrinkPotion()
     if (UnitClass("target") == "Warrior") then
         if (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Stoneshield")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastPhysicalProtect = GetTime();
                       drankPotion = true;
@@ -6571,9 +6566,9 @@ function DrinkPotion()
             end
         elseif (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Free Action")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastFreeAction = GetTime();
                       drankPotion = true;
@@ -6583,9 +6578,9 @@ function DrinkPotion()
             end
         elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastInvulnerability = GetTime();
                       drankPotion = true;
@@ -6599,9 +6594,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Druid") then
         if (hasArcaneProtect and (GetTime() - lastArcaneProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Arcane Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastArcaneProtect = GetTime();
                       drankPotion = true;
@@ -6611,9 +6606,9 @@ function DrinkPotion()
             end
         elseif (hasNatureProtect and (GetTime() - lastNatureProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Nature Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastNatureProtect = GetTime();
                       drankPotion = true;
@@ -6623,9 +6618,9 @@ function DrinkPotion()
             end
         elseif (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Stoneshield")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastPhysicalProtect = GetTime();
                       drankPotion = true;
@@ -6635,9 +6630,9 @@ function DrinkPotion()
             end
         elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Magic Resistance")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastMagicProtect = GetTime();
                       drankPotion = true;
@@ -6651,9 +6646,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Hunter") then
         if (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Stoneshield")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastPhysicalProtect = GetTime();
                       drankPotion = true;
@@ -6663,9 +6658,9 @@ function DrinkPotion()
             end
         elseif (hasArcaneProtect and (GetTime() - lastArcaneProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Arcane Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastArcaneProtect = GetTime();
                       drankPotion = true;
@@ -6675,9 +6670,9 @@ function DrinkPotion()
             end
         elseif (hasNatureProtect and (GetTime() - lastNatureProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Nature Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastNatureProtect = GetTime();
                       drankPotion = true;
@@ -6687,9 +6682,9 @@ function DrinkPotion()
             end
         elseif (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Free Action")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastFreeAction = GetTime();
                       drankPotion = true;
@@ -6699,9 +6694,9 @@ function DrinkPotion()
             end
         elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastInvulnerability = GetTime();
                       drankPotion = true;
@@ -6715,9 +6710,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Mage") then
         if (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Magic Resistance")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastMagicProtect = GetTime();
                       drankPotion = true;
@@ -6727,9 +6722,9 @@ function DrinkPotion()
             end
         elseif (hasFireProtect and (GetTime() - lastFireProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Fire Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Fire Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastFireProtect = GetTime();
                       drankPotion = true;
@@ -6739,9 +6734,9 @@ function DrinkPotion()
             end
         elseif (hasFrostProtect and (GetTime() - lastFrostProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Frost Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Frost Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastFrostProtect = GetTime();
                       drankPotion = true;
@@ -6751,9 +6746,9 @@ function DrinkPotion()
             end
         elseif (hasArcaneProtect and (GetTime() - lastArcaneProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Arcane Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Arcane Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastArcaneProtect = GetTime();
                       drankPotion = true;
@@ -6767,9 +6762,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Paladin") then
         if (hasHolyProtect and (GetTime() - lastHolyProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Holy Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Holy Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastHolyProtect = GetTime();
                       drankPotion = true;
@@ -6779,9 +6774,9 @@ function DrinkPotion()
             end
         elseif (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Stoneshield")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastPhysicalProtect = GetTime();
                       drankPotion = true;
@@ -6791,9 +6786,9 @@ function DrinkPotion()
             end
         elseif (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Free Action")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastFreeAction = GetTime();
                       drankPotion = true;
@@ -6803,9 +6798,9 @@ function DrinkPotion()
             end
         elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastInvulnerability = GetTime();
                       drankPotion = true;
@@ -6819,9 +6814,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Priest") then
         if (hasShadowProtect and (GetTime() - lastShadowProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Shadow Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Shadow Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastShadowProtect = GetTime();
                       drankPotion = true;
@@ -6831,9 +6826,9 @@ function DrinkPotion()
             end
         elseif (hasHolyProtect and (GetTime() - lastHolyProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Holy Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Holy Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastHolyProtect = GetTime();
                       drankPotion = true;
@@ -6843,9 +6838,9 @@ function DrinkPotion()
             end
         elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Magic Resistance")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastMagicProtect = GetTime();
                       drankPotion = true;
@@ -6859,9 +6854,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Rogue") then
         if (hasFreeAction and (GetTime() - lastFreeAction) >= 31) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Free Action")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Free Action")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastFreeAction = GetTime();
                       drankPotion = true;
@@ -6871,9 +6866,9 @@ function DrinkPotion()
             end
         elseif (hasPoisonProtect and (GetTime() - lastPoisonProtect) >= 61) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Poison Resistance")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Poison Resistance")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastPoisonProtect = GetTime();
                       drankPotion = true;
@@ -6883,9 +6878,9 @@ function DrinkPotion()
             end
         elseif (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Stoneshield")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastPhysicalProtect = GetTime();
                       drankPotion = true;
@@ -6895,9 +6890,9 @@ function DrinkPotion()
             end
         elseif (hasInvulnerability and (GetTime() - lastInvulnerability) >= 15) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Invulnerability Potion")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastInvulnerability = GetTime();
                       drankPotion = true;
@@ -6907,9 +6902,9 @@ function DrinkPotion()
             end
         elseif (hasStealthDetect and (GetTime() - lastStealthDetect) >= 601) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Catseye Elixir")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Catseye Elixir")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastStealthDetect = GetTime();
                       drankPotion = true;
@@ -6923,9 +6918,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Shaman") then
         if (hasPhysicalProtect and (GetTime() - lastPhysicalProtect) >= 121) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Stoneshield")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Stoneshield")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastPhysicalProtect = GetTime();
                       drankPotion = true;
@@ -6935,9 +6930,9 @@ function DrinkPotion()
             end
         elseif (hasNatureProtect and (GetTime() - lastNatureProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Nature Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Nature Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastNatureProtect = GetTime();
                       drankPotion = true;
@@ -6947,9 +6942,9 @@ function DrinkPotion()
             end
         elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Magic Resistance")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastMagicProtect = GetTime();
                       drankPotion = true;
@@ -6963,9 +6958,9 @@ function DrinkPotion()
     elseif (UnitClass("target") == "Warlock") then
         if (hasShadowProtect and (GetTime() - lastShadowProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Shadow Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Shadow Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastShadowProtect = GetTime();
                       drankPotion = true;
@@ -6975,9 +6970,9 @@ function DrinkPotion()
             end
         elseif (hasFireProtect and (GetTime() - lastFireProtect) >= 3600) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Fire Protection")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Fire Protection")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastFireProtect = GetTime();
                       drankPotion = true;
@@ -6987,9 +6982,9 @@ function DrinkPotion()
             end
         elseif (hasMagicProtect and (GetTime() - lastMagicProtect) >= 181) then
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot)) then
-                  if (string.find(GetContainerItemLink(bag,slot), "Magic Resistance")) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot)) then
+                  if (string.find(C_Container.GetContainerItemLink(bag,slot), "Magic Resistance")) then
                       FuckBlizUseContainerItem(bag,slot);
                       lastMagicProtect = GetTime();
                       drankPotion = true;
