@@ -19,4 +19,17 @@ ROGUE_DEF_TRINKET = "Insignia of the Horde";
 
 function btp_rogue_initialize()
     btp_frame_debug("Rogue INIT");
+
+    SlashCmdList["ROGUEH"] = rogue_heal;
+    SLASH_DRUIDH1 = "/rh";
+    SlashCmdList["ROGUED"] = rogue_dps;
+    SLASH_DRUIDD1 = "/rd";
+end
+
+function rogue_heal()
+    btp_frame_debug("Rogue Heal");
+end
+
+function rogue_dps()
+    btp_frame_debug("Rogue Heal");
 end
