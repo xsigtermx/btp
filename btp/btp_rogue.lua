@@ -35,10 +35,30 @@ function rogue_dps()
         return true;
     end
 
-    Trinkets();
+    -- Trinkets();
     ProphetKeyBindings();
 
-    btp_cast_spell("Sinister Strike");
+    --
+    -- Slice and Dice
+    --
+    hasSlice, mySlice, numSlice = btp_check_buff("SliceAndDice", "player");
+
+    if (IsStealthed() and btp_cast_spell("Backstab")) then
+        btp_frame_debug("Backstab");
+        return true;
+    elseif (GetComboPoints("player", "target") > 3 and
+            btp_cast_spell("Eviscerate")) then
+        btp_frame_debug("Eviscerate");
+        return true;
+    elseif (GetComboPoints("player", "target") > 0 and not hasSlice and
+            btp_cast_spell("Slice and Dice")) then
+        btp_frame_debug("Slice and Dice");
+        return true;
+    elseif (UnitPower("player", T_ENERGY) > 65 and
+            btp_cast_spell("Sinister Strike")) then
+        btp_frame_debug("Sinister Strike");
+        return true;
+    end
 
     return true;
 end

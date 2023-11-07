@@ -37,6 +37,14 @@ WATERBREAK_USER = "";
 mageisDrinking = false;
 
 --
+-- Energy Types
+--
+T_MANA   = 0;
+T_RAGE   = 1;
+T_ENERGY = 3;
+T_COMBO  = 4;
+
+--
 -- Ints and Floats
 --
 lastExcludeBroadcast= 0;
@@ -4295,47 +4303,49 @@ function btp_check_debuff(buff, unit)
 end
 
 function btp_set_cb(sname, tname)
-        if (cb_array[sname] ~= nil) then
-            -- btp_frame_debug("setting callback to " .. sname);
-            current_cb = cb_array[sname];
-            current_cb_target = tname;
-        end
+    if (cb_array[sname] ~= nil) then
+        -- btp_frame_debug("setting callback to " .. sname);
+        current_cb = cb_array[sname];
+        current_cb_target = tname;
+    end
 end
 
 function btp_cast_spell(sname)
-        return btp_cast_spell_on_target(sname, "target");
+    return btp_cast_spell_on_target(sname, "target");
 end
 
 function btp_cast_spell_alt(sname)
-        return btp_cast_spell_on_target_alt(sname, "target");
+    return btp_cast_spell_on_target_alt(sname, "target");
 end
 
 function btp_cast_spell_on_target(sname, tname)
-        -- btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
+    -- btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
 
-        if (not sname or not tname) then
-            return false;
-        end
-
-        if (not btp_spell_known(sname)) then
-                return false;
-        end
-
-        if (btp_can_cast(sname)) then
-                -- btp_frame_debug("Casting: " .. sname .. " On: " .. tname);
-                btp_set_cb(sname, tname);
-
-                if (tname ~= "target") then
-                    FuckBlizzardTargetUnit(tname);
-                end
-
-                FuckBlizzardByName(sname);
-                return true;
---	else
---		btp_frame_debug("FAILD CASTING: " .. sname .. " On: " .. tname);
-        end
-
+    if (not sname or not tname) then
+        -- btp_frame_debug("NIL: " .. sname .. " or " .. tname);
         return false;
+    end
+
+    if (not btp_spell_known(sname)) then
+        -- btp_frame_debug("UNKNOWN: " .. sname);
+        return false;
+    end
+
+    if (btp_can_cast(sname)) then
+        -- btp_frame_debug("CAN CAST: " .. sname .. " On: " .. tname);
+        btp_set_cb(sname, tname);
+
+        if (tname ~= "target") then
+            FuckBlizzardTargetUnit(tname);
+        end
+
+        FuckBlizzardByName(sname);
+        return true;
+    else
+    	-- btp_frame_debug("FAILD CASTING: " .. sname .. " On: " .. tname);
+    end
+
+    return false;
 end
 
 function btp_cast_spell_on_target_alt(sname, tname)
@@ -4361,121 +4371,129 @@ function btp_cast_spell_on_target_alt(sname, tname)
 end
 
 function btp_can_cast(sname)
-        if(sname == nil) then
-            return false;
-        end
-        -- btp_frame_debug("trying to cast: " .. sname);
-
-        -- check if we disabled the spell
-        use_spell = CONFIG_SPELLS[sname];
-        if(use_spell == nil or use_spell == false) then
-                return false;
-        end
-
-        if(btp_spell_known(sname)) then
-                usable, nomana = IsUsableSpell(sname);
-                if (nomana) then
-                    -- btp_frame_debug("No mana for: " .. sname);
-                    return false;
-                end
-
-                local sid = btp_get_spell_id(sname);
-                if(not sid) then                    
-                    -- btp_frame_debug(sname .. " has no SID.");
-                end
-
-                local psid = btp_get_spell_id_pet(sname);
-                if(not psid) then                    
-                    -- btp_frame_debug(sname .. " has no PID.");
-                end
-
-                if (sid) then
-                    -- btp_frame_debug("SID: " .. sid);
-                    if (GetSpellCooldown(sid, BOOKTYPE_SPELL) == 0) then
-                            return true;
-                    else
-                            -- btp_frame_debug(sname .. " is in cooldown");
-                    end
-                elseif (psid) then
-                    -- btp_frame_debug("PSID: " .. psid);
-                    if (GetSpellCooldown(psid, BOOKTYPE_PET) == 0) then
-                            return true;
-                    else
-                            -- btp_frame_debug(sname .. " is in cooldown");
-                    end
-                end
-        end
-        
+    if(sname == nil) then
         return false;
+    end
+    -- btp_frame_debug("trying to cast: " .. sname);
+
+    -- check if we disabled the spell
+    use_spell = CONFIG_SPELLS[sname];
+    if(use_spell == nil or use_spell == false) then
+            return false;
+    end
+
+    if(btp_spell_known(sname)) then
+            -- This appears to be redundant
+            -- usable, nomana = IsUsableSpell(sname);
+            -- if (nomana) then
+            --     -- btp_frame_debug("No mana for: " .. sname);
+            --     return false;
+            -- end
+
+            local sid = btp_get_spell_id(sname);
+            if(not sid) then                    
+                -- btp_frame_debug(sname .. " has no SID.");
+            end
+
+            local psid = btp_get_spell_id_pet(sname);
+            if(not psid) then                    
+                -- btp_frame_debug(sname .. " has no PID.");
+            end
+
+            if (sid) then
+                -- btp_frame_debug("SID: " .. sid);
+                if (GetSpellCooldown(sid, BOOKTYPE_SPELL) == 0) then
+                    return true;
+                else
+                    -- btp_frame_debug(sname .. " is in cooldown");
+                end
+            elseif (psid) then
+                -- btp_frame_debug("PSID: " .. psid);
+                if (GetSpellCooldown(psid, BOOKTYPE_PET) == 0) then
+                    return true;
+                else
+                    -- btp_frame_debug(sname .. " is in cooldown");
+                end
+            end
+    end
+    
+    return false;
 end 
 
 function btp_spell_known(sname)
     if (sname) then
-	usable, nomana = IsUsableSpell(sname, BOOKTYPE_SPELL);
-	if (usable and nomana == nil) then return true; end;
-	usable, nomana = IsUsableSpell(sname, BOOKTYPE_PET);
-	if (usable and nomana == nil) then return true; end;
+	    usable, nomana = IsUsableSpell(btp_get_spell_id(sname), BOOKTYPE_SPELL);
+	    if (usable and not nomana) then
+            return true;
+        else
+            -- btp_frame_debug(sname .. " for player is unusable");
+        end
 
+        usable, nomana = IsUsableSpell(btp_get_spell_id_pet(sname), BOOKTYPE_PET);
+        if (usable and not nomana) then
+            return true;
+        else
+            -- btp_frame_debug(sname .. " for pet is unusable");
+        end
     end
+
     return false;
 end
 
 function btp_get_spell_id(SpellName)
-        local SpellCount = 0;
-        local ReturnName;
-        local ReturnRank;
+    local SpellCount = 0;
+    local ReturnName;
+    local ReturnRank;
 
-        while (SpellName ~= ReturnName) do
-                SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount,
-                                                      BOOKTYPE_SPELL);
-                if(not ReturnName) then
-                    return false;
-                end
+    while (SpellName ~= ReturnName) do
+        SpellCount = SpellCount + 1;
+        ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_SPELL);
+        if(not ReturnName) then
+            return false;
         end
+    end
 
-        while (SpellName and ReturnName and SpellName == ReturnName) do
-                SpellID = SpellCount;
-                SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount,
-                                                      BOOKTYPE_SPELL);
-                if (SpellName ~= ReturnName) then
-                        break;
-                end
-                if(not ReturnName) then
-                        break;
-                end
+    while (SpellName and ReturnName and SpellName == ReturnName) do
+        SpellID = SpellCount;
+        SpellCount = SpellCount + 1;
+        ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_SPELL);
+        if (SpellName ~= ReturnName) then
+            break;
         end
+        if(not ReturnName) then
+            break;
+        end
+    end
 
-        return SpellID;
+    return SpellID;
 end
 
 function btp_get_spell_id_pet(SpellName)
-        local SpellCount = 0;
-        local ReturnName;
-        local ReturnRank;
+    local SpellCount = 0;
+    local ReturnName;
+    local ReturnRank;
 
-        while (SpellName ~= ReturnName) do
-                SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_PET);
-                if(not ReturnName) then
-                    return false;
-                end
+    while (SpellName ~= ReturnName) do
+        SpellCount = SpellCount + 1;
+        ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_PET);
+        if(not ReturnName) then
+            return false;
         end
+    end
 
-        while (SpellName and ReturnName and SpellName == ReturnName) do
-                SpellID = SpellCount;
-                SpellCount = SpellCount + 1;
-                ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_PET);
-                if (SpellName ~= ReturnName) then
-                        break;
-                end
-                if(not ReturnName) then
-                        break;
-                end
+    while (SpellName and ReturnName and SpellName == ReturnName) do
+        SpellID = SpellCount;
+        SpellCount = SpellCount + 1;
+        ReturnName, ReturnRank = GetSpellBookItemName(SpellCount, BOOKTYPE_PET);
+        if (SpellName ~= ReturnName) then
+            break;
         end
+        if(not ReturnName) then
+            break;
+        end
+    end
 
-        return SpellID;
+    return SpellID;
 end
 
 
