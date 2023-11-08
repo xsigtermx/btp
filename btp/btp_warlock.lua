@@ -1661,15 +1661,16 @@ function WarlockDest()
     hasBackdraft, myBackdraft,
     numBackdraft = btp_check_buff("Backdraft", "player");
 
-    buffTexture = "foo";
+    buffName = "foo";
     i = 1;
 
-    while (buffTexture) do
-        buffName, buffRank, buffTexture, buffApplications,
-        buffType, buffDuration, buffTime, buffMine,
-        buffStealable = UnitBuff("player", i);
+    while (buffName) do
+        buffName, buffIcon, buffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitBuff("player", i);
 
-        if (buffTexture and strfind(buffTexture, "RagingScream")) then
+        if (buffName and strfind(buffName, "RagingScream")) then
             demonArmorCount = demonArmorCount + 1;
         end
 
