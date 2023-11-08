@@ -3049,8 +3049,9 @@ function SelfHeal(healthThresh, manaThresh)
         end
       end
     end
-           
-    if (IsActiveBattlefieldArena() == nil) then
+
+    isArena, isRegistered = IsActiveBattlefieldArena();
+    if (not isArena) then
         for bag=0,4 do
           for slot=1,C_Container.GetContainerNumSlots(bag) do
             if (C_Container.GetContainerItemLink(bag,slot)) then
@@ -3086,8 +3087,7 @@ function SelfHeal(healthThresh, manaThresh)
         end
     end
 
-    if (GetNumBattlefieldScores() > 0 and
-        IsActiveBattlefieldArena() == nil) then
+    if (GetNumBattlefieldScores() > 0 and not isArena) then
         for bag=0,4 do
           for slot=1,C_Container.GetContainerNumSlots(bag) do
             if (C_Container.GetContainerItemLink(bag,slot)) then
@@ -4207,56 +4207,35 @@ function btp_check_buff(buff, unit)
     local i = 1;
     local hasBuff = false;
     local stackNum = 0;
-    local buffTexture = "foo";
+    local buffName = "foo";
 
     if (not unit) then
         unit="player";
     end
 
-    while (buffTexture) do
-        buffName, buffRank, buffTexture, buffApplications,
-        buffType, buffDuration, buffTime, buffMine,
-        buffStealable = UnitBuff(unit, i);
-        if (buffTexture and buffMine == "player" and
-            strfind(buffTexture, buff)) then
-            return true, true, buffApplications, (buffTime - GetTime());
-        elseif (buffTexture and strfind(buffTexture, buff)) then
+    while (buffName) do
+        buffName, buffIcon, buffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitBuff(unit, i);
+
+        if (buffName and source == "player" and
+            strfind(buffName, buff)) then
+            return true, true, buffCount, (expirationTime - GetTime());
+        elseif (buffName and strfind(buffName, buff)) then
             hasBuff = true;
-            stackNum = stackNum + buffApplications;
+            stackNum = stackNum + buffCount;
         end
 
         i = i + 1;
     end
 
     if (hasBuff) then
-        return true, false, stackNum, (buffTime - GetTime());
+        return true, false, stackNum, (expirationTime - GetTime());
     else
         return false, false, 0, 0;
     end
 end
-
-function btp_dispell_buffs(unit)
-    if (not unit) then unit="player"; end
-
-    while (buffTexture) do
-        buffName, buffRank, buffTexture, buffApplications,
-        buffType, buffDuration, buffTime, buffMine,
-        buffStealable = UnitBuff(unit, i);
-
-        if (buffTexture and buffMine == "player" and
-            strfind(buffTexture, buff)) then
-            return true, true, buffApplications;
-        elseif (buffTexture and strfind(buffTexture, buff)) then
-            hasBuff = true;
-            stackNum = stackNum + buffApplications;
-        end
-
-        i = i + 1;
-    end
-
-
-end
-
 
 function btp_check_player_debuff(buff)
         return btp_check_debuff(buff, "player");
@@ -5158,13 +5137,16 @@ end
 
 function btp_is_mounted_ground(unitid)
     local i = 1;
-    local buffTexture = "foo";
+    local buffName = "foo";
 
-    while (buffTexture) do
-        buffName, buffRank, buffTexture, buffApplications,
-        buffType, buffDuration, buffTime, buffMine,
-        buffStealable = UnitBuff(unitid, i);
-        if (btp_icon_is_mount_ground(buffTexture)) then return true; end
+    while (buffName) do
+        buffName, buffIcon, buffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitBuff(unitid, i);
+        if (btp_icon_is_mount_ground(buffName)) then
+            return true;
+        end
         i = i + 1;
     end
     return false
@@ -5172,13 +5154,16 @@ end
 
 function btp_is_mounted_flying(unitid)
     local i = 1;
-    local buffTexture = "foo";
+    local buffName = "foo";
 
-    while (buffTexture) do
-        buffName, buffRank, buffTexture, buffApplications,
-        buffType, buffDuration, buffTime, buffMine,
-        buffStealable = UnitBuff(unitid, i);
-        if (btp_icon_is_mount_flying(buffTexture)) then return true; end
+    while (buffName) do
+        buffName, buffIcon, buffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitBuff(unitid, i);
+        if (btp_icon_is_mount_flying(buffName)) then
+            return true;
+        end
         i = i + 1;
     end
     return false;
@@ -6441,45 +6426,49 @@ end
 function PrintBuffs()
     btp_frame_debug("PLAYER BUFFS");
     for i = 1, 64 do
-        buffName, buffRank, buffTexture, buffApplications,
-        buffType, buffDuration, buffTime, buffMine,
-        buffStealable = UnitBuff("player", i);
+        buffName, buffIcon, buffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitBuff("player", i);
 
-        if (buffTexture) then
-            btp_frame_debug(buffTexture);
+        if (buffName) then
+            btp_frame_debug(buffName);
         end
     end
 
     btp_frame_debug("PLAYER DEBUFFS");
     for i = 1, 40 do
-        debuffName, debuffRank, debuffTexture, debuffApplications,
-        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
-        debuffStealable = UnitDebuff("player", i);
+        debuffName, buffIcon, debuffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitDebuff("player", i);
 
-        if (debuffTexture) then
-            btp_frame_debug(debuffTexture);
+        if (debuffName) then
+            btp_frame_debug(debuffName);
         end
     end
 
     btp_frame_debug("TARGET BUFFS");
     for i = 1, 64 do
-        buffName, buffRank, buffTexture, buffApplications,
-        buffType, buffDuration, buffTime, buffMine,
-        buffStealable = UnitBuff("target", i);
+        buffName, buffIcon, buffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitBuff("target", i);
 
-        if (buffTexture) then
-            btp_frame_debug(buffTexture);
+        if (buffName) then
+            btp_frame_debug(buffName);
         end
     end
 
     btp_frame_debug("TARGET DEBUFFS");
     for i = 1, 40 do
-        debuffName, debuffRank, debuffTexture, debuffApplications,
-        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
-        debuffStealable = UnitDebuff("target", i);
+        debuffName, buffIcon, debuffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitDebuff("target", i);
 
-        if (debuffTexture) then
-            btp_frame_debug(debuffTexture);
+        if (debuffName) then
+            btp_frame_debug(debuffName);
         end
     end
 end

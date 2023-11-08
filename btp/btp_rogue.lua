@@ -16,6 +16,7 @@
 -- 
 
 ROGUE_DEF_TRINKET = "Insignia of the Horde";
+ROGUE_THRESH=.45;
 
 function btp_rogue_initialize()
     btp_frame_debug("Rogue INIT");
@@ -27,7 +28,19 @@ function btp_rogue_initialize()
 end
 
 function rogue_heal()
-    btp_frame_debug("Rogue Heal");
+    if (current_cb ~= nil and current_cb()) then
+        return true;
+    end
+
+    -- Trinkets();
+    ProphetKeyBindings();
+
+    if (SelfHeal(ROGUE_THRESH, 0)) then
+        --
+        -- doing a self heal here (heathstones, potions, etc)
+        --
+        return true;
+    end
 end
 
 function rogue_dps()
@@ -41,22 +54,50 @@ function rogue_dps()
     --
     -- Slice and Dice
     --
-    hasSlice, mySlice, numSlice = btp_check_buff("SliceAndDice", "player");
+    hasSlice, mySlice, numSlice, expSlice = btp_check_buff(
+        "Slice and Dice",
+        "player"
+    );
 
-    if (IsStealthed() and btp_cast_spell("Backstab")) then
-        btp_frame_debug("Backstab");
+    comboPoints = GetComboPoints("player", "target");
+    playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
+    targetHealthRatio =  UnitHealth("target")/UnitHealthMax("target");
+
+    if (SelfHeal(ROGUE_THRESH, 0)) then
+        --
+        -- doing a self heal here (heathstones, potions, etc)
+        --
         return true;
-    elseif (GetComboPoints("player", "target") > 3 and
+    elseif (playerHealthRatio <= .75 and btp_cast_spell("Evasion")) then
+        return true;
+    elseif (playerHealthRatio > .80 and btp_cast_spell("Blood Fury")) then
+        return true;
+    elseif (playerHealthRatio < .70 and btp_cast_spell("Berserking")) then
+        return true;
+    elseif (IsStealthed() and btp_cast_spell("Backstab")) then
+        return true;
+    elseif (comboPoints > 4 and btp_cast_spell("Eviscerate")) then
+        return true;
+    elseif (comboPoints == 5 and targetHealthRatio < .30 and
             btp_cast_spell("Eviscerate")) then
-        btp_frame_debug("Eviscerate");
         return true;
-    elseif (GetComboPoints("player", "target") > 0 and not hasSlice and
+    elseif (comboPoints == 4 and targetHealthRatio < .25 and
+            btp_cast_spell("Eviscerate")) then
+        return true;
+    elseif (comboPoints == 3 and targetHealthRatio < .20 and
+            btp_cast_spell("Eviscerate")) then
+        return true;
+    elseif (comboPoints == 2 and targetHealthRatio < .15 and
+            btp_cast_spell("Eviscerate")) then
+        return true;
+    elseif (comboPoints == 1 and targetHealthRatio < .10 and
+            btp_cast_spell("Eviscerate")) then
+        return true;
+    elseif (comboPoints > 0 and not hasSlice and
             btp_cast_spell("Slice and Dice")) then
-        btp_frame_debug("Slice and Dice");
         return true;
-    elseif (UnitPower("player", T_ENERGY) > 65 and
+    elseif (comboPoints < 5 and UnitPower("player", T_ENERGY) > 50 and
             btp_cast_spell("Sinister Strike")) then
-        btp_frame_debug("Sinister Strike");
         return true;
     end
 
