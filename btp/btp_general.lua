@@ -4252,30 +4252,32 @@ function btp_check_debuff(buff, unit)
     local i = 1;
     local hasDebuff = false;
     local stackNum = 0;
-    local debuffTexture = "foo";
+    local debuffName = "foo";
 
     if (not unit) then
         unit="player";
     end
 
-    while (debuffTexture) do
-        debuffName, debuffRank, debuffTexture, debuffApplications,
-        debuffType, debuffDuration, debuffTimeLeft, debuffMine,
-        debuffStealable = UnitDebuff(unit, i);
+    while (debuffName) do
+        debuffName, debuffIcon, debuffCount, dispelType, duration,
+        expirationTime, source, isStealable, nameplateShowPersonal,
+        spellId, canApplyAura, isBossDebuff, castByPlayer,
+        nameplateShowAll, timeMod = UnitDebuff(unit, i);
 
-        if (debuffTexture and debuffMine == "player" and
-            strfind(debuffTexture, buff)) then
-            return true, true, debuffApplications, (debuffTimeLeft - GetTime());
-        elseif (debuffTexture and strfind(debuffTexture, buff)) then
+
+        if (debuffName and source == "player" and
+            strfind(debuffName, buff)) then
+            return true, true, debuffCount, (expirationTime - GetTime());
+        elseif (debuffName and strfind(debuffName, buff)) then
             hasDebuff = true;
-            stackNum = stackNum + debuffApplications;
+            stackNum = stackNum + debuffCount;
         end
 
         i = i + 1;
     end
 
     if (hasDebuff) then
-        return true, false, stackNum, (debuffTimeLeft - GetTime());
+        return true, false, stackNum, (expirationTime - GetTime());
     else
         return false, false, 0, 0;
     end
@@ -5181,6 +5183,24 @@ function btp_is_summoning_mount(unitid)
         return btp_icon_is_mount(icon);
     end
     return false
+end
+
+function btp_is_casting(unitid)
+    name, text, texture, startTimeMS, endTimeMS,
+    isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(unitid)
+    if (name) then
+        return true;
+    end
+    return false;
+end
+
+function btp_is_channeling(unitid)
+    name, text, texture, startTimeMS, endTimeMS,
+    isTradeSkill, notInterruptible, spellId = UnitChannelInfo(unitid);
+    if (name) then
+        return true;
+    end
+    return false;
 end
 
 

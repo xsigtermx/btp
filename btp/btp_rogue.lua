@@ -23,6 +23,8 @@ function btp_rogue_initialize()
 
     SlashCmdList["ROGUEH"] = rogue_heal;
     SLASH_ROGUEH1 = "/rh";
+    SlashCmdList["ROGUER"] = rogue_roach;
+    SLASH_ROGUER1 = "/rr";
     SlashCmdList["ROGUED"] = rogue_dps;
     SLASH_ROGUED1 = "/rd";
 end
@@ -35,10 +37,64 @@ function rogue_heal()
     -- Trinkets();
     ProphetKeyBindings();
 
+    for bag=0,4 do
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot), "Bandage")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
+              if (duration - (GetTime() - start) <= 0) then
+                  hasBandage = true;
+                  bandageBag = bag;
+                  bandageSlot = slot;
+              end
+              break;
+          end
+        end
+      end
+    end
+
+    --
+    -- Bandage Debuff check
+    --
+    hasBandageDebuff, myBandageDebuff,
+    numBandageDebuff = btp_check_debuff("Recently Bandaged", "player");
+
     if (SelfHeal(ROGUE_THRESH, 0)) then
         --
         -- doing a self heal here (heathstones, potions, etc)
         --
+        return true;
+    elseif (hasBandage and not hasBandageDebuff and
+            UnitHealth("player")/UnitHealthMax("player") < 1) then
+            lastBandage = GetTime();
+            FuckBlizzardTargetUnitContainer("player");
+            FuckBlizUseContainerItem(bandageBag, bandageSlot);
+            return true;
+    end
+end
+
+function rogue_roach()
+    if (current_cb ~= nil and current_cb()) then
+        return true;
+    end
+
+    -- Trinkets();
+    ProphetKeyBindings();
+
+    playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
+
+    if (SelfHeal(ROGUE_THRESH, 0)) then
+        --
+        -- doing a self heal here (heathstones, potions, etc)
+        --
+        return true;
+    elseif (btp_cast_spell("Sprint")) then
+        return true;
+    elseif (playerHealthRatio <= .75 and btp_cast_spell("Evasion")) then
+        return true;
+    elseif (UnitAffectingCombat("player") and btp_cast_spell("Gouge")) then
+        return true;
+    elseif (not UnitAffectingCombat("player") and btp_cast_spell("Stealth")) then
         return true;
     end
 end
@@ -63,10 +119,17 @@ function rogue_dps()
     playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
     targetHealthRatio =  UnitHealth("target")/UnitHealthMax("target");
 
+    if ((btp_is_casting("target") or btp_is_channeling("target"))) then
+        btp_frame_debug("CASTING");
+    end
+
     if (SelfHeal(ROGUE_THRESH, 0)) then
         --
         -- doing a self heal here (heathstones, potions, etc)
         --
+        return true;
+    elseif ((btp_is_casting("target") or btp_is_channeling("target")) and
+            btp_cast_spell("Gouge")) then
         return true;
     elseif (playerHealthRatio <= .75 and btp_cast_spell("Evasion")) then
         return true;
