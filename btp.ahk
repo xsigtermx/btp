@@ -1,4 +1,4 @@
-; Behead The Prophet code driver.
+; Behead The Prophet code.
 ; Chris Mooney, James Luedke
 
 ;
