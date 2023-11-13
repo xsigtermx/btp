@@ -665,7 +665,7 @@ Loop
             }
 
             xbox += 5
-            if(xbox > 2048)
+            if(xbox > 4096)
             {
                 break
             }
@@ -673,14 +673,14 @@ Loop
             if(b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8 and b9 and bA and bB and bC and bD and bE)
             {
                 SendInput %clearKey%
-                ybox := 80
+                ybox := 1024
                 break
             }
         }
 
         ybox += 5
 
-        if(ybox > 80)
+        if(ybox > 1024)
         {
             break
         }
