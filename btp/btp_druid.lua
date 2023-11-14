@@ -767,20 +767,20 @@ function druid_dps()
         return true;
     end
 
-    Trinkets();
+    -- Trinkets();
     ProphetKeyBindings();
 
     --
     -- Moonfire check
     --
     hasMoonfire, myMoonfire,
-    numMoonfire = btp_check_debuff("StarFall", "target");
+    numMoonfire, expMoonFire = btp_check_debuff("Moonfire", "target");
 
     --
     -- Insect Swarm check
     --
     hasInsectSwarm, myInsectSwarm,
-    numInsectSwarm = btp_check_debuff("InsectSwarm", "target");
+    numInsectSwarm, expInsectSwarm = btp_check_debuff("Insect Swarm", "target");
 
     if (SelfHeal(DR_THRESH, DR_MANA/3)) then
         --

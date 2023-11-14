@@ -148,6 +148,13 @@ function warrior_dps()
         btp_frame_debug("CASTING");
     end
 
+    --
+    -- instant actions (as if you could macro them together)
+    --
+    if (UnitAffectingCombat("player") and rage < 50 and
+        playerHealthRatio > .50 and btp_cast_spell_alt("Bloodrage")) then
+    end
+
     if (SelfHeal(WARRIOR_THRESH, 0)) then
         --
         -- doing a self heal here (heathstones, potions, etc)
@@ -160,7 +167,7 @@ function warrior_dps()
             btp_check_dist("target", 3) and btp_cast_spell("Hamstring")) then
         return true;
     elseif (UnitAffectingCombat("player") and rage < 50 and
-            playerHealthRatio > .50 and btp_cast_spell("Bloodrage")) then
+            playerHealthRatio > .50 and btp_cast_spell_alt("Bloodrage")) then
         return true;
     elseif (not myShout and btp_cast_spell("Battle Shout")) then
         return true;
