@@ -15,8 +15,12 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-WARRIOR_DEF_TRINKET = "Insignia of the Horde";
 WARRIOR_THRESH=.45;
+
+-- stance types
+S_BATTLE  = 1;
+S_DEFENSE = 2;
+S_BESERK  = 3;
 
 function btp_warrior_initialize()
     btp_frame_debug("warrior INIT");
@@ -34,7 +38,6 @@ function warrior_heal()
         return true;
     end
 
-    -- Trinkets();
     ProphetKeyBindings();
 
     for bag=0,4 do
@@ -57,19 +60,21 @@ function warrior_heal()
     -- Bandage Debuff check
     --
     hasBandageDebuff, myBandageDebuff,
-    numBandageDebuff = btp_check_debuff("Recently Bandaged", "player");
+    numBandageDebuff, expBanadageDebuff = btp_check_debuff("Recently Bandaged", "player");
+
+    playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
 
     if (SelfHeal(WARRIOR_THRESH, 0)) then
         --
         -- doing a self heal here (heathstones, potions, etc)
         --
         return true;
-    elseif (hasBandage and not hasBandageDebuff and
-            UnitHealth("player")/UnitHealthMax("player") < 1) then
-            lastBandage = GetTime();
+    elseif (not UnitAffectingCombat("player") and
+            playerHealthRatio < WARRIOR_THRESH and
+            hasBandage and not hasBandageDebuff) then
             FuckBlizzardTargetUnitContainer("player");
             FuckBlizUseContainerItem(bandageBag, bandageSlot);
-            return true;
+        return true;
     end
 end
 
@@ -78,8 +83,10 @@ function warrior_roach()
         return true;
     end
 
-    -- Trinkets();
     ProphetKeyBindings();
+
+    -- get the stance
+    stance = GetShapeshiftForm();
 
     -- Hamstring
     hasHamstring, myHamstring, numHamstring, expHamstring = btp_check_debuff(
@@ -89,12 +96,18 @@ function warrior_roach()
 
     playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
 
-    if (SelfHeal(WARRIOR_THRESH, 0)) then
-        --
-        -- doing a self heal here (heathstones, potions, etc)
-        --
-        return true;
-    elseif (not hasHamstring and btp_cast_spell("Hamstring")) then
+    warrior_heal();
+
+    --
+    -- instant actions (these don't have a GCD)
+    --
+    if (UnitAffectingCombat("player") and stance ~= S_BATTLE and
+        btp_cast_spell_alt("Battle Stance")) then
+        -- for hamstring and other abilities while running
+    end
+
+    -- primary actions
+    if (not hasHamstring and btp_cast_spell("Hamstring")) then
         return true;
     end
 end
@@ -104,8 +117,10 @@ function warrior_dps()
         return true;
     end
 
-    -- Trinkets();
     ProphetKeyBindings();
+
+    -- get the stance
+    stance = GetShapeshiftForm();
 
     --
     -- buffs
@@ -139,43 +154,68 @@ function warrior_dps()
         "target"
     );
 
+    -- Sunder Armor
+    hasSunder, mySunder, numSunder, expSunder = btp_check_debuff(
+        "Sunder Armor",
+        "target"
+    );
+
     playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
     targetHealthRatio =  UnitHealth("target")/UnitHealthMax("target");
 
     rage = UnitPower("player", T_RAGE);
 
-    if ((btp_is_casting("target") or btp_is_channeling("target"))) then
-        btp_frame_debug("CASTING");
-    end
+    --
+    -- instant actions (these don't have a GCD)
+    --
+    warrior_heal();
 
-    --
-    -- instant actions (as if you could macro them together)
-    --
     if (UnitAffectingCombat("player") and rage < 50 and
         playerHealthRatio > .50 and btp_cast_spell_alt("Bloodrage")) then
+        -- pop bloodrage
+    elseif (UnitAffectingCombat("player") and stance ~= S_BATTLE and
+            playerHealthRatio > .50 and targetHealthRatio <= .20 and
+            btp_cast_spell_alt("Battle Stance")) then
+        -- swap stances for hamstring, execute, thunder clap, and overpower
+    elseif (UnitAffectingCombat("player") and stance ~= S_DEFENSE and
+            targetHealthRatio > .20 and btp_cast_spell_alt("Defensive Stance")) then
+        -- swap stances taunting and tanking
+    elseif (not UnitAffectingCombat("player") and stance ~= S_BATTLE and
+            btp_cast_spell_alt("Battle Stance")) then
+        -- swap stances out of combat for charge
     end
 
     if (SelfHeal(WARRIOR_THRESH, 0)) then
-        --
-        -- doing a self heal here (heathstones, potions, etc)
-        --
         return true;
     elseif ((btp_is_casting("target") or btp_is_channeling("target")) and
             btp_check_dist("target", 3) and btp_cast_spell("Shield Bash")) then
+        btp_frame_debug("Shield Bash WORKED!");
         return true;
-    elseif (targetHealthRatio < .50 and not hasHamstring and
+    elseif (targetHealthRatio < .20 and btp_check_dist("target", 3) and
+            btp_cast_spell("Execute")) then
+        return true;
+    elseif (btp_check_dist("target", 3) and btp_cast_spell("Shield Slam")) then
+        return true;
+    elseif (btp_check_dist("target", 3) and btp_cast_spell("Bloodthirst")) then
+        return true;
+    elseif (btp_check_dist("target", 3) and btp_cast_spell("Revenge")) then
+        return true;
+    elseif (targetHealthRatio < .20 and not hasHamstring and
             btp_check_dist("target", 3) and btp_cast_spell("Hamstring")) then
         return true;
-    elseif (UnitAffectingCombat("player") and rage < 50 and
-            playerHealthRatio > .50 and btp_cast_spell_alt("Bloodrage")) then
+    elseif (not mySunder and numSunder < 1 and btp_check_dist("target", 3) and
+            btp_cast_spell("Sunder Armor")) then
         return true;
-    elseif (not myShout and btp_cast_spell("Battle Shout")) then
+    elseif (not hasShout and btp_cast_spell("Battle Shout")) then
         return true;
     elseif (not myClap and btp_check_dist("target", 3) and
             btp_cast_spell("Thunder Clap")) then
         return true;
     elseif (not myRend and btp_check_dist("target", 3) and
             btp_cast_spell("Rend")) then
+        return true;
+    elseif (not mySunder and numSunder < 5 and btp_check_dist("target", 3) and
+            btp_cast_spell("Sunder Armor")) then
         return true;
     elseif (rage > 70 and btp_check_dist("target", 3) and
             btp_cast_spell("Heroic Strike")) then

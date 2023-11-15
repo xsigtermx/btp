@@ -15,7 +15,6 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-ROGUE_DEF_TRINKET = "Insignia of the Horde";
 ROGUE_THRESH=.45;
 
 function btp_rogue_initialize()
@@ -34,7 +33,6 @@ function rogue_heal()
         return true;
     end
 
-    -- Trinkets();
     ProphetKeyBindings();
 
     for bag=0,4 do
@@ -78,7 +76,6 @@ function rogue_roach()
         return true;
     end
 
-    -- Trinkets();
     ProphetKeyBindings();
 
     playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
@@ -104,7 +101,6 @@ function rogue_dps()
         return true;
     end
 
-    -- Trinkets();
     ProphetKeyBindings();
 
     --

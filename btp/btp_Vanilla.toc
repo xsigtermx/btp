@@ -1,4 +1,4 @@
-## Interface: 11404
+## Interface: 011500
 ## Title: BTP Classic
 ## Description: Behead The Prophet Add On
 ## This file is part of BTP.
@@ -16,8 +16,10 @@
 ## You should have received a copy of the GNU General Public License
 ## along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 ## 
-btp_druid.xml
 btp_general.xml
+btp_chatter.xml
+btp_frame.xml
+btp_druid.xml
 btp_hunter.xml
 btp_mage.xml
 btp_paladin.xml
@@ -26,5 +28,3 @@ btp_rogue.xml
 btp_shaman.xml
 btp_warlock.xml
 btp_warrior.xml
-btp_chatter.xml
-btp_frame.xml

@@ -275,8 +275,6 @@ function btp_general_initialize()
     SLASH_BTPFARMBG1 = "/btpfarmbg";
     SlashCmdList["BTPFARMDUNGEON"] = BTP_Farm_Dungeon;
     SLASH_BTPFARMDUNGEON1 = "/btpfarmdungeon";
-    SlashCmdList["FUNTRNK"] = FunTrink;
-    SLASH_FUNTRNK1 = "/funtrink";
     SlashCmdList["DONTBEG"] = DontBeg;
     SLASH_DONTBEG1 = "/btpbeg";
     SlashCmdList["DONTHRTH"] = DontHearth;
@@ -664,11 +662,11 @@ function btp_check_dist(target, dist)
     if (dontCheckDist) then
         return true;
     else
-	if(target ~= nil) then
-		return CheckInteractDistance(target, dist);
-	else
-		return false;
-	end
+	    if(target ~= nil) then
+	    	return CheckInteractDistance(target, dist);
+	    else
+	    	return false;
+	    end
     end
 end
 
@@ -2892,16 +2890,6 @@ function btp_general_chat_msg_whisper()
     end
 end
 
-function FunTrink()
-    if (funTrink) then
-        funTrink = false;
-        btp_frame_debug("FUN TRINKET -- Off.");
-    else
-        funTrink = true;
-        btp_frame_debug("FUN TRINKET -- On.");
-    end
-end
-
 function DontBeg()
     if (dontBeg) then
         dontBeg = false;
@@ -3149,853 +3137,6 @@ function SelfHeal(healthThresh, manaThresh)
     return false;
 end
 
-function Trinkets()
-    trinkSlot = DEF_TRINK_SLOT;
-    trinkSlotPrimary = PRIMARY_TRINK_SLOT;
-
-    hasDebuff = false;
-    orbOn = false;
-    almostReady = false;
-    almostReadyPrimary = false;
-    partyCount = 1;
-    stopTop = false;
-
-    hasBattleStandard = false;
-    battleStandardBag = 0;
-    battleStandardSlot = 0;
-
-    hasFrostBattleStandard = false;
-    battleFrostStandardBag = 0;
-    battleFrostStandardSlot = 0;
-
-    hasDefTrink = false;
-    defTrinkBag = 0;
-    defTrinkSlot = 0;
-
-    readyDefTali = false;
-    hasDefTali = false;
-    defTaliBag = 0;
-    defTaliSlot = 0;
-
-    readyBarov = false;
-    hasBarov = false;
-    barovBag = 0;
-    barovSlot = 0;
-
-    readyMark = false;
-    hasMark = false;
-    markBag = 0;
-    markSlot = 0;
-
-    readyDemon = false;
-    hasDemon = false;
-    demonBag = 0;
-    demonSlot = 0;
-
-    readyDeception = false;
-    hasDeception = false;
-    deceptionBag = 0;
-    deceptionSlot = 0;
-
-    readyLifestone = false;
-    hasLifestone = false;
-    lifestoneBag = 0;
-    lifestoneSlot = 0;
-
-    readyBurst = false;
-    hasBurst = false;
-    burstBag = 0;
-    burstSlot = 0;
-
-    readyBoom = false;
-    hasBoom = false;
-    boomBag = 0;
-    boomSlot = 0;
-
-    readyLighter = false;
-    hasLighter = false;
-    lighterBag = 0;
-    lighterSlot = 0;
-
-    readyCannon = false;
-    hasCannon = false;
-    cannonBag = 0;
-    cannonSlot = 0;
-
-    readyPrism = false;
-    hasPrism = false;
-    prisimBag = 0;
-    prisimSlot = 0;
-
-    readyAlacrity = false;
-    hasAlacrity = false;
-    alacrityBag = 0;
-    alacritySlot = 0;
-
-    --
-    -- These are the variables for the 2 minute cooldown trinkets
-    -- that up your damage stats.  When adding a new damage trinket below
-    -- make sure to add variables for it.
-    --
-    readyCrescent = false;
-    hasCrescent = false;
-    crescentBag = 0;
-    crescentSlot = 0;
-
-    readyXiris = false;
-    hasXiris = false;
-    xirisBag = 0;
-    xirisSlot = 0;
-
-    readyBloodgem = false;
-    hasBloodgem = false;
-    bloodgemBag = 0;
-    bloodgemSlot = 0;
-
-    readyIllidari = false;
-    hasIllidari = false;
-    illidariBag = 0;
-    illidariSlot = 0;
-
-    readyCrystal = false;
-    hasCrystal = false;
-    crystalBag = 0;
-    crystalSlot = 0;
-
-    readyDraenei = false;
-    hasDraenei = false;
-    draeneiBag = 0;
-    draeneiSlot = 0;
-
-    readyVim = false;
-    hasVim = false;
-    vimBag = 0;
-    vimSlot = 0;
-
-    readyStark = false;
-    hasStark = false;
-    starkBag = 0;
-    starkSlot = 0;
-
-    readyPrayer = false;
-    hasPrayer = false;
-    prayerBag = 0;
-    prayerSlot = 0;
-
-    readyDrakk = false;
-    hasDrakk = false;
-    drakkBag = 0;
-    drakkSlot = 0;
-
-    if (UnitClass("player") == "Warlock") then
-        DEF_TRINKET = WARLOCK_DEF_TRINKET;
-    elseif (UnitClass("player") == "Death Knight") then
-        DEF_TRINKET = DEATHKNIGHT_DEF_TRINKET;
-    elseif (UnitClass("player") == "Druid") then
-        DEF_TRINKET = DRUID_DEF_TRINKET;
-    elseif (UnitClass("player") == "Priest") then
-        DEF_TRINKET = PRIEST_DEF_TRINKET;
-    elseif (UnitClass("player") == "Hunter") then
-        DEF_TRINKET = HUNTER_DEF_TRINKET;
-    elseif (UnitClass("player") == "Warrior") then
-        DEF_TRINKET = WARRIOR_DEF_TRINKET;
-    elseif (UnitClass("player") == "Rogue") then
-        DEF_TRINKET = ROGUE_DEF_TRINKET;
-    elseif (UnitClass("player") == "Shaman") then
-        DEF_TRINKET = SHAMAN_DEF_TRINKET;
-    elseif (UnitClass("player") == "Mage") then
-        DEF_TRINKET = MAGE_DEF_TRINKET;
-    elseif (UnitClass("player") == "Paladin") then
-        DEF_TRINKET = PALADIN_DEF_TRINKET;
-    end
-
-    if (GetInventoryItemLink("player", trinkSlot)) then
-        start, duration, enable = GetInventoryItemCooldown("player", trinkSlot);
-        if (duration - (GetTime() - start) > 0 and
-            duration - (GetTime() - start) <= 30) then
-            almostReady = true;
-        end
-
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Six Demon Bag")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyDemon = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Mark of Resolution")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyMark = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Orb of Deception")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            --
-            -- Orb of Deception check
-            --
-            orbOn, myOrb, numOrb = btp_check_buff("AntiShadow", "player");
-
-            if (duration - (GetTime() - start) > 1500 and
-                duration - (GetTime() - start) <= 1800 and orbOn) then
-                stopTop = true;
-            elseif (duration - (GetTime() - start) <= 0) then
-                readyDeception = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Barov Peasant Caller")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyBarov = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Defiler's Talisman")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyDefTali = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Lifestone")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                      trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyLifestone = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Burst of Knowledge")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) > 890 and
-                duration - (GetTime() - start) <= 900) then
-                stopTop = true;
-            elseif (duration - (GetTime() - start) <= 0) then
-                readyBurst = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Smokey's Lighter")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyLighter = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Linken's Boomerang")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyBoom = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Cannonball Runner")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyCannon = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Prismcharm")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyPrism = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlot),
-                        "Charm of Alacrity")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                               trinkSlot);
-            if (duration - (GetTime() - start) <= 0) then
-                readyAlacrity = true;
-            end
-        end
-    end
-
-    if (GetInventoryItemLink("player", trinkSlotPrimary)) then
-        start, duration, enable = GetInventoryItemCooldown("player",
-                                                           trinkSlotPrimary);
-        if (duration - (GetTime() - start) > 0 and
-            duration - (GetTime() - start) <= 30) then
-            almostReadyPrimary = true;
-        end
-
-        --
-        -- The following is for your primary trinkets.  Change these to the
-        -- Trinket you will always keep in your lower slot.
-        --
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Icon of the Silver Crescent")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyCrescent = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Xi'ri's Gift")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyXiris = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Scryer's Bloodgem")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyBloodgem = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Vengeance of the Illidari")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyIllidari = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Ancient Crystal Talisman")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyCrystal = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Ancient Draenei Arcane Relic")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyDraenei = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Terokkar Tablet of Vim")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyVim = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Starkiller's Bauble")) then
-            start, duration,
-            enable = GetInventoryItemCooldown("player", trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyStark = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Lower City Prayerbook")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                              trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyPrayer = true;
-            end
-        end
-        if (string.find(GetInventoryItemLink("player", trinkSlotPrimary),
-                        "Draconic Infused Emblem")) then
-            start, duration, enable = GetInventoryItemCooldown("player",
-                                                              trinkSlotPrimary);
-            if (duration - (GetTime() - start) <= 0) then
-                readyDrakk = true;
-            end
-        end
-    end
-
-    local bag = 4
-    while (bag >= 0) do
-      for slot=1,C_Container.GetContainerNumSlots(bag) do
-        if (C_Container.GetContainerItemLink(bag,slot)) then
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Frostwolf Battle Standard")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 0) then
-                    hasFrostBattleStandard = true;
-                    battleFrostStandardBag = bag;
-                    battleFrostStandardSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Horde Battle Standard") or
-                string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Alliance Battle Standard")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 0) then
-                    hasBattleStandard = true;
-                    battleStandardBag = bag;
-                    battleStandardSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot), DEF_TRINKET)) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasDefTrink = true;
-                    defTrinkBag = bag;
-                    defTrinkSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Six Demon Bag")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasDemon = true;
-                    demonBag = bag;
-                    demonSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Mark of Resolution")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasMark = true;
-                    markBag = bag;
-                    markSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Orb of Deception")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasDeception = true;
-                    deceptionBag = bag;
-                    deceptionSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Barov Peasant Caller")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasBarov = true;
-                    barovBag = bag;
-                    barovSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Defiler's Talisman")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasDefTali = true;
-                    defTaliBag = bag;
-                    defTaliSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Lifestone")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasLifestone = true;
-                    lifestoneBag = bag;
-                    lifestoneSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Burst of Knowledge")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasBurst = true;
-                    burstBag = bag;
-                    burstSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Smokey's Lighter")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasLighter = true;
-                    lighterBag = bag;
-                    lighterSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Linken's Boomerang")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasBoom = true;
-                    boomBag = bag;
-                    boomSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Cannonball Runner")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasCannon = true;
-                    cannonBag = bag;
-                    cannonSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot), "Prismcharm")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasPrism = true;
-                    prismBag = bag;
-                    prismSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Charm of Alacrity")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasAlacrity = true;
-                    alacrityBag = bag;
-                    alacritySlot = slot;
-                end
-            end
-
-            --
-            -- The following is to find primary trinkets in your bags.
-            -- These are those 2 minute cooldown + to damage or healing
-            -- trinkets.  If you do not have any don't worry, just put on
-            -- a normal trinket that does + to stats in its place.
-            --
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Icon of the Silver Crescent")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasCrescent = true;
-                    crescentBag = bag;
-                    crescentSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Xi'ri's Gift")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasXiris = true;
-                    xirisBag = bag;
-                    xirisSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Lower City Prayerbook")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasPrayer = true;
-                    prayerBag = bag;
-                    prayerSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Draconic Infused Emblem")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasDrakk = true;
-                    drakkBag = bag;
-                    drakkSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Scryer's Bloodgem")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasBloodgem = true;
-                    bloodgemBag = bag;
-                    bloodgemSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Vengeance of the Illidari")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasIllidari = true;
-                    illidariBag = bag;
-                    illidariSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Ancient Crystal Talisman")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasCrystal = true;
-                    crystalBag = bag;
-                    crystalSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Ancient Draenei Arcane Relic")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasDraenei = true;
-                    draeneiBag = bag;
-                    draeneiSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Terokkar Tablet of Vim")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasVim = true;
-                    vimBag = bag;
-                    vimSlot = slot;
-                end
-            end
-            if (string.find(C_Container.GetContainerItemLink(bag,slot),
-                            "Starkiller's Bauble")) then
-                start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
-                if (duration - (GetTime() - start) <= 30) then
-                    hasStark = true;
-                    starkBag = bag;
-                    starkSlot = slot;
-                end
-            end
-        end
-      end
-
-      bag = bag - 1;
-    end
-
-    RequestBattlefieldScoreData();
-
-    if (UnitAffectingCombat("player")) then
-
-        for i = 1, GetNumPartyMembers() do
-            nextPlayer = "party" .. i;
-            if (btp_check_dist(nextPlayer, 1)) then
-               partyCount = partyCount + 1;
-            end
-        end
-
-        for i=1, MAX_BATTLEFIELD_QUEUES do
-            status, mapName, instanceID = GetBattlefieldStatus(i);
-            if (status == "active" and
-                string.find(mapName, "Alterac Valley") and
-                math_round(GetNumPartyMembers() * .5) <=  partyCount and
-                GetNumBattlefieldScores() > 0 and hasFrostBattleStandard) then
-                FuckBlizUseContainerItem(battleFrostStandardBag,
-                                         battleFrostStandardSlot);
-            end
-        end
-
-        if (math_round(GetNumPartyMembers() * .5) <=  partyCount and
-            GetNumBattlefieldScores() > 0 and hasBattleStandard) then
-            FuckBlizUseContainerItem(battleStandardBag, battleStandardSlot);
-        end
-
-        debuffTexture = "foo";
-        i = 1;
-
-        while (debuffTexture) do
-            debuffName, debuffRank, debuffTexture, debuffApplications,
-            debuffType, debuffDuration, debuffTimeLeft, debuffMine,
-            debuffStealable = UnitDebuff("player", i);
-
-            if (debuffTexture and not strfind(debuffTexture, "Bandage_08")) then
-                hasDebuff = true;
-            end
-
-            i = i + 1;
-        end
-
-        if (readyCrescent) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyXiris) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyBloodgem) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyIllidari) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyCrystal) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyDraenei) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyVim) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyStark) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyPrayer) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        elseif (readyDrakk) then
-            FuckBlizUseInventoryItem(trinkSlotPrimary);
-            return true;
-        end
-
-        if (readyDemon) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyMark and
-                UnitHealth("player")/UnitHealthMax("player") <= .75) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyDeception) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyBarov and UnitFactionGroup("target")) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyDefTali and
-                UnitHealth("player")/UnitHealthMax("player") <= .75) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyLifestone and
-                UnitHealth("player")/UnitHealthMax("player") <= .75) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyBoom) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyBurst) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyLighter) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyCannon and UnitFactionGroup("target")) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyPrism) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        elseif (readyAlacrity) then
-            FuckBlizUseInventoryItem(trinkSlot);
-            return true;
-        end
-    else
-        if (not funTrink) then
-            return false;
-        end
-
-        if (not stopTop and not almostReady) then
-            if (hasPrism and UnitPowerType("target") == 0) then
-                UseContainerItem(prismBag, prismSlot);
-            elseif (hasMark and UnitPowerType("target") > 0 and
-                   not (readyPrism)) then
-                UseContainerItem(markBag, markSlot);
-            elseif (hasDeception and not
-                   (readyMark or readyPrism)) then
-                UseContainerItem(deceptionBag, deceptionSlot);
-            elseif (hasBarov and UnitFactionGroup("target") and not
-                   (readyMark or readyDeception or readyPrism)) then
-                UseContainerItem(barovBag, barovSlot);
-            elseif (hasBurst and not (readyMark or
-                    readyDeception or readyBarov or readyPrism)) then
-                UseContainerItem(burstBag, burstSlot);
-            elseif (hasCannon and UnitFactionGroup("target") and not
-                   (readyBurst or readyMark or readyDeception or
-                    readyBarov or readyPrism)) then
-                UseContainerItem(cannonBag, cannonSlot);
-            elseif (hasLighter and UnitPowerType("target") > 0 and not
-                   (readyBurst or readyMark or readyDeception or
-                    readyBarov or readyCannon or readyPrism)) then
-                UseContainerItem(lighterBag, lighterSlot);
-            elseif (hasBoom and not
-                   (readyLighter or readyBurst or readyMark or
-                    readyDeception or readyBarov or 
-                    readyCannon or readyPrism)) then
-                UseContainerItem(boomBag, boomSlot);
-            elseif (hasDemon and not
-                   (readyBurst or readyMark or readyDeception or
-                    readyBarov or readyLighter or readyBoom or
-                    readyCannon or readyPrism)) then
-                UseContainerItem(demonBag, demonSlot);
-            elseif (hasAlacrity and not
-                   (readyBurst or readyDemon or readyMark or readyDeception or
-                    readyBarov or readyLighter or readyBoom or 
-                    readyCannon or readyPrism)) then
-                UseContainerItem(alacrityBag, alacritySlot);
-            elseif (hasDefTali and UnitPowerType("target") > 0 and not
-                   (readyBurst or readyDemon or readyMark or readyDeception or
-                    readyBarov or readyLighter or readyBoom or readyCannon or
-                    readyPrism or readyAlacrity)) then
-                UseContainerItem(defTaliBag, defTaliSlot);
-            elseif (hasLifestone and not
-                   (readyBurst or readyMark or readyDeception or
-                    readyBarov or readyLighter or readyBoom or
-                    readyCannon or readyPrism or readyDemon or
-                    readyAlacrity or readyDefTali)) then
-                UseContainerItem(lifestoneBag, lifestoneSlot);
-            elseif (hasDefTrink and not (readyBurst or readyDemon or
-                    readyMark or readyDeception or readyBarov or
-                    readyDefTali or readyLighter or readyLifestone or
-                    readyBoom or readyCannon or readyPrism or
-                    readyAlacrity)) then
-                UseContainerItem(defTrinkBag, defTrinkSlot);
-            end
-        end
-
-        if (not almostReadyPrimary) then
-            if (hasCrescent) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(crescentBag, crescentSlot);
-            elseif (hasXiris and not (readyCrescent)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(xirisBag, xirisSlot);
-            elseif (hasBloodgem and not (readyCrescent or readyXiris)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(bloodgemBag, bloodgemSlot);
-            elseif (hasIllidari and not (readyCrescent or readyXiris or
-                    readyBloodgem)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(illidariBag, illidariSlot);
-            elseif (hasCrystal and not (readyCrescent or readyIllidari or
-                    readyXiris or readyBloodgem)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(crystalBag, crystalSlot);
-            elseif (hasDraenei and not (readyCrescent or readyIllidari or
-                    readyCrystal or readyXiris or readyBloodgem)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(draeneiBag, draeneiSlot);
-            elseif (hasVim and not (readyCrescent or readyIllidari or
-                    readyCrystal or readyDraenei or readyXiris or
-                    readyBloodgem)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(vimBag, vimSlot);
-            elseif (hasStark and not (readyCrescent or readyIllidari or
-                    readyCrystal or readyDraenei or readyXiris or readyVim or
-                    readyBloodgem)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(starkBag, starkSlot);
-            elseif (hasPrayer and not (readyCrescent or readyIllidari or
-                    readyCrystal or readyDraenei or readyXiris or readyVim or
-                    readyBloodgem or readyStark)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(prayerBag, prayerSlot);
-            elseif (hasDrakk and not (readyCrescent or readyIllidari or
-                    readyCrystal or readyDraenei or readyPrayer or
-                    readyXiris or readyVim or readyBloodgem or readyStark)) then
-                PickupInventoryItem(trinkSlotPrimary);
-                PutItemInBackpack();
-                UseContainerItem(drakkBag, drakkSlot);
-            end
-        end
-    end
-
-    return false;
-end
-
 function TradeItem(itemName, playerName)
     unitName = nil;
     itemBag = nil;
@@ -4193,7 +3334,7 @@ function btp_spell_damage(sname)
 end
 
 function btp_check_player_buff(buff)
-                return btp_check_buff(buff, "player");
+    return btp_check_buff(buff, "player");
 end
 
 -- Returns:
@@ -4202,6 +3343,7 @@ end
 --     stackNum:   Number of buffs in the stack if myBuff is true, otherwise
 --                 this returns the sum of all buffs of this type and their
 --                 stack numbers.
+--     expBuff:    seconds until expiration 
 --
 function btp_check_buff(buff, unit)
     local i = 1;
@@ -5330,7 +4472,6 @@ function btp_bot()
     playerOnFlyingMount = false;
     targetOnFlyingMount = false;
     isDrinking = false;
-    castingBandage = false;
     shadowTrance = false;
     canCurse = true;
     canInst = true;
@@ -5342,13 +4483,9 @@ function btp_bot()
     unitid = "no one";
 
     hasBandageBuff, myBandageBuff,
-    numBandageBuff = btp_check_buff("Holy_Heal", bandageTarget);
+    numBandageBuff, expBandageBuff = btp_check_buff("Bandage", bandageTarget);
       
     if (((GetTime() - lastBandage) <= 1) or myBandageBuff) then
-        castingBandage = true;
-    end
-
-    if (castingBandage) then
         return true;
     end
 
@@ -5684,7 +4821,7 @@ function btp_bot()
             if (manualFollow and
                 manualFollowName == UnitName(nextPlayer)) then
 
-                if (CheckInteractDistance(nextPlayer, 4)) then
+                if (btp_check_dist(nextPlayer, 4)) then
                     followPlayer = nextPlayer;
                 end
 
@@ -5694,7 +4831,7 @@ function btp_bot()
                     UnitName("player") ~= UnitName(nextPlayer)) then
 
                 if (not btp_dont_follow(name) and
-                    CheckInteractDistance(nextPlayer, 4)) then
+                    btp_check_dist(nextPlayer, 4)) then
                     followPlayer = nextPlayer;
                 end
 
@@ -5709,7 +4846,7 @@ function btp_bot()
                 if (manualFollow and
                     manualFollowName == UnitName(nextPlayer)) then
 
-                    if (CheckInteractDistance(nextPlayer, 4)) then
+                    if (btp_check_dist(nextPlayer, 4)) then
                         followPlayer = nextPlayer;
                     end
 
@@ -5719,7 +4856,7 @@ function btp_bot()
                         UnitName("player") ~= UnitName(nextPlayer)) then
 
                    if (not btp_dont_follow(name) and
-                       CheckInteractDistance(nextPlayer, 4)) then
+                       btp_check_dist(nextPlayer, 4)) then
                        followPlayer = nextPlayer;
                    end
 
@@ -5740,7 +4877,7 @@ function btp_bot()
             for i = GetNumRaidMembers() - 1, 1, -1 do
                 nextPlayer = "raid" .. i;
 
-                if (CheckInteractDistance(nextPlayer, 4) and
+                if (btp_check_dist(nextPlayer, 4) and
                     not btp_dont_follow(UnitName(nextPlayer)) and
                    ((bgStats[UnitName(nextPlayer)] ~= nil and
                     bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage) or
@@ -5769,7 +4906,7 @@ function btp_bot()
                 for i = GetNumPartyMembers() - 1, 1, -1 do
                     nextPlayer = "party" .. i;
 
-                    if (CheckInteractDistance(nextPlayer, 4) and
+                    if (btp+btp_check_dist(nextPlayer, 4) and
                         not btp_dont_follow(UnitName(nextPlayer)) and
                        ((bgStats[UnitName(nextPlayer)] ~= nil and
                         bgStats[UnitName(nextPlayer)]["dd"] >= bestDamage) or
@@ -5870,12 +5007,12 @@ function btp_bot()
                 (GetTime() - lastMountTry) > 2 and
                 not forceDrink and (not isDrinking or
                 UnitMana("player") == UnitManaMax("player") or
-               (farmDungeon and CheckInteractDistance(followPlayer, 4) and
-                not CheckInteractDistance(followPlayer, 2)))) then
+               (farmDungeon and btp_check_dist(followPlayer, 4) and
+                not btp_check_dist(followPlayer, 2)))) then
 
                 FollowUnit(followPlayer);
 
-                if (CheckInteractDistance(followPlayer, 4) and
+                if (btp_check_dist(followPlayer, 4) and
                     followPlayer ~= "player") then
                     bootyCall = false;
                     lastFollowTime = GetTime();
@@ -5916,8 +5053,8 @@ function btp_bot()
                     UnitMana("player") > 0 and UnitHealth("player") > 2 and
                     not isDrinking and not targetOnMount and
                     not UnitAffectingCombat("player")) then
-                if (farmDungeon and CheckInteractDistance(followPlayer, 4) and
-                    not CheckInteractDistance(followPlayer, 2)) then
+                if (farmDungeon and btp_check_dist(followPlayer, 4) and
+                    not btp_check_dist(followPlayer, 2)) then
                     -- We are lagging, do not drink
                 else
                     lastBotWater = GetTime();
@@ -7509,4 +6646,20 @@ function btp_is_guild_member(unit_name)
     end
 
     return false;
+end
+
+function btp_iterate_group_members(reversed, forceParty)
+  local unit = (not forceParty and IsInRaid()) and 'raid' or 'party'
+  local numGroupMembers = unit == 'party' and GetNumSubgroupMembers() or GetNumGroupMembers()
+  local i = reversed and numGroupMembers or (unit == 'party' and 0 or 1)
+  return function()
+    local ret
+    if i == 0 and unit == 'party' then
+      ret = 'player'
+    elseif i <= numGroupMembers and i > 0 then
+      ret = unit .. i
+    end
+    i = i + (reversed and -1 or 1)
+    return ret
+  end
 end

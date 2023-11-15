@@ -29,17 +29,6 @@ DR_MANA = .3;
 MAX_DRDEST = 1;
 
 --
--- This is the last trinket you expect to find in the chain of trinkets
--- that will cycle through the top slot with a call to the fun trink code.
--- That is, your top trinket slot is set up to change trinkets if you have
--- those trinkets in your bag, this value is the name of the last (base)
--- trinket that will be called.  So if you blow the cooldown on all your
--- other trinkets, this will be flipped into place until the cooldown is
--- ready.
---
-DRUID_DEF_TRINKET = "Scarab of the Infinite Cycle";
-
---
 -- YOU CAN STOP HERE!  THERE IS NOTHING LEFT FOR YOU TO CHANGE.
 --
 druidDestCount = 0;
@@ -71,7 +60,6 @@ function btp_druid_initialize()
 end
 
 function druid_heal()
-    castingBandage = false;
     hasBandage = false;
     bandageBag = 0;
     bandageSlot = 1;
@@ -92,49 +80,42 @@ function druid_heal()
     -- Innervate Buff Check
     --
     hasInnervate, myInnervate,
-    numInnervate = btp_check_buff("Nature_Lightning", "player");
+    numInnervate, expInnervate = btp_check_buff("Innervate", "player");
 
     --
     -- Innervate Buff Check
     --
     targetHasInnervate, targetMyInnervate,
-    targetNumInnervate = btp_check_buff("Nature_Lightning",
-                                        btp_name_to_unit(iTarget));
-
-    --
-    -- Clear Casting check
-    --
-    hasClearCasting, myClearCasting,
-    numClearCasting, timeClearCasting = btp_check_buff("ManaBurn", "player");
+    targetNumInnervate, targetExpInnervate = btp_check_buff(
+        "Innervate", btp_name_to_unit(iTarget)
+    );
 
     --
     -- Nature's Swiftness check
     --
     hasNaturesSwiftness, myNaturesSwiftness,
-    numNaturesSwiftness = btp_check_buff("RavenForm", "player");
+    numNaturesSwiftness, expNaturesSwiftness = btp_check_buff(
+        "Nature's Swiftness", "player"
+    );
 
     --
     -- Bandage Check check
     --
     hasBandageBuff, myBandageBuff,
-    numBandageBuff = btp_check_buff("Holy_Heal", bandageTarget);
+    numBandageBuff, expBandageBuff = btp_check_buff("Bandage", bandageTarget);
 
-    if (((GetTime() - lastBandage) <= 1) or myBandageBuff) then
-        castingBandage = true;
-    end
-
-    if (castingBandage) then
+    -- we're currently bandaging someone, so just return
+    if (myBandageBuff) then
         return true;
     end
 
-    Trinkets();
     ProphetKeyBindings();
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-          if (string.find(GetContainerItemLink(bag,slot), "Bandage")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot), "Bandage")) then
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasBandage = true;
                   bandageBag = bag;
@@ -146,12 +127,12 @@ function druid_heal()
       end
     end
 
-    if (SelfHeal((DR_THRESH + DR_SCALAR)/2, DR_MANA/3)) then
+    if (SelfHeal(DR_THRESH, DR_MANA/3)) then
         --
         -- doing a self heal here (healthstones, potions, etc)
         --
         return true;
-    elseif (not hasClearCasting and not targetHasInnervate and
+    elseif (not targetHasInnervate and
             UnitAffectingCombat("player") and
             UnitMana(btp_name_to_unit(iTarget)) /
             UnitManaMax(btp_name_to_unit(iTarget)) <= DR_MANA/3 and
@@ -163,9 +144,9 @@ function druid_heal()
             UnitHealth("player")/UnitHealthMax("player") <=
            (DR_THRESH + DR_SCALAR) and UnitHealth("player") > 1 and
             btp_cast_spell_alt("Barkskin")) then
-        -- This has no global cooldown
+        -- This has no GCD
     elseif (pvpBot and UnitAffectingCombat("player") and
-            not btp_check_buff("StoneClawTotem", "player") and
+            not btp_check_buff("Nature's Grasp", "player") and
             UnitHealth("player")/UnitHealthMax("player") <=
            (DR_THRESH + DR_SCALAR) and UnitHealth("player") > 1 and
             btp_cast_spell("Nature's Grasp")) then
@@ -608,39 +589,23 @@ function druid_buff()
     goodToBuff = true;
     nextPlayer = "player";
 
-    Trinkets();
     ProphetKeyBindings();
 
-    if (GetNumRaidMembers() > 0) then
-        for i = 1, GetNumRaidMembers() do
-            nextPlayer = "raid" .. i;
-            if (UnitHealth(nextPlayer) < 4 or
-                not btp_check_dist(nextPlayer,1)) then
-                goodToBuff = false;
-                break;
-            end
+    for nextPlayer in btp_iterate_group_members() do
+        if (UnitHealth(nextPlayer) < 4 or not btp_check_dist(nextPlayer, 1)) then
+            goodToBuff = false;
+            break;
         end
     end
 
-    if (GetNumRaidMembers() <= 0) then
-        for i = 1, GetNumPartyMembers() do
-            nextPlayer = "party" .. i;
-            if (UnitHealth(nextPlayer) < 4 or
-                not btp_check_dist(nextPlayer,1)) then
-                goodToBuff = false;
-                break;
-            end
-        end
-    end
-
-    if (GetNumPartyMembers() == 0 and GetNumRaidMembers() == 0) then
+    if (GetNumGroupMembers() == 0) then
         goodToBuff = false;
     end
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-          if (string.find(GetContainerItemLink(bag,slot), "Wild")) then
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot), "Wild")) then
               hasWild = true;
               break;
           end
@@ -651,12 +616,17 @@ function druid_buff()
     --
     -- Mark of the Wild check
     --
-    hasMark, myMark, numMark = btp_check_buff("Regeneration", "player");
+    hasMark, myMark, numMark, expMark = btp_check_buff("Mark of the Wild", "player");
 
     --
     -- Gift of the Wild check
     --
-    hasGift, myGift, numGift = btp_check_buff("GiftoftheWild", "player");
+    hasGift, myGift, numGift, expGift = btp_check_buff("Gift of the Wild", "player");
+
+    --
+    -- Thorns
+    --
+    hasThorns, myThorns, numThorns, expThorns = btp_check_buff("Thorns", "player");
 
     if (hasMark or hasGift) then
         noMarkOfWild = false;
@@ -668,27 +638,33 @@ function druid_buff()
         return true;
     end
 
-    if (math.random(100) == 69 and btp_cast_spell("Two Forms")) then
+    if (noThorns and
+        btp_cast_spell_on_target("Thorns", "player")) then
+        FuckBlizzardTargetUnit("playertarget");
         return true;
     end
 
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer = "raid" .. i;
+    for nextPlayer in btp_iterate_group_members() do
         noMarkOfWild = true;
 
-        if (UnitHealth(nextPlayer) >= 5 and
-            btp_check_dist(nextPlayer,1)) then
+        if (UnitHealth(nextPlayer) >= 5 and btp_check_dist(nextPlayer,1)) then
             --
             -- Mark of the Wild check
             --
             hasMark, myMark,
-            numMark = btp_check_buff("Regeneration", nextPlayer);
+            numMark, expMark = btp_check_buff("Mark of the Wild", nextPlayer);
 
             --
             -- Gift of the Wild check
             --
             hasGift, myGift,
-            numGift = btp_check_buff("GiftoftheWild", nextPlayer);
+            numGift, expGift = btp_check_buff("Gift of the Wild", nextPlayer);
+
+            --
+            -- Thorns check
+            --
+            hasThorns, myThorns,
+            numThorns, expThorns = btp_check_buff("Thorns", nextPlayer);
 
             --
             if (hasMark or hasGift) then
@@ -706,57 +682,11 @@ function druid_buff()
                 FuckBlizzardTargetUnit("playertarget");
                 return true;
             end
-        end
-    end
 
-    if (GetNumRaidMembers() <= 0) then
-        for i = 1, GetNumPartyMembers() do
-            nextPlayer = "party" .. i;
-            noMarkOfWild = true;
-
-            if (UnitHealth(nextPlayer) >= 5 and
-                btp_check_dist(nextPlayer,1)) then
-                --
-                -- Mark of the Wild check
-                --
-                hasMark, myMark,
-                numMark = btp_check_buff("Regeneration", nextPlayer);
-
-                --
-                -- Gift of the Wild check
-                --
-                hasGift, myGift,
-                numGift = btp_check_buff("GiftoftheWild", nextPlayer);
-
-                --
-                -- Thorns check
-                --
-                hasThorns, myThorns,
-                numThorns = btp_check_buff("Thorns", nextPlayer);
-
-                if (hasMark or hasGift) then
-                    noMarkOfWild = false;
-                end
-
-                if (hasWild and noMarkOfWild and goodToBuff and not pvpBot and
-                    btp_cast_spell_on_target("Gift of the Wild",
-                    nextPlayer)) then
-                    FuckBlizzardTargetUnit("playertarget");
-                    return true;
-                end
-
-                if (noMarkOfWild and
-                    btp_cast_spell_on_target("Mark of the Wild",
-                    nextPlayer)) then
-                    FuckBlizzardTargetUnit("playertarget");
-                    return true;
-                end
-
-                if (noThorns and
-                    btp_cast_spell_on_target("Thorns", nextPlayer)) then
-                    FuckBlizzardTargetUnit("playertarget");
-                    return true;
-                end
+            if (noThorns and
+                btp_cast_spell_on_target("Thorns", nextPlayer)) then
+                FuckBlizzardTargetUnit("playertarget");
+                return true;
             end
         end
     end
@@ -767,7 +697,6 @@ function druid_dps()
         return true;
     end
 
-    -- Trinkets();
     ProphetKeyBindings();
 
     --
@@ -782,16 +711,20 @@ function druid_dps()
     hasInsectSwarm, myInsectSwarm,
     numInsectSwarm, expInsectSwarm = btp_check_debuff("Insect Swarm", "target");
 
+    playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
+
+    -- TODO: replace this with druid_heal() when ready
     if (SelfHeal(DR_THRESH, DR_MANA/3)) then
         --
         -- doing a self heal here (heathstones, potions, etc)
         --
-    elseif (not myInsectSwarm and btp_cast_spell("Insect Swarm")) then
+    end
+
+    if (not myInsectSwarm and btp_cast_spell("Insect Swarm")) then
         return true;
     elseif (not myMoonfire and btp_cast_spell("Moonfire")) then
         return true;
-    elseif (UnitHealth("player")/UnitHealthMax("player") == 1 and
-            btp_cast_spell("Starfire")) then
+    elseif (playerHealthRatio == 1 and btp_cast_spell("Starfire")) then
         return true;
     elseif (btp_cast_spell("Wrath")) then
         return true;
@@ -854,7 +787,7 @@ function btp_cb_druid_regrowth()
     -- Regrowth check
     --
     hasRegrowth, myRegrowth,
-    numRegrowth = btp_check_buff("ResistNature", current_cb_target);
+    numRegrowth, expRegrowth = btp_check_buff("Regrowth", current_cb_target);
 
     if ((myRegrowth and
          UnitHealth(current_cb_target)/UnitHealthMax(current_cb_target) >
