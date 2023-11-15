@@ -17,7 +17,6 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-PRIEST_DEF_TRINKET = "Insignia of the Horde";
 -- Moved a lot of stuff to btp_priest_old.lua
 function btp_priest_initialize()
     btp_frame_debug("Priest INIT");
@@ -101,7 +100,6 @@ function PriestBuff()
     hasCandle = false;
     goodToBuff = true;
 
-    Trinkets();
     ProphetKeyBindings();
 
     local i = 1
@@ -160,9 +158,9 @@ function PriestBuff()
     end
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-          if (string.find(GetContainerItemLink(bag,slot), "Candle")) then
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot), "Candle")) then
               hasCandle = true;
               break;
           end
@@ -754,11 +752,6 @@ function btp_priest_heal()
     --
     -- Put any callback code here.
     --
-
-    --
-    -- Run Trinket code.
-    --
-    Trinkets();
 
     if(pvpBot) then
         return btp_priest_heal_pvp_quick();

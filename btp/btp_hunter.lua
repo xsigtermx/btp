@@ -15,7 +15,6 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-HUNTER_DEF_TRINKET = "Insignia of the Horde";
 lastHunterPetFollow = 0;
 lastHunterPetFeed = 0;
 lastHunterMendPet = 0;
@@ -76,7 +75,7 @@ function btp_hunter_bow()
 	end
 
 
-	if(CheckInteractDistance("target", 3)) then
+	if(btp_check_dist("target", 3)) then
 		if(not btp_is_slowed()) then
 			if(btp_cast_spell("Wing Clip")) then return true; end
 		end
@@ -120,7 +119,7 @@ function btp_hunter_bow()
 end
 
 function btp_hunter_mele()
-	if(CheckInteractDistance("target", 3)) then
+	if(btp_check_dist("target", 3)) then
 		-- btp_frame_debug("Interact");
 	end
 end

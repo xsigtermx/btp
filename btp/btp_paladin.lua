@@ -16,7 +16,6 @@
 -- 
 PALADIN_MANA_THRESH = .3;
 PALADIN_HEALTH_THRESH = .3;
-PALADIN_DEF_TRINKET = "Insignia of the Horde";
 PALADIN_PULL_SPELL = "Avenger's Shield";
 PALADIN_GRIND = false;
 

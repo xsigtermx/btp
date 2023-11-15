@@ -15,7 +15,6 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-SHAMAN_DEF_TRINKET = "Insignia of the Horde";
 
 BTP_SHAM_THRESH_MANA=.33
 BTP_SHAM_THRESH_CRIT=.40
@@ -376,7 +375,6 @@ function btp_sham_heal()
         return true;
     end
 
-    -- Trinkets();
 	ProphetKeyBindings();
 
     for bag=0,4 do

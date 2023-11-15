@@ -58,17 +58,6 @@ WARLOCK_ARMOR = "Demon Armor";
 DEFAULT_ARMOR = "Fel Armor";
 
 --
--- This is the last trinket you expect to find in the chain of trinkets
--- that will cycle through the top slot with a call to the fun trink code.
--- That is, your top trinket slot is set up to change trinkets if you have
--- those trinkets in your bag, this value is the name of the last (base)
--- trinket that will be called.  So if you blow the cooldown on all your
--- other trinkets, this will be flipped into place until the cooldown is
--- ready.
---
-WARLOCK_DEF_TRINKET = "Quagmirran's Eye";
-
---
 -- If you do not have WARLOCK_ARCANE_R, WARLOCK_FIRE_R, WARLOCK_NATURE_R,
 -- WARLOCK_FROST_R, or WARLOCK_SHADOW_R rings then you sould change each of
 -- these to the following.
@@ -499,13 +488,13 @@ function WarlockDefaultRings()
         PickupInventoryItem(12);
         PutItemInBackpack();
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot) and
-                string.find(GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot) and
+                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
                 UseContainerItem(bag,slot);
             end
-            if (GetContainerItemLink(bag,slot) and
-                string.find(GetContainerItemLink(bag,slot), WARLOCK_DEF1_R)) then
+            if (C_Container.GetContainerItemLink(bag,slot) and
+                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF1_R)) then
                 UseContainerItem(bag,slot);
             end
           end
@@ -519,9 +508,9 @@ function WarlockDefaultRings()
             PutItemInBackpack();
         end
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot) and
-                string.find(GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot) and
+                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
                 UseContainerItem(bag,slot);
             end
           end
@@ -535,9 +524,9 @@ function WarlockDefaultRings()
             PutItemInBackpack();
         end
         for bag=0,4 do
-          for slot=1,GetContainerNumSlots(bag) do
-            if (GetContainerItemLink(bag,slot) and
-                string.find(GetContainerItemLink(bag,slot), WARLOCK_DEF1_R)) then
+          for slot=1,C_Container.GetContainerNumSlots(bag) do
+            if (C_Container.GetContainerItemLink(bag,slot) and
+                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF1_R)) then
                 UseContainerItem(bag,slot);
             end
           end
@@ -547,7 +536,6 @@ function WarlockDefaultRings()
     --
     -- Call them here becuase we need to bind last
     --
-    Trinkets();
     ProphetKeyBindings();
     WarlockSetPet();
 end
@@ -604,13 +592,13 @@ function SwitchWarlockRings()
             PickupInventoryItem(12);
             PutItemInBackpack();
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
                     UseContainerItem(bag,slot);
                 end
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -624,9 +612,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -640,9 +628,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -655,13 +643,13 @@ function SwitchWarlockRings()
             PickupInventoryItem(12);
             PutItemInBackpack();
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_FROST_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FROST_R)) then
                     UseContainerItem(bag,slot);
                 end
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -675,9 +663,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -691,9 +679,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_FROST_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FROST_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -706,13 +694,13 @@ function SwitchWarlockRings()
             PickupInventoryItem(12);
             PutItemInBackpack();
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
                     UseContainerItem(bag,slot);
                 end
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -726,9 +714,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -742,9 +730,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -757,13 +745,13 @@ function SwitchWarlockRings()
             PickupInventoryItem(12);
             PutItemInBackpack();
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
                     UseContainerItem(bag,slot);
                 end
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -777,9 +765,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -793,9 +781,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -808,13 +796,13 @@ function SwitchWarlockRings()
             PickupInventoryItem(12);
             PutItemInBackpack();
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
                     UseContainerItem(bag,slot);
                 end
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -828,9 +816,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -844,9 +832,9 @@ function SwitchWarlockRings()
                 PutItemInBackpack();
             end
             for bag=0,4 do
-              for slot=1,GetContainerNumSlots(bag) do
-                if (GetContainerItemLink(bag,slot) and
-                    string.find(GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
+              for slot=1,C_Container.GetContainerNumSlots(bag) do
+                if (C_Container.GetContainerItemLink(bag,slot) and
+                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
                     UseContainerItem(bag,slot);
                 end
               end
@@ -866,7 +854,6 @@ function WarlockBuff()
     nextPlayer = "player";
 
     WarlockDefaultRings();
-    Trinkets();
     ProphetKeyBindings();
     WarlockSetPet();
 
@@ -1125,12 +1112,12 @@ function EngineerCC()
     discombobulatorRaySlot = 0;
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
 
-          if (string.find(GetContainerItemLink(bag,slot),
+          if (string.find(C_Container.GetContainerItemLink(bag,slot),
               "Discombobulator Ray") and btp_check_dist("target", 1)) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasDiscombobulatorRay = true;
                   discombobulatorRayBag = bag;
@@ -1302,7 +1289,6 @@ function WarlockPrimary()
     end
 
     SwitchWarlockRings();
-    Trinkets();
     ProphetKeyBindings();
     WarlockSetPet();
 
@@ -1472,11 +1458,11 @@ function WarlockDest()
     RequestBattlefieldScoreData();
 
     for bag=0,4 do
-      for slot=1,GetContainerNumSlots(bag) do
-        if (GetContainerItemLink(bag,slot)) then
-          if (string.find(GetContainerItemLink(bag,slot),
+      for slot=1,C_Container.GetContainerNumSlots(bag) do
+        if (C_Container.GetContainerItemLink(bag,slot)) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot),
               "EZ-Thro Dynamite")) then
-              start, duration, enable = GetContainerItemCooldown(bag, slot);
+              start, duration, enable = C_Container.GetContainerItemCooldown(bag, slot);
               if (duration - (GetTime() - start) <= 0) then
                   hasEZ = true;
                   EZBag = bag;
@@ -1484,11 +1470,11 @@ function WarlockDest()
               end
           end
 
-          if (string.find(GetContainerItemLink(bag,slot), "Soul Shard")) then
+          if (string.find(C_Container.GetContainerItemLink(bag,slot), "Soul Shard")) then
               shardCount = shardCount + 1;
           end
 
-          if (string.find(GetContainerItemLink(bag,slot),
+          if (string.find(C_Container.GetContainerItemLink(bag,slot),
                           "Infernal Stone")) then
               hasInfernalStone = true;
           end
@@ -1780,7 +1766,6 @@ function WarlockDest()
         onlyFire = false;
     end
 
-    Trinkets();
     ProphetKeyBindings();
     WarlockSetPet();
 
