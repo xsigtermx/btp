@@ -602,8 +602,8 @@ function btp_priest_dps_new(unit)
 
     -- check if we should cast shadowFiend bring it out for pvp right away
     if(in_combat and 
-      ((UnitIsPlayer(unit) and UnitMana("player")/UnitManaMax("player") < .92) or
-       (UnitMana("player")/UnitManaMax("player") < .30))) then
+      ((UnitIsPlayer(unit) and UnitPower("player")/UnitPowerMax("player") < .92) or
+       (UnitPower("player")/UnitPowerMax("player") < .30))) then
         if(btp_cast_spell_on_target("Shadowfiend", unit)) then return true; end
     end
 
@@ -712,7 +712,7 @@ function _btp_priest_dps_pve(unit)
     end
     --
     -- Try to drain mana if we can
-        -- if(UnitMana(unit) > 110) then
+        -- if(UnitPower(unit) > 110) then
     --     if(btp_cast_spell_on_target("Mana Burn", unit)) then return true end;
     -- end
 
@@ -732,7 +732,7 @@ function btp_priest_dps(unit)
     end
 
     -- check if we should cast shadowFiend
-        if(UnitMana("player")/UnitManaMax("player") < .5) then
+        if(UnitPower("player")/UnitPowerMax("player") < .5) then
         if(btp_cast_spell_on_target("Shadowfiend", unit)) then return true; end
     end
 
@@ -785,7 +785,7 @@ function btp_priest_resurrection()
 
     if (not UnitAffectingCombat("player") and
         res_name ~= "none" and res_name ~= nil and
-        UnitMana("player")/UnitManaMax("player") > PR_MANA) then
+        UnitPower("player")/UnitPowerMax("player") > PR_MANA) then
     if(btp_cast_spell_on_target("Resurrection", res_name)) then 
         return true; 
     end

@@ -170,17 +170,17 @@ function warrior_dps()
     --
     warrior_heal();
 
-    if (UnitAffectingCombat("player") and rage < 50 and
+    if (UnitAffectingCombat("player") and rage < 25 and
         playerHealthRatio > .50 and btp_cast_spell_alt("Bloodrage")) then
         -- pop bloodrage
-    elseif (UnitAffectingCombat("player") and stance ~= S_BATTLE and
+    elseif (UnitAffectingCombat("player") and stance ~= S_BATTLE and rage < 5 and
             playerHealthRatio > .50 and targetHealthRatio <= .20 and
             btp_cast_spell_alt("Battle Stance")) then
         -- swap stances for hamstring, execute, thunder clap, and overpower
-    elseif (UnitAffectingCombat("player") and stance ~= S_DEFENSE and
+    elseif (UnitAffectingCombat("player") and stance ~= S_DEFENSE and rage < 5 and
             targetHealthRatio > .20 and btp_cast_spell_alt("Defensive Stance")) then
         -- swap stances taunting and tanking
-    elseif (not UnitAffectingCombat("player") and stance ~= S_BATTLE and
+    elseif (not UnitAffectingCombat("player") and stance ~= S_BATTLE and rage < 5 and
             btp_cast_spell_alt("Battle Stance")) then
         -- swap stances out of combat for charge
     end
@@ -214,7 +214,10 @@ function warrior_dps()
     elseif (not myRend and btp_check_dist("target", 3) and
             btp_cast_spell("Rend")) then
         return true;
-    elseif (not mySunder and numSunder < 5 and btp_check_dist("target", 3) and
+    elseif (btp_check_dist("target", 3) and
+            btp_cast_spell("Overpower")) then
+        return true;
+    elseif (mySunder and numSunder < 5 and btp_check_dist("target", 3) and
             btp_cast_spell("Sunder Armor")) then
         return true;
     elseif (rage > 70 and btp_check_dist("target", 3) and

@@ -558,7 +558,7 @@ function btp_pal_heal_pvp()
 	end
 
 	-- if we are getting low on mana fix it
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	if(UnitAffectingCombat("player") and mana_level < .4) then
 		if(btp_cast_spell("Divine Illumination")) then
 			return true;
@@ -593,7 +593,7 @@ function btp_pal_heal_pvp()
 	if(cur_player ~= false) then
 		-- btp_frame_debug("Crit Heal: " .. cur_player);
 
-		mana_level = UnitMana("player")/UnitManaMax("player");
+		mana_level = UnitPower("player")/UnitPowerMax("player");
 		if(mana_level < .2) then
 			if(btp_cast_spell("Lay on Hands")) then 
 				return true; 
@@ -663,7 +663,7 @@ function btp_pal_dps()
 	if(btp_cast_spell("Holy Shield")) then return true; end
 
 	-- Get our mana level
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	-- Get our health level
 	health_level = UnitHealth("player")/UnitHealthMax("player");
 
@@ -1063,7 +1063,7 @@ function btp_pal_ret()
 	if(btp_cast_spell("Holy Shield")) then return true; end
 
 	-- Get our mana level
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	-- Get our health level
 	health_level = UnitHealth("player")/UnitHealthMax("player");
 
@@ -1201,7 +1201,7 @@ function btp_pal_tank_new(tank_aoe)
         end
 
 	-- Get our mana level
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	-- Get our health level
 	health_level = UnitHealth("player")/UnitHealthMax("player");
 
@@ -1299,7 +1299,7 @@ function btp_pal_tank()
 
 
 	-- Get our mana level
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	-- Get our health level
 	health_level = UnitHealth("player")/UnitHealthMax("player");
 
@@ -1374,7 +1374,7 @@ function btp_pal_tank()
 	end
 
 
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	if(pvpBot and not btp_pal_issoj() 
 		and not btp_check_debuff("SealOfWrath", target)) then
 		return btp_cast_spell("Seal of Justice");

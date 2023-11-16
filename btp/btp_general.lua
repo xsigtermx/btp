@@ -3129,7 +3129,7 @@ function SelfHeal(healthThresh, manaThresh)
         FuckBlizUseContainerItem(healthPotionBag, healthPotionSlot);
         return true;
     elseif (hasManaPotion and UnitAffectingCombat("player") and
-            UnitMana("player")/UnitManaMax("player") <= manaThresh) then
+            UnitPower("player")/UnitPowerMax("player") <= manaThresh) then
         FuckBlizUseContainerItem(manaPotionBag, manaPotionSlot);
         return true;
     end
@@ -3361,6 +3361,10 @@ function btp_check_buff(buff, unit)
         spellId, canApplyAura, isBossDebuff, castByPlayer,
         nameplateShowAll, timeMod = UnitBuff(unit, i);
 
+        if (expirationTime == nil) then
+            expirationTime = 0;
+        end
+
         if (buffName and source == "player" and
             strfind(buffName, buff)) then
             return true, true, buffCount, (expirationTime - GetTime());
@@ -3406,6 +3410,9 @@ function btp_check_debuff(buff, unit)
         spellId, canApplyAura, isBossDebuff, castByPlayer,
         nameplateShowAll, timeMod = UnitDebuff(unit, i);
 
+        if (expirationTime == nil) then
+            expirationTime = 0;
+        end
 
         if (debuffName and source == "player" and
             strfind(debuffName, buff)) then
@@ -3625,44 +3632,20 @@ function btp_health_status_quick()
     local lowest_target = 0;
     local lowest_percent = 1;
 
-    -- only check raid if we are in one
-    if(UnitInRaid("player")) then
-    	for i = 1, GetNumRaidMembers() do
-            nextPlayer     = "raid" .. i;
-            cur_health     = UnitHealth(nextPlayer);
-            cur_health_max = UnitHealthMax(nextPlayer);
-            cur_class      = UnitClass(nextPlayer);
-            cur_percent    = cur_health / cur_health_max;
+    for nextPlayer in btp_iterate_group_members() do
+        cur_health     = UnitHealth(nextPlayer);
+        cur_health_max = UnitHealthMax(nextPlayer);
+        cur_class      = UnitClass(nextPlayer);
+        cur_percent    = cur_health / cur_health_max;
 
-            if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
-                lowest_percent = cur_percent;
-                lowest_target = nextPlayer;
-                lowest_health = (cur_health_max - cur_health)
-	        if (btp_heal_priority_check(lowest_target)) then
-                    return lowest_percent, lowest_health, lowest_target;
-	        end
-                -- btp_frame_debug("raid-name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
-            end
-
+        if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
+            lowest_percent = cur_percent;
+            lowest_target = nextPlayer;
+            lowest_health = (cur_health_max - cur_health)
+        if (btp_heal_priority_check(lowest_target)) then
+            return lowest_percent, lowest_health, lowest_target;
         end
-    -- check the party
-    else
-    	for i = 1, GetNumPartyMembers() do
-            nextPlayer     = "party" .. i;
-            cur_health     = UnitHealth(nextPlayer);
-            cur_health_max = UnitHealthMax(nextPlayer);
-            cur_class      = UnitClass(nextPlayer);
-            cur_percent    = cur_health / cur_health_max;
-
-            if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
-                lowest_percent = cur_percent;
-                lowest_target = nextPlayer;
-                lowest_health = (cur_health_max - cur_health)
-                -- btp_frame_debug("name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
-                if (btp_heal_priority_check(lowest_target)) then
-                    return lowest_percent, lowest_health, lowest_target;
-	        end
-            end
+            -- btp_frame_debug("raid-name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
         end
     end
 
@@ -3723,53 +3706,22 @@ function btp_health_status(thresh, raidHeal)
     party_status[7] = 0;
     party_status[8] = 0;
 
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer     = "raid" .. i;
+    for nextPlayer in btp_iterate_group_members() do
         cur_health     = UnitHealth(nextPlayer);
         cur_health_max = UnitHealthMax(nextPlayer);
         cur_class      = UnitClass(nextPlayer);
         cur_threat     = UnitThreatSituation(nextPlayer);
         cur_percent    = cur_health / cur_health_max;
 
-        if(not UnitInVehicle(nextPlayer) and cur_percent <= thresh and
-           cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
+        if(cur_percent <= thresh and cur_health >= 5 and
+           btp_check_dist(nextPlayer, 1)) then
                 name, rank, subgroup, level, class, fileName, zone, online,
                 isDead, role, isML = GetRaidRosterInfo(i + 1);
 
                 raid_cnt                   = raid_cnt + 1;
+                party_cnt                  = party_cnt + 1;
                 party_status[subgroup]     = party_status[subgroup] + 1;
         end
-
-        --
-        -- We could check for pets here, but for now we don't care about
-        -- how hurt pets are.  They will get heals if they need them,
-        -- but we're not going to blow the good stuff on pets.
-        --
-    end
-
-    for i = 0, GetNumPartyMembers() do
-        if (i == 0) then
-            nextPlayer = "player";
-        else
-            nextPlayer = "party" .. i;
-        end
-
-        cur_health     = UnitHealth(nextPlayer);
-        cur_health_max = UnitHealthMax(nextPlayer);
-        cur_class      = UnitClass(nextPlayer);
-        cur_threat     = UnitThreatSituation(nextPlayer);
-        cur_percent    = cur_health / cur_health_max;
-
-        if(not UnitInVehicle(nextPlayer) and cur_percent <= thresh and
-           cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
-                party_cnt = party_cnt + 1;
-        end
-
-        --
-        -- We could check for pets here, but for now we don't care about
-        -- how hurt pets are.  They will get heals if they need them,
-        -- but we're not going to blow the good stuff on pets.
-        --
     end
 
     --
@@ -3779,49 +3731,21 @@ function btp_health_status(thresh, raidHeal)
         for j = 0, pcount do
             pval = PRIORITY_G[j];
 
-            for i = 1, GetNumRaidMembers() do
-                nextPlayer = "raid" .. i;
-
+            for nextPlayer in btp_iterate_group_members() do
                 cur_health     = UnitHealth(nextPlayer);
                 cur_health_max = UnitHealthMax(nextPlayer);
                 cur_class      = UnitClass(nextPlayer);
                 cur_percent    = cur_health / cur_health_max;
 
                 if(cur_health/cur_health_max <= thresh and
-                   not UnitInVehicle(nextPlayer) and
                    cur_health >= 2 and btp_check_dist(nextPlayer, 1) and
                    pval and UnitName(nextPlayer) and
-                   string.lower(UnitName(nextPlayer)) ==
-                   string.lower(pval)) then
+                   string.lower(UnitName(nextPlayer)) == string.lower(pval)) then
                     name, rank, subgroup, level, class, fileName, zone, online,
                     isDead, role, isML = GetRaidRosterInfo(i + 1);
 
                     return nextPlayer, party_cnt, raid_cnt,
                            party_status[subgroup];
-                end
-            end
-
-            if (GetNumRaidMembers() <= 0) then
-                for i = 0, GetNumPartyMembers() do
-                    if (i == 0) then
-                        nextPlayer = "player";
-                    else
-                        nextPlayer = "party" .. i;
-                    end
-
-                    cur_health     = UnitHealth(nextPlayer);
-                    cur_health_max = UnitHealthMax(nextPlayer);
-                    cur_class      = UnitClass(nextPlayer);
-                    cur_percent    = cur_health / cur_health_max;
-
-                    if(cur_health/cur_health_max <= thresh and
-                       not UnitInVehicle(nextPlayer) and
-                       cur_health >= 2 and btp_check_dist(nextPlayer, 1) and
-                       pval and UnitName(nextPlayer) and
-                       string.lower(UnitName(nextPlayer)) ==
-                       string.lower(pval)) then
-                        return nextPlayer, party_cnt, raid_cnt, party_cnt;
-                    end
                 end
             end
         end
@@ -3833,9 +3757,7 @@ function btp_health_status(thresh, raidHeal)
 
     -- Now that we are done checking our priorities check
     -- to see if any party or raid members are below thresh
-
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer     = "raid" .. i;
+    for nextPlayer in btp_iterate_group_members() do
         cur_health     = UnitHealth(nextPlayer);
         cur_health_max = UnitHealthMax(nextPlayer);
         cur_class      = UnitClass(nextPlayer);
@@ -3849,40 +3771,21 @@ function btp_health_status(thresh, raidHeal)
            -- Rejuvination check
            --
            hasRejuvenation, myRejuvenation,
-           numRejuvenation = btp_check_buff("Rejuvenation", nextPlayer);
-
-           --
-           -- Lifebloom check
-           --
-           hasLifebloom, myLifebloom,
-           numLifebloom = btp_check_buff("Felblossom", nextPlayer);
+           numRejuvenation, expRejuvination = btp_check_buff("Rejuvenation", nextPlayer);
 
            --
            -- Regrowth check
            --
            hasRegrowth, myRegrowth,
-           numRegrowth = btp_check_buff("ResistNature", nextPlayer);
+           numRegrowth, expRegrowth = btp_check_buff("Regrowth", nextPlayer);
 
            --
            -- Renew check
            --
            hasRenew, myRenew,
-           numRenew = btp_check_buff("Renew", nextPlayer);
+           numRenew, expRenew = btp_check_buff("Renew", nextPlayer);
 
-           --
-           -- Wild Growth check
-           --
-           hasWildGrowth, myWildGrowth,
-           numWildGrowth = btp_check_buff("Flourish", nextPlayer);
-
-           --
-           -- Riptide Buff check
-           --
-           hasRiptide, myRiptide,
-           numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
-
-           if (hasRejuvenation or hasLifebloom or hasRegrowth or
-               hasRenew or hasWildGrowth or hasRiptide) then
+           if (hasRejuvenation or hasRegrowth or hasRenew) then
                skipPlayer = true;
            end
         end
@@ -3891,7 +3794,6 @@ function btp_health_status(thresh, raidHeal)
         isDead, role, isML = GetRaidRosterInfo(i + 1);
 
         if(not skipPlayer and cur_percent <= thresh and
-           not UnitInVehicle(nextPlayer) and
            cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
 
             -- Tanking
@@ -3929,254 +3831,62 @@ function btp_health_status(thresh, raidHeal)
         end
 
         -- check raid pets lowest priority
-        if(UnitExists("raidpet" .. i)) then
-            nextPet        = "raidpet" .. i;
-            pet_health     = UnitHealth(nextPet);
-            pet_health_max = UnitHealthMax(nextPet);
-            pet_threat     = UnitThreatSituation(nextPet);
-            pet_percent    = pet_health / pet_health_max;
+        -- if(UnitExists("raidpet" .. i)) then
+        --     nextPet        = "raidpet" .. i;
+        --     pet_health     = UnitHealth(nextPet);
+        --     pet_health_max = UnitHealthMax(nextPet);
+        --     pet_threat     = UnitThreatSituation(nextPet);
+        --     pet_percent    = pet_health / pet_health_max;
 
-            if (raidHeal and pet_threat ~= nil and pet_threat < 2) then
-               skipPlayer = false;
+        --     if (raidHeal and pet_threat ~= nil and pet_threat < 2) then
+        --        skipPlayer = false;
 
-               --
-               -- Rejuvination check
-               --
-               hasRejuvenation, myRejuvenation,
-               numRejuvenation = btp_check_buff("Rejuvenation", nextPet);
+        --        --
+        --        -- Rejuvination check
+        --        --
+        --        hasRejuvenation, myRejuvenation,
+        --        numRejuvenation, expRejuvination = btp_check_buff("Rejuvenation", nextPet);
 
-               --
-               -- Lifebloom check
-               --
-               hasLifebloom, myLifebloom,
-               numLifebloom = btp_check_buff("Felblossom", nextPet);
+        --        --
+        --        -- Regrowth check
+        --        --
+        --        hasRegrowth, myRegrowth,
+        --        numRegrowth, expRegrowth = btp_check_buff("Regrowth", nextPet);
 
-               --
-               -- Regrowth check
-               --
-               hasRegrowth, myRegrowth,
-               numRegrowth = btp_check_buff("ResistNature", nextPet);
+        --        --
+        --        -- Renew check
+        --        --
+        --        hasRenew, myRenew,
+        --        numRenew, expRenew = btp_check_buff("Renew", nextPet);
 
-               --
-               -- Renew check
-               --
-               hasRenew, myRenew,
-               numRenew = btp_check_buff("Renew", nextPet);
+        --        if (hasRejuvenation or hasRegrowth or hasRenew) then
+        --            skipPlayer = true;
+        --        end
+        --     end
 
-               --
-               -- Wild Growth check
-               --
-               hasWildGrowth, myWildGrowth,
-               numWildGrowth = btp_check_buff("Flourish", nextPet);
+        --     if(not skipPlayer and pet_percent <= thresh and
+        --        pet_health > 5 and btp_check_dist(nextPet, 1)) then
+        --         if(cur_priority <= 20 and pet_threat ~= nil and
+        --            pet_threat > 1 and cur_heal_percent > pet_percent) then
+        --             cur_heal         = nextPet;
+        --             cur_priority     = 20;
+        --             cur_heal_percent = pet_percent;
+        --             cur_subgroup     = subgroup;
+        --         end
 
-               --
-               -- Riptide Buff check
-               --
-               hasRiptide, myRiptide,
-               numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
-
-               if (hasRejuvenation or hasLifebloom or hasRegrowth or
-                   hasRenew or hasWildGrowth or hasRiptide) then
-                   skipPlayer = true;
-               end
-            end
-
-            if(not skipPlayer and pet_percent <= thresh and
-               not UnitInVehicle(nextPlayer) and
-               pet_health > 5 and btp_check_dist(nextPet, 1)) then
-                if(cur_priority <= 20 and pet_threat ~= nil and
-                   pet_threat > 1 and cur_heal_percent > pet_percent) then
-                    cur_heal         = nextPet;
-                    cur_priority     = 20;
-                    cur_heal_percent = pet_percent;
-                    cur_subgroup     = subgroup;
-                end
-
-                if(cur_priority <= 10 and
-                   cur_heal_percent > pet_percent) then
-                    cur_heal         = nextPet;
-                    cur_priority     = 10;
-                    cur_heal_percent = pet_percent;
-                    cur_subgroup     = subgroup;
-                end
-            end
-        end
-    end
-
-    if (GetNumRaidMembers() <= 0) then
-        for i = 0, GetNumPartyMembers() do
-            if (i == 0) then
-                nextPlayer = "player";
-            else
-                nextPlayer = "party" .. i;
-            end
-
-            cur_health     = UnitHealth(nextPlayer);
-            cur_health_max = UnitHealthMax(nextPlayer);
-            cur_class      = UnitClass(nextPlayer);
-            cur_threat     = UnitThreatSituation(nextPlayer);
-            cur_percent    = cur_health / cur_health_max;
-
-            if (raidHeal and cur_threat ~= nil and cur_threat < 2) then
-               skipPlayer = false;
-
-               --
-               -- Rejuvination check
-               --
-               hasRejuvenation, myRejuvenation,
-               numRejuvenation = btp_check_buff("Rejuvenation", nextPlayer);
-
-               --
-               -- Lifebloom check
-               --
-               hasLifebloom, myLifebloom,
-               numLifebloom = btp_check_buff("Felblossom", nextPlayer);
-
-               --
-               -- Regrowth check
-               --
-               hasRegrowth, myRegrowth,
-               numRegrowth = btp_check_buff("ResistNature", nextPlayer);
-
-               --
-               -- Renew check
-               --
-               hasRenew, myRenew,
-               numRenew = btp_check_buff("Renew", nextPlayer);
-
-               --
-               -- Wild Growth check
-               --
-               hasWildGrowth, myWildGrowth,
-               numWildGrowth = btp_check_buff("Flourish", nextPlayer);
-
-               --
-               -- Riptide Buff check
-               --
-               hasRiptide, myRiptide,
-               numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
-
-               if (hasRejuvenation or hasLifebloom or hasRegrowth or
-                   hasRenew or hasWildGrowth or hasRiptide) then
-                   skipPlayer = true;
-               end
-            end
-
-            if(not skipPlayer and cur_percent <= thresh and
-               not UnitInVehicle(nextPlayer) and
-               cur_health >= 5 and btp_check_dist(nextPlayer, 1)) then
-
-                -- Tanking
-                if(cur_threat ~= nil and cur_threat > 1) then
-                    if(cur_heal_percent > cur_percent) then
-                        cur_heal         = nextPlayer;
-                        cur_priority     = 100;
-                        cur_heal_percent = cur_percent;
-                    end
-                end
-
-                -- second in line are the healers
-                if(cur_class == "Priest" or
-                   cur_class == "Druid" or
-                   cur_class == "Paladin" or
-                   cur_class == "Shaman") then
-                    if(cur_priority <= 75 and
-                       cur_heal_percent > cur_percent) then
-                        cur_heal         = nextPlayer;
-                        cur_priority     = 75;
-                        cur_heal_percent = cur_percent;
-                    end
-                end
-                
-                -- dps classes all get the same
-                if(cur_priority <= 50 and
-                   cur_heal_percent > cur_percent) then
-                    cur_heal         = nextPlayer;
-                    cur_priority     = 50;
-                    cur_heal_percent = cur_percent;
-                end
-            end
-
-            -- check party pets lowest priority
-            if(UnitExists("partypet" .. i)) then
-                nextPet        = "partypet" .. i;
-                pet_health     = UnitHealth(nextPet);
-                pet_health_max = UnitHealthMax(nextPet);
-                pet_threat     = UnitThreatSituation(nextPet);
-                pet_percent    = pet_health / pet_health_max;
-
-                if (raidHeal and pet_threat ~= nil and pet_threat < 2) then
-                   skipPlayer = false;
-
-                   --
-                   -- Rejuvination check
-                   --
-                   hasRejuvenation, myRejuvenation,
-                   numRejuvenation = btp_check_buff("Rejuvenation", nextPet);
-
-                   --
-                   -- Lifebloom check
-                   --
-                   hasLifebloom, myLifebloom,
-                   numLifebloom = btp_check_buff("Felblossom", nextPet);
-
-                   --
-                   -- Regrowth check
-                   --
-                   hasRegrowth, myRegrowth,
-                   numRegrowth = btp_check_buff("ResistNature", nextPet);
-
-                   --
-                   -- Renew check
-                   --
-                   hasRenew, myRenew,
-                   numRenew = btp_check_buff("Renew", nextPet);
-
-                   --
-                   -- Wild Growth check
-                   --
-                   hasWildGrowth, myWildGrowth,
-                   numWildGrowth = btp_check_buff("Flourish", nextPet);
-
-                   --
-                   -- Riptide Buff check
-                   --
-                   hasRiptide, myRiptide,
-                   numRiptide = btp_check_buff("Druid_Typhoon", nextPlayer);
-
-                   if (hasRejuvenation or hasLifebloom or hasRegrowth or
-                       hasRenew or hasWildGrowth or hasRiptide) then
-                       skipPlayer = true;
-                   end
-                end
-
-                if(not skipPlayer and pet_percent <= thresh and
-                   not UnitInVehicle(nextPlayer) and
-                   pet_health > 5 and btp_check_dist(nextPet, 1)) then
-                    if(cur_priority <= 20 and pet_threat ~= nil and
-                       pet_threat > 1 and cur_heal_percent > pet_percent) then
-                        cur_heal         = nextPet;
-                        cur_priority     = 20;
-                        cur_heal_percent = pet_percent;
-                    end
-
-                    if(cur_priority <= 10 and
-                       cur_heal_percent > pet_percent) then
-                        cur_heal         = nextPet;
-                        cur_priority     = 10;
-                        cur_heal_percent = pet_percent;
-                    end
-                end
-            end
-        end
+        --         if(cur_priority <= 10 and
+        --            cur_heal_percent > pet_percent) then
+        --             cur_heal         = nextPet;
+        --             cur_priority     = 10;
+        --             cur_heal_percent = pet_percent;
+        --             cur_subgroup     = subgroup;
+        --         end
+        --     end
+        -- end
     end
 
     if(cur_heal ~= nil) then
-        if (GetNumRaidMembers() <= 0) then
-            return cur_heal, party_cnt, raid_cnt, party_cnt;
-        else
-            return cur_heal, party_cnt, raid_cnt, party_status[cur_subgroup];
-        end
+        return cur_heal, party_cnt, raid_cnt, party_status[cur_subgroup];
     end
 
     return false;
@@ -4746,7 +4456,7 @@ function btp_bot()
     end
 
     -- Mage Code for WATERBREAK
-    cur_mana = UnitMana("player")/UnitManaMax("player");
+    cur_mana = UnitPower("player")/UnitPowerMax("player");
     if(not dontBeg and UnitClass("player") == "Mage") then
 	    dontHearth = true;
 
@@ -4783,7 +4493,7 @@ function btp_bot()
         end
 
 	if(not onMount and not mageisDrinking and cur_mana >= .99
-            and (UnitMana("player")/UnitManaMax("player") <= .3)) then
+            and (UnitPower("player")/UnitPowerMax("player") <= .3)) then
         	-- FuckBlizUseContainerItem(mountBag,mountSlot);
 		CallCompanion("MOUNT", mountSlot);
 		onMount = true;
@@ -5006,7 +4716,7 @@ function btp_bot()
                 btpFollow and not stopMoving and not atFlag and
                 (GetTime() - lastMountTry) > 2 and
                 not forceDrink and (not isDrinking or
-                UnitMana("player") == UnitManaMax("player") or
+                UnitPower("player") == UnitPowerMax("player") or
                (farmDungeon and btp_check_dist(followPlayer, 4) and
                 not btp_check_dist(followPlayer, 2)))) then
 
@@ -5049,8 +4759,8 @@ function btp_bot()
                     not btp_dont_follow(UnitName(followPlayer))) then
                 PromoteToLeader(followPlayer);
             elseif (hasWater and (GetTime() - lastBotWater) >= 5 and
-                    UnitMana("player")/UnitManaMax("player") <= .3 and
-                    UnitMana("player") > 0 and UnitHealth("player") > 2 and
+                    UnitPower("player")/UnitPowerMax("player") <= .3 and
+                    UnitPower("player") > 0 and UnitHealth("player") > 2 and
                     not isDrinking and not targetOnMount and
                     not UnitAffectingCombat("player")) then
                 if (farmDungeon and btp_check_dist(followPlayer, 4) and
@@ -5217,17 +4927,17 @@ function btp_bot()
                     UnitHealth("player") > 2) then
                 lastBuff = GetTime();
                 if (UnitClass("player") == "Priest" and pvpBot and
-                    UnitMana("player")/UnitManaMax("player") >= .9) then
+                    UnitPower("player")/UnitPowerMax("player") >= .9) then
                     PriestBuff();
                 elseif (UnitClass("player") == "Priest" and
-                    UnitMana("player")/UnitManaMax("player") >= .3 and
+                    UnitPower("player")/UnitPowerMax("player") >= .3 and
                     not pvpBot) then
                     PriestBuff();
                 elseif (UnitClass("player") == "Druid" and
-                        UnitMana("player")/UnitManaMax("player") >= .3) then
+                        UnitPower("player")/UnitPowerMax("player") >= .3) then
                     druid_buff();
                 elseif (UnitClass("player") == "Warlock" and
-                        UnitMana("player")/UnitManaMax("player") >= .3) then
+                        UnitPower("player")/UnitPowerMax("player") >= .3) then
                     WarlockBuff();
                 end
             else
@@ -5237,7 +4947,7 @@ function btp_bot()
                     	btp_priest_heal();
                       if (DPS_MODE_ON == true and
                           UnitAffectingCombat(followPlayer) and
-                          UnitMana("player")/UnitManaMax("player") > .35 and
+                          UnitPower("player")/UnitPowerMax("player") > .35 and
                           UnitAffectingCombat("player")) then
                           DPS_ASSIST_TARGET = followPlayer .. "target";
                              btp_priest_dps(DPS_ASSIST_TARGET);
@@ -6436,29 +6146,14 @@ function btp_name_to_unit(name)
         return "player";
     end
 
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer     = "raid" .. i;
-
+    for nextPlayer in btp_iterate_group_members() do
         if (UnitName(nextPlayer) == name) then
             return nextPlayer;
         end
 
-        if(UnitExists("raidpet" .. i) and UnitName("raidpet" .. i) == name) then
-            return "raidpet" .. i;
-        end
-    end
-
-    for i = 1, GetNumPartyMembers() do
-        nextPlayer = "party" .. i;
-
-        if (UnitName(nextPlayer) == name) then
-            return nextPlayer;
-        end
-
-        if(UnitExists("partypet" .. i) and
-           UnitName("partypet" .. i) == name) then
-            return "partypet" .. i;
-        end
+        -- if(UnitExists("raidpet" .. i) and UnitName("raidpet" .. i) == name) then
+        --     return "raidpet" .. i;
+        -- end
     end
 
     return "player";
