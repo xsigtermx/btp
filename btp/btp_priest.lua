@@ -21,37 +21,16 @@
 function btp_priest_initialize()
     btp_frame_debug("Priest INIT");
 
-    SlashCmdList["PRIESTA"] = PriestAssist;
-    SLASH_PRIESTA1 = "/pa";
     SlashCmdList["PRIESTB"] = PriestBuff;
     SLASH_PRIESTB1 = "/pb";
-    SlashCmdList["PRIESTH"] = PriestHeal;
+    SlashCmdList["PRIESTH"] = btp_priest_heal;
     SLASH_PRIESTH1 = "/ph";
-    SlashCmdList["PRIESTP"] = PriestPrimary;
-    SLASH_PRIESTP1 = "/pp";
-    SlashCmdList["PRIESTD"] = PriestDest;
-    SLASH_PRIESTD1 = "/pd";
-    SlashCmdList["PRIESTJ"] = PriestJeff;
-    SLASH_PRIESTJ1 = "/pj";
-    SlashCmdList["PRIESTY"] = PriestPrayer;
-    SLASH_PRIESTY1 = "/py";
-    SlashCmdList["PRIESTV"] = PriestVulner;
-    SLASH_PRIESTV1 = "/pv";
-    SlashCmdList["PRIESTS"] = PriestShield;
-    SLASH_PRIESTS1 = "/ps";
-
-    SlashCmdList["NEWPRIESTHEAL"] = btp_priest_heal;
-    SLASH_NEWPRIESTHEAL1 = "/newpriestheal";
-
-    SlashCmdList["PRIESTDPS"] = btp_priest_dps_new;
+    SlashCmdList["PRIESTDPS"] = btp_priest_dps;
     SLASH_PRIESTDPS1 = "/pdps";
-
+    SlashCmdList["PRIESTDPS"] = btp_priest_dps_pve;
+    SLASH_PRIESTDPS1 = "/pdps_pve";
     SlashCmdList["PRIESTDPSPVP"] = btp_priest_dps_pvp;
     SLASH_PRIESTDPSPVP1 = "/pdps_pvp";
-
-    SlashCmdList["PRIESTDPSPVE"] = btp_priest_dps_pve;
-    SLASH_PRIESTDPSPVE1 = "/pdps_pve";
-
     SlashCmdList["DPSMODE"] = btp_dps_mode_toggle;
     SLASH_DPSMODE1 = "/dps";
 
@@ -61,13 +40,18 @@ function btp_priest_initialize()
     cb_array["Greater Heal"]            = function()
         return btp_cb_priest_greater_heal("Greater Heal");
     end
+    cb_array["Lesser Heal"]            = function()
+        return btp_cb_priest_greater_heal("Lesser Heal");
+    end
+    cb_array["Heal"]            = function()
+        return btp_cb_priest_greater_heal("Heal");
+    end
     cb_array["Binding Heal"]            = function()
         return btp_cb_priest_binding_heal("Binding Heal");
     end
     -- cb_array["Prayer of Healing"]       = btp_cb_priest_prayer_of_healing("Prayer of Healing");
     -- cb_array["Holy Word: Sanctuary"]    = btp_cb_priest_holy_word_sanctuary("Holy Word: Sanctuary");
     -- cb_array["Hymn of Hope"]            = btp_cb_priest_hymn_of_hope("Hymn of Hope");
-
 
 end
 
@@ -179,23 +163,6 @@ function PriestBuff()
         end
     end
       
-    if (GetNumRaidMembers() ~= 0) then
-        for i = 1, GetNumRaidMembers() do
-            nextPlayer = "raid" .. i;
-            if (UnitHealth(nextPlayer) < 4 or
-                not btp_check_dist(nextPlayer,1)) then
-                -- btp_frame_debug("false ".. UnitHealth(nextPlayer) .. " " ..
-                --                 nextPlayer .. " " .. GetNumRaidMembers());
-                goodToBuff = false;
-                break;
-            end                
-        end
-    end
-                
-    if (not GetNumPartyMembers() and not GetNumRaidMembers()) then
-        goodToBuff = false;
-    end
-
     for i = 0, 256 do
         buffName, buffRank, buffTexture,
         buffApplications, buffDuration, buffTime = UnitBuff("player", i);
@@ -355,83 +322,6 @@ function PriestBuff()
             end
         end
     end
-
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer = "raid" .. i;
-        noFort = true;
-        noInnerFire = true;
-        noShadowProtection = true;
-        noDivineSpirit = true;
-
-        if (UnitHealth(nextPlayer) >= 5 and
-            btp_check_dist(nextPlayer,1)) then
-
-            for i = 0, 256 do
-                buffName, buffRank, buffTexture,
-                buffApplications, buffDuration,
-                buffTime = UnitBuff(nextPlayer, i);
-
-                if (buffTexture and strfind(buffTexture, "Fortitude")) then
-                    noFort = false;
-                end
-
-                if (buffTexture and (strfind(buffTexture, "AntiShadow") or
-                    strfind(buffTexture, "ShadowProtection"))) then
-                    noShadowProtection = false;
-                end
-
-                if (buffTexture and strfind(buffTexture, "Spirit")) then
-                    noDivineSpirit = false;
-                end
-            end
-
-            if (hasCandle and hasPrayerFort and noFort and goodToBuff and
-                not pvpBot) then
-                FuckBlizzardTargetUnit(nextPlayer);
-                FuckBlizzardByName("Prayer of Fortitude");
-                FuckBlizzardTargetUnit("playertarget");
-                return true;
-            end
-
-            if (hasFortitude and noFort) then
-                FuckBlizzardTargetUnit(nextPlayer);
-                FuckBlizzardByName("Power Word: Fortitude");
-                FuckBlizzardTargetUnit("playertarget");
-                return true;
-            end
-
-            if (hasCandle and hasPrayerSpirit and goodToBuff and
-                noDivineSpirit and
-                goodToBuff and not pvpBot) then
-                FuckBlizzardTargetUnit("player");
-                FuckBlizzardByName("Prayer of Spirit");
-                FuckBlizzardTargetUnit("playertarget");
-                return true;
-            end
-
-            if (hasDivineSpirit and noDivineSpirit) then
-                FuckBlizzardTargetUnit(nextPlayer);
-                FuckBlizzardByName("Divine Spirit");
-                FuckBlizzardTargetUnit("playertarget");
-                return true;
-            end
-
-            if (hasCandle and hasPrayerShadowProtect and goodToBuff and
-                noShadowProtection) then
-                FuckBlizzardTargetUnit(nextPlayer);
-                FuckBlizzardByName("Prayer of Shadow Protection");
-                FuckBlizzardTargetUnit("playertarget");
-                return true;
-            end
-
-            if (hasShadowProtect and noShadowProtection) then
-                FuckBlizzardTargetUnit(nextPlayer);
-                FuckBlizzardByName("Shadow Protection");
-                FuckBlizzardTargetUnit("playertarget");
-                return true;
-            end
-        end
-    end
 end
 
 -- JML START
@@ -449,7 +339,7 @@ BTP_PRIEST_THRESH_MANA=.15
 
 function btp_priest_dps_pve(unit)
     if(not unit or unit == nil or unit == "") then  unit = "target"; end
-    if (btp_priest_dps_new(unit)) then return true; end
+    -- if (btp_priest_dps_new(unit)) then return true; end
     if (_btp_priest_dps_pve(unit)) then return true; end
     return false;
 end
@@ -480,12 +370,15 @@ function btp_priest_dps_new(unit)
         return true;
     end
 
+--[[
+
     -- remove any curse from ourselves
     if ((((GetTime() - lastDecurse) >= 8) or blockOnDecurse) and
         BTP_Decursive()) then                                   
          lastDecurse = GetTime();
          return true;            
      end
+]]
 
     -- check if our target is casting a spell
     local spell_cast, _, _, _, _, endTime = UnitCastingInfo("target")
@@ -775,14 +668,6 @@ function btp_priest_resurrection()
         end
     end
 
-    for i = 1, GetNumRaidMembers() do
-        res_name = "raid" .. i;
-        if (UnitHealth(res_name) < 2 and UnitHealth("player") >= 2 and
-            btp_check_dist(res_name,1)) then
-            resurrectionName = res_name;
-        end
-    end
-
     if (not UnitAffectingCombat("player") and
         res_name ~= "none" and res_name ~= nil and
         UnitPower("player")/UnitPowerMax("player") > PR_MANA) then
@@ -792,6 +677,26 @@ function btp_priest_resurrection()
     end
 
     return false;
+end
+
+function btp_health_status()
+    local lowest_health = 0;
+    local lowest_target = 0;
+    local lowest_percent = 1;
+
+    for nextPlayer in btp_iterate_group_members() do
+        cur_health     = UnitHealth(nextPlayer);
+        cur_health_max = UnitHealthMax(nextPlayer);
+        cur_class      = UnitClass(nextPlayer);
+        cur_percent    = cur_health / cur_health_max;
+        if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
+            lowest_percent = cur_percent;
+            lowest_target = nextPlayer;
+            lowest_health = (cur_health_max - cur_health)
+        end
+
+    end
+    return lowest_percent, lowest_health, lowest_target;
 end
 
 -- i am hoping to speed up the heal function bye doing this.
@@ -866,7 +771,10 @@ BTP_PRIEST_THRESH_MANA=.15
     -- small heals after we heal ourself
     if(btp_priest_heal_small(lowest_percent, lowest_health, lowest_target)) then return true; end;
 
+--[[
+
     if(BTP_Decursive()) then return true; end
+]]
 
     return false;
 end
@@ -1057,12 +965,14 @@ BTP_PRIEST_THRESH_MANA=.15
             if(btp_cast_spell_on_target("Circle of Healing", cur_player)) then return true; end
         end
     end
+--[[
 
     if ((((GetTime() - lastDecurse) >= 5) or blockOnDecurse) and
         BTP_Decursive()) then                                   
         lastDecurse = GetTime();
         return true;            
     end
+]]
 
     if(SelfHeal(BTP_PRIEST_THRESH_CRIT, BTP_PRIEST_THRESH_MANA)) then
         return true;
@@ -1307,9 +1217,11 @@ BTP_PRIEST_THRESH_MANA=.15
         end
     end
 
+--[[
     if(BTP_Decursive()) then
         return true;
     end
+]]
     return false;
 end
 
@@ -1386,12 +1298,14 @@ function btp_priest_heal_std()
         end
 
     end
+--[[
 
     if ((((GetTime() - lastDecurse) >= 5) or blockOnDecurse) and
         BTP_Decursive()) then                                   
         lastDecurse = GetTime();
         return true;            
     end
+]]
 
     if(SelfHeal(BTP_PRIEST_THRESH_CRIT, BTP_PRIEST_THRESH_MANA)) then
         return true;
@@ -1516,9 +1430,11 @@ function btp_priest_heal_std()
 
     end
 
+--[[
      if(BTP_Decursive()) then
          return true;
      end
+]]
     return false;
 end
 
@@ -1652,7 +1568,7 @@ end;
 
 function btp_priest_is_my_swp(unit)
     if(not unit) then  unit = "target"; end
-    has_swp, my_swp, num_swp = btp_check_debuff("ShadowWordPain", unit);
+    has_swp, my_swp, num_swp = btp_check_debuff("Shadow Word: Pain", unit);
     return my_swp;
 end
 
