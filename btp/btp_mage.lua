@@ -75,7 +75,7 @@ BTP_MAGE_THRESH_NO_ICEBARRIER = .01
 	end
 
 	-- Get our mana level
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	-- Get our health level
 	health_level = UnitHealth("player")/UnitHealthMax("player");
 
@@ -187,7 +187,7 @@ function btp_mage_dps_frost(unit)
 	-- btp_frame_debug("attacking unit: " .. unit);
 
 	-- Get our mana level
-	mana_level = UnitMana("player")/UnitManaMax("player");
+	mana_level = UnitPower("player")/UnitPowerMax("player");
 	-- Get our health level
 	health_level = UnitHealth("player")/UnitHealthMax("player");
 

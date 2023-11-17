@@ -96,7 +96,7 @@ function btp_hunter_bow()
 	if(not btp_hunter_scorpid()) then
 		if( not btp_hunter_viper() and not
 			btp_hunter_serpent() and
-			(UnitMana("target") > 10)) then
+			(UnitPower("target") > 10)) then
 			if(btp_cast_spell("Viper Sting")) then return true; end
 		elseif(not btp_hunter_serpent() and not
 			btp_hunter_viper()) then

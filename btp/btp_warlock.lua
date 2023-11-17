@@ -1363,7 +1363,7 @@ function WarlockPrimary()
 
                 return true;
             elseif (not hasMyCurse and
-                    not hasCurseTounges and UnitMana("target") > 0 and
+                    not hasCurseTounges and UnitPower("target") > 0 and
                     UnitPowerType("target") == 0 and
                     btp_cast_spell("Curse of Tongues")) then
                 FuckBlizzardAttackTarget();
@@ -1931,7 +1931,7 @@ function WarlockDest()
             btp_cast_spell("Shadow Cleave")) then
         return true;
     elseif (not UnitPlayerControlled("target") and demonArmorCount < 2 and
-            UnitMana("target") > 0 and UnitPowerType("target") == 0 and
+            UnitPower("target") > 0 and UnitPowerType("target") == 0 and
             not hasShadowProt and btp_cast_spell("Shadow Ward")) then
         return true;
     elseif (demonArmorCount < 2 and (UnitClass("target") == "Warlock" or
@@ -2047,21 +2047,21 @@ function WarlockDest()
             normal_cast = true;
         elseif (not onlyFire and btp_cast_spell("Shadow Bolt")) then
             normal_cast = true;
-        elseif (UnitHealth("pet") > 1 and UnitMana("pet") > 500 and
+        elseif (UnitHealth("pet") > 1 and UnitPower("pet") > 500 and
                 btp_cast_spell("Dark Pact")) then
             normal_cast = true;
         elseif (UnitHealth("player")/UnitHealthMax("player") > HEALTH_THRESH and
                 btp_cast_spell("Life Tap")) then
             normal_cast = true;
         elseif (not onlyFire and UnitPowerType("target") == 0 and
-                UnitMana("target") > 500 and btp_cast_spell("Drain Mana")) then
+                UnitPower("target") > 500 and btp_cast_spell("Drain Mana")) then
             lastDrainMana = GetTime();
             normal_cast = true;
         elseif (UnitPlayerControlled("target") and hasEZ) then
             FuckBlizUseContainerItem(EZBag, EZSlot);
             normal_cast = true;
         elseif (UnitHealth("player")/UnitHealthMax("player") < HEALTH_THRESH and
-                UnitMana("player")/UnitManaMax("player") < MANA_THRESH/5) then
+                UnitPower("player")/UnitPowerMax("player") < MANA_THRESH/5) then
 
             if (btp_cast_spell("Shoot")) then
                 normal_cast = true;
