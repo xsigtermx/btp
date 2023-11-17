@@ -51,6 +51,8 @@ function btp_druid_initialize()
     SLASH_DRUIDH1 = "/dh";
     SlashCmdList["DRUIDD"] = druid_dps;
     SLASH_DRUIDD1 = "/dd";
+    SlashCmdList["DRUIDR"] = druid_roach;
+    SLASH_DRUIDR1 = "/dr";
 
     cb_array["Regrowth"]           = btp_cb_druid_regrowth;
     cb_array["Healing Touch"]      = btp_cb_druid_healing_touch;
@@ -350,17 +352,15 @@ function druid_heal()
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (not myRejuvenation and
-              ((UnitThreatSituation(playerName) ~= nil and
-                UnitThreatSituation(playerName) == 3) or
-                UnitHealth(playerName)/UnitHealthMax(playerName) <= 
-                DR_THRESH + DR_SCALAR/2 or pvpBot) and
-                btp_cast_spell_on_target("Rejuvenation", playerName)) then
+                (
+                    (UnitThreatSituation(playerName) ~= nil and UnitThreatSituation(playerName) >= 1) or
+                    UnitHealth(playerName)/UnitHealthMax(playerName) <= DR_THRESH + DR_SCALAR/2 or
+                    pvpBot
+                ) and btp_cast_spell_on_target("Rejuvenation", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (UnitAffectingCombat("player") and not myRegrowth and
-               (UnitHealth(playerName)/UnitHealthMax(playerName) <= 
-               (DR_THRESH + DR_SCALAR/3) or (hasClearCasting and
-                timeClearCasting > 2)) and
+               (UnitHealth(playerName)/UnitHealthMax(playerName) <= (DR_THRESH + DR_SCALAR/3)) and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
             if (not stopMoving and pvpBot) then
@@ -488,6 +488,39 @@ function druid_buff()
             end
         end
     end
+
+    noMarkOfWild = true;
+
+    --
+    -- Mark of the Wild check
+    --
+    hasMark, myMark, numMark, expMark = btp_check_buff("Mark of the Wild", "target");
+
+    --
+    -- Gift of the Wild check
+    --
+    hasGift, myGift, numGift, expGift = btp_check_buff("Gift of the Wild", "target");
+
+    --
+    -- Thorns
+    --
+    hasThorns, myThorns, numThorns, expThorns = btp_check_buff("Thorns", "target");
+
+    if (hasMark or hasGift) then
+        noMarkOfWild = false;
+    end
+
+    if (noMarkOfWild and UnitIsPlayer("target") and
+        btp_cast_spell_on_target("Mark of the Wild", "target")) then
+        FuckBlizzardTargetUnit("playertarget");
+        return true;
+    end
+
+    if (not hasThorns and UnitIsPlayer("target") and
+        btp_cast_spell_on_target("Thorns", "target")) then
+        FuckBlizzardTargetUnit("playertarget");
+        return true;
+    end
 end
 
 function druid_dps()
@@ -509,17 +542,27 @@ function druid_dps()
     hasInsectSwarm, myInsectSwarm,
     numInsectSwarm, expInsectSwarm = btp_check_debuff("Insect Swarm", "target");
 
-    playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
+    --
+    -- Entangling Roots check
+    --
+    hasEntanglingRoots, myEntanglingRoots,
+    numEntanglingRoots, expEntanglingRoots = btp_check_debuff("Entangling Roots", "target");
 
-    -- TODO: replace this with druid_heal() when ready
-    if (SelfHeal(DR_THRESH, DR_MANA/3)) then
-        --
-        -- doing a self heal here (heathstones, potions, etc)
-        --
-    end
+    playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
+    targetHealthRatio =  UnitHealth("target")/UnitHealthMax("target");
 
     if (druid_heal()) then
         FuckBlizzardTargetUnit("playertarget");
+        return true;
+    elseif (not UnitAffectingCombat("player") and
+            btp_cast_spell("Wrath")) then
+        return true;
+    elseif ((btp_is_casting("target") or btp_is_channeling("target")) and
+            btp_check_dist("target", 3) and btp_cast_spell("War Stomp")) then
+        return true;
+    elseif (targetHealthRatio < .20 and not hasEntanglingRoots and
+            UnitCreatureType("target") == "Humanoid" and
+            btp_cast_spell("Entangling Roots")) then
         return true;
     elseif (not myInsectSwarm and btp_cast_spell("Insect Swarm")) then
         return true;
@@ -530,6 +573,68 @@ function druid_dps()
     elseif (btp_cast_spell("Wrath")) then
         return true;
     end
+
+    return false;
+end
+
+function druid_roach()
+    if (current_cb ~= nil and current_cb()) then
+        return true;
+    end
+
+    ProphetKeyBindings();
+
+    --
+    -- Nature's Swiftness check
+    --
+    hasNaturesSwiftness, myNaturesSwiftness,
+    numNaturesSwiftness, expNaturesSwiftness = btp_check_buff(
+        "Nature's Swiftness", "player"
+    );
+
+    --
+    -- Rejuvination check
+    --
+    hasRejuvenation, myRejuvenation,
+    numRejuvenation, expRejuvenation = btp_check_buff(
+        "Rejuvenation", "player"
+    );
+
+    --
+    -- Regrowth check
+    --
+    hasRegrowth, myRegrowth,
+    numRegrowth, expRegrowth = btp_check_buff(
+        "Regrowth", "player"
+    );
+
+    if (not myRejuvenation and
+        btp_cast_spell_on_target("Rejuvenation", "player")) then
+        FuckBlizzardTargetUnit("playertarget");
+        return true;
+    elseif ((myRejuvenation or myRegrowth) and
+            UnitAffectingCombat("player") and
+            UnitHealth("player")/UnitHealthMax("player") <= DR_THRESH + DR_SCALAR/2 and
+            UnitHealth("player") > 1 and
+            btp_cast_spell_on_target("Swiftmend", playerName)) then
+            FuckBlizzardTargetUnit("playertarget");
+    elseif (UnitAffectingCombat("player") and
+            UnitHealth("player")/UnitHealthMax("player") <= DR_THRESH and
+            UnitHealth("player") > 1 and
+            (btp_cast_spell_alt("Nature's Swiftness") or hasNaturesSwiftness) and
+            btp_cast_spell_on_target("Healing Touch", "player")) then
+            FuckBlizzardTargetUnit("playertarget");
+            return true;
+    elseif (UnitAffectingCombat("player") and
+            not btp_check_buff("Nature's Grasp", "player") and
+            UnitHealth("player")/UnitHealthMax("player") <= (DR_THRESH + DR_SCALAR) and
+            UnitHealth("player") > 1 and
+            btp_cast_spell("Nature's Grasp")) then
+        return true;
+    end
+
+    -- just in case I can save a party member
+    druid_heal();
 
     return false;
 end
@@ -625,53 +730,6 @@ function btp_cb_druid_healing_touch()
     if (cast_spell == nil) then
         return false;
     elseif (cast_spell ~= "Healing Touch") then
-        --
-        -- Well we are not casting our spell, so we can clear the callback.
-        --
-        current_cb = nil;
-        return false;
-    end
-
-    --
-    -- This is the second case where we clear the callback.  All the above
-    -- code should stay the same; however, everything below this line will
-    -- be very different based on the type of spell and what we expect to
-    -- do with the callback.
-    --
-
-    if (UnitHealth(current_cb_target) < 2 or
-       (((cast_start_time - GetTime()) <= 1) and
-        UnitHealth(current_cb_target)/UnitHealthMax(current_cb_target) >
-        DR_THRESH + DR_SCALAR/2)) then
-        --
-        -- We will use the IPT target box because we never use this,
-        -- and we may get to do some back-to-back stop cast and cast
-        -- something else action.  If this doesn't work well, then we
-        -- should try to make this return true.
-        --
-        FuckBlizzardByNameStrange("stopcasting");
-        current_cb = nil;
-        return false;
-    end
-
-    return true;
-end
-
-function btp_cb_druid_nourish()
-    --
-    -- First we get the Casting and channel information about the player
-    -- and use this to make sure the player is casting something.
-    --
-    cast_spell, cast_rank, cast_display_name, cast_icon, cast_start_time,
-    cast_end_time, cast_is_trade_skill = UnitCastingInfo("player");
-
-    --
-    -- May just be beteen casts, so let it stand, otherwise we should
-    -- clear the callback if it's not the spell we expect.
-    --
-    if (cast_spell == nil) then
-        return false;
-    elseif (cast_spell ~= "Nourish") then
         --
         -- Well we are not casting our spell, so we can clear the callback.
         --

@@ -511,7 +511,7 @@ Loop
     if(not fpause and botOn)
     {
         ControlSend btpBotKey, , target
-        Sleep 100
+        Sleep 250
     }
 
     if (needClear and not fpause)

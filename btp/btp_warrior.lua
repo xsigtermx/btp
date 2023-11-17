@@ -15,7 +15,8 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-WARRIOR_THRESH=.45;
+WARRIOR_THRESH   = .45;
+W_RAGE_RETENTION = 0 + 5;
 
 -- stance types
 S_BATTLE  = 1;
@@ -173,14 +174,17 @@ function warrior_dps()
     if (UnitAffectingCombat("player") and rage < 25 and
         playerHealthRatio > .50 and btp_cast_spell_alt("Bloodrage")) then
         -- pop bloodrage
-    elseif (UnitAffectingCombat("player") and stance ~= S_BATTLE and rage < 5 and
-            playerHealthRatio > .50 and targetHealthRatio <= .20 and
+    elseif (UnitAffectingCombat("player") and stance ~= S_BATTLE and
+            rage < W_RAGE_RETENTION and playerHealthRatio > .50 and
+            targetHealthRatio <= .20 and
             btp_cast_spell_alt("Battle Stance")) then
         -- swap stances for hamstring, execute, thunder clap, and overpower
-    elseif (UnitAffectingCombat("player") and stance ~= S_DEFENSE and rage < 5 and
-            targetHealthRatio > .20 and btp_cast_spell_alt("Defensive Stance")) then
+    elseif (UnitAffectingCombat("player") and stance ~= S_DEFENSE and
+            rage < W_RAGE_RETENTION and targetHealthRatio > .20 and
+            btp_cast_spell_alt("Defensive Stance")) then
         -- swap stances taunting and tanking
-    elseif (not UnitAffectingCombat("player") and stance ~= S_BATTLE and rage < 5 and
+    elseif (not UnitAffectingCombat("player") and stance ~= S_BATTLE and
+            rage < W_RAGE_RETENTION and
             btp_cast_spell_alt("Battle Stance")) then
         -- swap stances out of combat for charge
     end
@@ -189,12 +193,20 @@ function warrior_dps()
         return true;
     elseif ((btp_is_casting("target") or btp_is_channeling("target")) and
             btp_check_dist("target", 3) and btp_cast_spell("Shield Bash")) then
-        btp_frame_debug("Shield Bash WORKED!");
         return true;
     elseif (targetHealthRatio < .20 and btp_check_dist("target", 3) and
             btp_cast_spell("Execute")) then
         return true;
-    elseif (btp_check_dist("target", 3) and btp_cast_spell("Shield Slam")) then
+    elseif (btp_check_dist("target", 3) and
+            UnitThreatSituation("player", "target") ~= nil and
+            UnitThreatSituation("player", "target") < 3 and
+            btp_cast_spell("Taunt")) then
+        return true;
+    elseif (not mySunder and numSunder < 1 and btp_check_dist("target", 3) and
+            btp_cast_spell("Sunder Armor")) then
+        return true;
+    elseif (btp_check_dist("target", 3) and
+            btp_cast_spell("Shield Slam")) then
         return true;
     elseif (btp_check_dist("target", 3) and btp_cast_spell("Bloodthirst")) then
         return true;
@@ -203,10 +215,8 @@ function warrior_dps()
     elseif (targetHealthRatio < .20 and not hasHamstring and
             btp_check_dist("target", 3) and btp_cast_spell("Hamstring")) then
         return true;
-    elseif (not mySunder and numSunder < 1 and btp_check_dist("target", 3) and
-            btp_cast_spell("Sunder Armor")) then
-        return true;
-    elseif (not hasShout and btp_cast_spell("Battle Shout")) then
+    elseif (not hasShout and
+            btp_cast_spell("Battle Shout")) then
         return true;
     elseif (not myClap and btp_check_dist("target", 3) and
             btp_cast_spell("Thunder Clap")) then
@@ -223,7 +233,8 @@ function warrior_dps()
     elseif (rage > 70 and btp_check_dist("target", 3) and
             btp_cast_spell("Heroic Strike")) then
         return true;
-    elseif (not UnitAffectingCombat("player") and btp_cast_spell("Charge")) then
+    elseif (not UnitAffectingCombat("player") and
+            btp_cast_spell("Charge")) then
         return true;
     end
 

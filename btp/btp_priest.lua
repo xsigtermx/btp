@@ -679,25 +679,25 @@ function btp_priest_resurrection()
     return false;
 end
 
-function btp_health_status()
-    local lowest_health = 0;
-    local lowest_target = 0;
-    local lowest_percent = 1;
-
-    for nextPlayer in btp_iterate_group_members() do
-        cur_health     = UnitHealth(nextPlayer);
-        cur_health_max = UnitHealthMax(nextPlayer);
-        cur_class      = UnitClass(nextPlayer);
-        cur_percent    = cur_health / cur_health_max;
-        if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
-            lowest_percent = cur_percent;
-            lowest_target = nextPlayer;
-            lowest_health = (cur_health_max - cur_health)
-        end
-
-    end
-    return lowest_percent, lowest_health, lowest_target;
-end
+-- function btp_health_status()
+--     local lowest_health = 0;
+--     local lowest_target = 0;
+--     local lowest_percent = 1;
+-- 
+--     for nextPlayer in btp_iterate_group_members() do
+--         cur_health     = UnitHealth(nextPlayer);
+--         cur_health_max = UnitHealthMax(nextPlayer);
+--         cur_class      = UnitClass(nextPlayer);
+--         cur_percent    = cur_health / cur_health_max;
+--         if(cur_health > 5 and (lowest_percent > cur_percent) and btp_check_dist(nextPlayer, 1)) then
+--             lowest_percent = cur_percent;
+--             lowest_target = nextPlayer;
+--             lowest_health = (cur_health_max - cur_health)
+--         end
+-- 
+--     end
+--     return lowest_percent, lowest_health, lowest_target;
+-- end
 
 -- i am hoping to speed up the heal function bye doing this.
 function btp_priest_heal_pvp_quick()
