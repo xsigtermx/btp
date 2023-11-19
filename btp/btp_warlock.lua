@@ -34,8 +34,8 @@ MAX_DEST = 4;
 -- it uses your spells that require shards to cast (soul fire and shadow burn).
 -- And NUM_SHARDS is the max amount of shards you would like to keep at any
 -- one time.
-BASE_SHARDS = 22;
-NUM_SHARDS = 28;
+BASE_SHARDS = 2;
+NUM_SHARDS = 5;
 
 --
 -- WARLOCK_LAST_PET is the name of the last pet the warlock was using.
@@ -46,16 +46,16 @@ WARLOCK_LAST_PET = "Summon Imp";
 
 --
 -- WARLOCK_ARMOR should be set to the name of the spell "Demon Skin" or
--- "Demon Armor" that the warlock currently has.  I could automate this,
+-- "Demon Skin" that the warlock currently has.  I could automate this,
 -- but I am lazy.
 --
-WARLOCK_ARMOR = "Demon Armor";
+WARLOCK_ARMOR = "Demon Skin";
 
 --
 -- This is the default armor to use when buffing.  Since only one can
 -- be used at a time you should use the /wt option to change this.
 --
-DEFAULT_ARMOR = "Fel Armor";
+DEFAULT_ARMOR = "Demon Skin";
 
 --
 -- If you do not have WARLOCK_ARCANE_R, WARLOCK_FIRE_R, WARLOCK_NATURE_R,
@@ -123,7 +123,6 @@ function btp_warlock_initialize()
     SlashCmdList["WARLOKP"] = WarlockPrimary;
     SlashCmdList["WARLOKI"] = WarlockInst;
     SlashCmdList["WARLOKD"] = WarlockDest;
-    SlashCmdList["WARLOKR"] = WarlockDefaultRings;
     SlashCmdList["WARLOKS"] = WarlockShadowToggle;
     SlashCmdList["WARLOKF"] = WarlockFireToggle;
     SlashCmdList["WARLOKC"] = WarlockCC;
@@ -132,7 +131,6 @@ function btp_warlock_initialize()
     SLASH_WARLOKP1 = "/wp";
     SLASH_WARLOKI1 = "/wi";
     SLASH_WARLOKD1 = "/wd";
-    SLASH_WARLOKR1 = "/wr";
     SLASH_WARLOKS1 = "/ws";
     SLASH_WARLOKF1 = "/wf";
     SLASH_WARLOKC1 = "/wc";
@@ -454,398 +452,6 @@ function WarlockFireToggle()
     end
 end
 
---
--- NOTE: for this function to work right you must set rings you don't have to
---       one of the other rings (use WARLOCK_DEF0_R and WARLOCK_DEF1_R)
---
-
-function WarlockDefaultRings()
-    hasDef0Ring = false;
-    Def0Slot = 0;
-    hasDef1Ring = false;
-    Def1Slot = 0;
-
-    if (UnitAffectingCombat("player") or LockRingsOff) then
-        return false;
-    end
-
-    for slot=11,12 do
-      if (GetInventoryItemLink("player", slot) and
-          string.find(GetInventoryItemLink("player", slot), WARLOCK_DEF0_R)) then
-          hasDef0Ring = true;
-          Def0Slot = slot;
-      end
-      if (GetInventoryItemLink("player", slot) and
-          string.find(GetInventoryItemLink("player", slot), WARLOCK_DEF1_R)) then
-          hasDef1Ring = true;
-          Def1Slot = slot;
-      end
-    end
-
-    if (not hasDef0Ring and not hasDef1Ring) then
-        PickupInventoryItem(11);
-        PutItemInBackpack();
-        PickupInventoryItem(12);
-        PutItemInBackpack();
-        for bag=0,4 do
-          for slot=1,C_Container.GetContainerNumSlots(bag) do
-            if (C_Container.GetContainerItemLink(bag,slot) and
-                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
-                UseContainerItem(bag,slot);
-            end
-            if (C_Container.GetContainerItemLink(bag,slot) and
-                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF1_R)) then
-                UseContainerItem(bag,slot);
-            end
-          end
-        end
-    elseif (not hasDef0Ring and hasDef1Ring) then
-        if (Def1Slot == 11) then
-            PickupInventoryItem(12);
-            PutItemInBackpack();
-        else
-            PickupInventoryItem(11);
-            PutItemInBackpack();
-        end
-        for bag=0,4 do
-          for slot=1,C_Container.GetContainerNumSlots(bag) do
-            if (C_Container.GetContainerItemLink(bag,slot) and
-                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
-                UseContainerItem(bag,slot);
-            end
-          end
-        end
-    elseif (not hasDef1Ring and hasDef0Ring) then
-        if (Def0Slot == 11) then
-            PickupInventoryItem(12);
-            PutItemInBackpack();
-        else
-            PickupInventoryItem(11);
-            PutItemInBackpack();
-        end
-        for bag=0,4 do
-          for slot=1,C_Container.GetContainerNumSlots(bag) do
-            if (C_Container.GetContainerItemLink(bag,slot) and
-                string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF1_R)) then
-                UseContainerItem(bag,slot);
-            end
-          end
-        end
-    end
-
-    --
-    -- Call them here becuase we need to bind last
-    --
-    ProphetKeyBindings();
-    WarlockSetPet();
-end
-
-function SwitchWarlockRings()
-    hasNatureRing = false;
-    natureSlot = 0;
-    hasArcaneRing = false;
-    arcaneSlot = 0;
-    hasFrostRing = false;
-    frostSlot = 0;
-    hasFireRing = false;
-    fireSlot = 0;
-    hasShadowRing = false;
-    shadowSlot = 0;
-
-    if (UnitAffectingCombat("player") or LockRingsOff) then
-        return false;
-    end
-
-    for slot=11,12 do
-      if (GetInventoryItemLink("player", slot) and
-          string.find(GetInventoryItemLink("player", slot), WARLOCK_ARCANE_R)) then
-          hasArcaneRing = true;
-          arcaneSlot = slot;
-      end
-      if (GetInventoryItemLink("player", slot) and
-          string.find(GetInventoryItemLink("player", slot), WARLOCK_FROST_R)) then
-          hasFrostRing = true;
-          frostSlot = slot;
-      end
-      if (GetInventoryItemLink("player", slot) and
-          string.find(GetInventoryItemLink("player", slot), WARLOCK_NATURE_R)) then
-          hasNatureRing = true;
-          natureSlot = slot;
-      end
-      if (GetInventoryItemLink("player", slot) and
-          string.find(GetInventoryItemLink("player", slot), WARLOCK_FIRE_R)) then
-          hasFireRing = true;
-          fireSlot = slot;
-      end
-      if (GetInventoryItemLink("player", slot) and
-          string.find(GetInventoryItemLink("player", slot), WARLOCK_SHADOW_R)) then
-          hasShadowRing = true;
-          shadowSlot = slot;
-      end
-    end
-
-    if (UnitClass("target") == "Druid" or
-        UnitClass("target") == "Hunter") then
-        if (not hasArcaneRing and not hasNatureRing) then
-            PickupInventoryItem(11);
-            PutItemInBackpack();
-            PickupInventoryItem(12);
-            PutItemInBackpack();
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasArcaneRing and hasNatureRing) then
-            if (natureSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasNatureRing and hasArcaneRing) then
-            if (arcaneSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        end
-    elseif (UnitClass("target") == "Mage") then
-        if (not hasArcaneRing and not hasFrostRing) then
-            PickupInventoryItem(11);
-            PutItemInBackpack();
-            PickupInventoryItem(12);
-            PutItemInBackpack();
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FROST_R)) then
-                    UseContainerItem(bag,slot);
-                end
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasArcaneRing and hasFrostRing) then
-            if (frostSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_ARCANE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasFrostRing and hasArcaneRing) then
-            if (arcaneSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FROST_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        end
-    elseif (UnitClass("target") == "Priest") then
-        if (not hasFireRing and not hasShadowRing) then
-            PickupInventoryItem(11);
-            PutItemInBackpack();
-            PickupInventoryItem(12);
-            PutItemInBackpack();
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
-                    UseContainerItem(bag,slot);
-                end
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasFireRing and hasShadowRing) then
-            if (shadowSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_DEF0_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasShadowRing and hasFireRing) then
-            if (fireSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        end
-    elseif (UnitClass("target") == "Warlock") then
-        if (not hasFireRing and not hasShadowRing) then
-            PickupInventoryItem(11);
-            PutItemInBackpack();
-            PickupInventoryItem(12);
-            PutItemInBackpack();
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasFireRing and hasShadowRing) then
-            if (shadowSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasShadowRing and hasFireRing) then
-            if (fireSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_SHADOW_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        end
-    elseif (UnitClass("target") == "Shaman") then
-        if (not hasFireRing and not hasNatureRing) then
-            PickupInventoryItem(11);
-            PutItemInBackpack();
-            PickupInventoryItem(12);
-            PutItemInBackpack();
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasFireRing and hasNatureRing) then
-            if (natureSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_FIRE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        elseif (not hasNatureRing and hasFireRing) then
-            if (fireSlot == 11) then
-                PickupInventoryItem(12);
-                PutItemInBackpack();
-            else
-                PickupInventoryItem(11);
-                PutItemInBackpack();
-            end
-            for bag=0,4 do
-              for slot=1,C_Container.GetContainerNumSlots(bag) do
-                if (C_Container.GetContainerItemLink(bag,slot) and
-                    string.find(C_Container.GetContainerItemLink(bag,slot), WARLOCK_NATURE_R)) then
-                    UseContainerItem(bag,slot);
-                end
-              end
-            end
-        end
-    else
-        WarlockDefaultRings();
-    end
-end
-
-
 function WarlockBuff()
     noArmor    = true;
     noSoulLink = true;
@@ -853,7 +459,6 @@ function WarlockBuff()
     noWater    = true;
     nextPlayer = "player";
 
-    WarlockDefaultRings();
     ProphetKeyBindings();
     WarlockSetPet();
 
@@ -862,10 +467,10 @@ function WarlockBuff()
     --
 
     --
-    -- Demon Armor Check
+    -- Demon Skin Check
     --
     hasDemonArmor, myDemonArmor,
-    numDemonArmor = btp_check_buff("RagingScream", "player");
+    numDemonArmor, expDemonArmor = btp_check_buff(DEFAULT_ARMOR, "player");
 
     --
     -- Soul Link Check
@@ -883,19 +488,19 @@ function WarlockBuff()
     -- Fel Armor Check
     --
     hasFelArmor, myFelArmor,
-    numFelArmor = btp_check_buff("FelArmour", "player");
+    numFelArmor = btp_check_buff("Fel Armour", "player");
 
     --
     -- Invisibility Check
     --
     hasInvis, myInvis,
-    numInvis = btp_check_buff("Invisibility", "player");
+    numInvis = btp_check_buff("Detect Invisibility", "player");
 
     --
     -- Unending Breath Check
     --
     hasWater, myWater,
-    numWater = btp_check_buff("DemonBreath", "player");
+    numWater = btp_check_buff("Unending Breath", "player");
 
     if (hasDemonArmor or hasFelArmor) then
         noArmor = false;
@@ -933,10 +538,9 @@ function WarlockBuff()
     end
 
     --
-    -- Check raid second
+    -- Check group second
     --
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer = "raid" .. i;
+    for nextPlayer in btp_iterate_group_members() do
         noWater = true;
         noInvis = true;
 
@@ -945,13 +549,13 @@ function WarlockBuff()
             -- Invisibility Check
             --
             hasInvis, myInvis,
-            numInvis = btp_check_buff("Invisibility", nextPlayer);
+            numInvis = btp_check_buff("Detect Invisibility", nextPlayer);
 
             --
             -- Unending Breath Check
             --
             hasWater, myWater,
-            numWater = btp_check_buff("DemonBreath", nextPlayer);
+            numWater = btp_check_buff("Unending Breath", nextPlayer);
 
             if (hasInvis) then
                 noInvis = false;
@@ -962,145 +566,13 @@ function WarlockBuff()
             end
 
             if (noInvis and
-                btp_cast_spell_on_target("Detect Invisibility",nextPlayer)) then
+                btp_cast_spell_on_target("Detect Detect Invisibility",nextPlayer)) then
                 return true;
             end
 
             if (noWater and
                 btp_cast_spell_on_target("Unending Breath", nextPlayer)) then
                 return true;
-            end
-        end
-    end
-
-    --
-    -- Check party third
-    --
-    if (GetNumRaidMembers() <= 0) then
-        for i = 1, GetNumPartyMembers() do
-            nextPlayer = "party" .. i;
-            noWater = true;
-            noInvis = true;
-
-            if (UnitHealth(nextPlayer) >= 2 and
-                btp_check_dist(nextPlayer,1)) then
-                --
-                -- Invisibility Check
-                --
-                hasInvis, myInvis,
-                numInvis = btp_check_buff("Invisibility", nextPlayer);
-
-                --
-                -- Unending Breath Check
-                --
-                hasWater, myWater,
-                numWater = btp_check_buff("DemonBreath", nextPlayer);
-
-                if (hasInvis) then
-                    noInvis = false;
-                end
-
-                if (hasWater) then
-                    noWater = false;
-                end
-
-                if (noInvis and btp_cast_spell_on_target("Detect Invisibility",
-                    nextPlayer)) then
-                    return true;
-                end
-
-                if (noWater and btp_cast_spell_on_target("Unending Breath",
-                    nextPlayer)) then
-                    return true;
-                end
-
-            end
-        end
-    end
-
-    --
-    -- Check raidpet fourth
-    --
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer = "raidpet" .. i;
-        noWater = true;
-        noInvis = true;
-
-        if (UnitExists(nextPlayer) and UnitHealth(nextPlayer) >= 2 and
-            btp_check_dist(nextPlayer, 1)) then
-            --
-            -- Invisibility Check
-            --
-            hasInvis, myInvis,
-            numInvis = btp_check_buff("Invisibility", nextPlayer);
-
-            --
-            -- Unending Breath Check
-            --
-            hasWater, myWater,
-            numWater = btp_check_buff("DemonBreath", nextPlayer);
-
-            if (hasInvis) then
-                noInvis = false;
-            end
-
-            if (hasWater) then
-                noWater = false;
-            end
-
-            if (noInvis and btp_cast_spell_on_target("Detect Invisibility",
-                nextPlayer)) then
-                return true;
-            end
-
-            if (noWater and btp_cast_spell_on_target("Unending Breath",
-                nextPlayer)) then
-                return true;
-            end
-        end
-    end
-
-    --
-    -- Check partypet fifth
-    --
-    if (GetNumRaidMembers() <= 0) then
-        for i = 1, GetNumPartyMembers() do
-            nextPlayer = "partypet" .. i;
-            noWater = true;
-            noInvis = true;
-
-            if (UnitExists(nextPlayer) and UnitHealth(nextPlayer) >= 2 and
-                btp_check_dist(nextPlayer, 1)) then
-                --
-                -- Invisibility Check
-                --
-                hasInvis, myInvis,
-                numInvis = btp_check_buff("Invisibility", nextPlayer);
-
-                --
-                -- Unending Breath Check
-                --
-                hasWater, myWater,
-                numWater = btp_check_buff("DemonBreath", nextPlayer);
-
-                if (hasInvis) then
-                    noInvis = false;
-                end
-
-                if (hasWater) then
-                    noWater = false;
-                end
-
-                if (noInvis and btp_cast_spell_on_target("Detect Invisibility",
-                    nextPlayer)) then
-                    return true;
-                end
-
-                if (noWater and btp_cast_spell_on_target("Unending Breath",
-                    nextPlayer)) then
-                    return true;
-                end
-
             end
         end
     end
@@ -1146,46 +618,22 @@ function WarlockPrimary()
         return false;
     end
 
-    if (GetNumRaidMembers() > 0) then
-        for i = 1, GetNumRaidMembers() do
-            nextPlayer = "raid" .. i;
-               
-            if (btp_check_dist(nextPlayer, 1)) then
-                --
-                -- Shadow Form Check
-                --
-                hasShadowForm, myShadowForm,
-                numShadowForm = btp_check_buff("Shadowform", nextPlayer);
+    for nextPlayer in btp_iterate_group_members() do
+       if (btp_check_dist(nextPlayer, 1)) then
+           --
+           -- Shadow Form Check
+           --
+           hasShadowForm, myShadowForm,
+           numShadowForm = btp_check_buff("Shadowform", nextPlayer);
 
-                if (hasShadowForm) then
-                    elementsCount = elementsCount + 1;
-                end
+           if (hasShadowForm) then
+               elementsCount = elementsCount + 1;
+           end
 
-                if (UnitClass(nextPlayer) == "Mage") then
-                    elementsCount = elementsCount + 1;
-                end
-            end
-        end
-    elseif (GetNumPartyMembers() > 0) then
-        for i = 1, GetNumPartyMembers() do
-            nextPlayer = "party" .. i;
-               
-            if (btp_check_dist(nextPlayer, 1)) then
-                --
-                -- Shadow Form Check
-                --
-                hasShadowForm, myShadowForm,
-                numShadowForm = btp_check_buff("Shadowform", nextPlayer);
-
-                if (hasShadowForm) then
-                    elementsCount = elementsCount + 1;
-                end
-
-                if (UnitClass(nextPlayer) == "Mage") then
-                    elementsCount = elementsCount + 1;
-                end
-            end
-        end
+           if (UnitClass(nextPlayer) == "Mage") then
+               elementsCount = elementsCount + 1;
+           end
+       end
     end
 
     if (elementsCount > 0) then
@@ -1220,59 +668,43 @@ function WarlockPrimary()
     -- Curse of Tounges
     --    
     hasCurseTounges, myCurseTounges,
-    numCurseTounges = btp_check_debuff("CurseOfTounges", "target");
+    numCurseTounges = btp_check_debuff("Curse of Tounges", "target");
 
     --
     -- Curse of Elements
     --    
     hasCurseElements, myCurseElements,
-    numCurseElements = btp_check_debuff("ChillTouch", "target");
+    numCurseElements = btp_check_debuff("Chill Touch", "target");
 
     --
     -- Curse of Weakness
     --    
     hasCurseWeakness, myCurseWeakness,
-    numCurseWeakness = btp_check_debuff("CurseOfMannoroth", "target");
+    numCurseWeakness, expCurseWeakness = btp_check_debuff("Curse of Weakness", "target");
 
     --
     -- Curse of Agony
     --    
     hasCurseAgony, myCurseAgony,
-    numCurseAgony = btp_check_debuff("CurseOfSargeras", "target");
+    numCurseAgony = btp_check_debuff("Curse of Agony", "target");
 
     --
     -- Curse of Doom
     --    
     hasCurseDoom, myCurseDoom,
-    numCurseDoom = btp_check_debuff("AuraOfDarkness", "target");
+    numCurseDoom = btp_check_debuff("Curse of Doom", "target");
 
     --
     -- Curse of Rec
     --    
     hasCurseRec, myCurseRec,
-    numCurseRec = btp_check_debuff("UnholyStrength", "target");
+    numCurseRec = btp_check_debuff("Curse of Recklessness", "target");
 
     --
     -- Curse of Exaust
     --    
     hasCurseExhaust, myCurseExhaust,
-    numCurseExhaust = btp_check_debuff("GrimWard", "target");
-
-    --
-    -- Seal of Blood
-    --    
-    hasSealOfBlood, mySealOfBlood,
-    numSealOfBlood = btp_check_buff("SealOfBlood", "target");
-
-    --
-    -- Seal of Vengance
-    --    
-    hasSealOfVengance, mySealOfVengance,
-    numSealOfVengance = btp_check_buff("Racial_Avatar", "target");
-
-    if (SealOfBlood or hasSealOfVengance) then
-        retPally = true;
-    end
+    numCurseExhaust = btp_check_debuff("Curst of Exhaustion", "target");
 
     if (myCurseTounges or myCurseElements or myCurseWeakness or
         myCurseAgony or myCurseDoom or myCurseRec or myCurseExhaust) then
@@ -1288,7 +720,6 @@ function WarlockPrimary()
         onlyFire = false;
     end
 
-    SwitchWarlockRings();
     ProphetKeyBindings();
     WarlockSetPet();
 
@@ -1381,6 +812,14 @@ function WarlockPrimary()
                 end
 
                 return true;
+            elseif (not hasMyCurse and btp_cast_spell("Curse of Weakness")) then
+                FuckBlizzardAttackTarget();
+
+                if (not myCharm) then
+                    FuckBlizzardPetAttack();
+                end
+
+                return true;
             end
         end
     end
@@ -1397,7 +836,7 @@ function WarlockInst()
     -- Corruption Debuff check
     --
     hasCorruptionDebuff, myCorruptionDebuff,
-    numCorruptionDebuff = btp_check_debuff("AbominationExplosion", "target");
+    numCorruptionDebuff = btp_check_debuff("Corruption", "target");
 
     --
     -- Seed Debuff check
@@ -1492,7 +931,7 @@ function WarlockDest()
     -- Immolation check
     --
     hasImmolation, myImmolation,
-    numImmolation = btp_check_debuff("Immolation", "target");
+    numImmolation = btp_check_debuff("Immolate", "target");
 
     --
     -- FireWeak check
@@ -1661,82 +1100,6 @@ function WarlockDest()
         end
 
         i = i + 1;
-    end
-
-    for i = 1, GetNumRaidMembers() do
-        nextPlayer = "raid" .. i;
-
-        if (btp_check_dist(nextPlayer, 1)) then
-            for j = 1, 40 do
-                debuffName, debuffRank, debuffTexture, debuffApplications,
-                debuffType, debuffDuration, debuffTimeLeft, debuffMine,
-                debuffStealable = UnitDebuff(nextPlayer, j);
-
-                if (debuffTexture and not strfind(debuffTexture, "Cripple") and
-                    debuffType and strfind(debuffType, "Magic")) then
-                    partyHasMagicDebuff = true;
-                    partyDebuffPlayer = nextPlayer;
-                    break;
-                end
-
-                if (UnitExists("raidpet" .. i) and
-                    btp_check_dist("raidpet" .. i, 1)) then
-                    nextPlayer = "raidpet" .. i;
-                    debuffName, debuffRank, debuffTexture, debuffApplications,
-                    debuffType, debuffDuration, debuffTimeLeft, debuffMine,
-                    debuffStealable = UnitDebuff(nextPlayer, j);
-
-                    if (debuffTexture and
-                        not (strfind(debuffTexture, "Cripple") and
-                        strfind(debuffTexture, "ShadowWordDomination")) and
-                        debuffType and strfind(debuffType, "Magic")) then
-                        partyHasMagicDebuff = true;
-                        partyDebuffPlayer = nextPlayer;
-                        break;
-                    end
-                end
-            end
-        end
-    end
-
-    if (GetNumRaidMembers() <= 0) then
-        for i = 1, GetNumPartyMembers() do
-            nextPlayer = "party" .. i;    
-
-            if (btp_check_dist(nextPlayer, 1)) then
-                for j = 1, 40 do
-                    debuffName, debuffRank, debuffTexture, debuffApplications,
-                    debuffType, debuffDuration, debuffTimeLeft, debuffMine,
-                    debuffStealable = UnitDebuff(nextPlayer, j);
-
-                    if (debuffTexture and
-                        not strfind(debuffTexture, "Cripple") and
-                        debuffType and strfind(debuffType, "Magic")) then
-                        partyHasMagicDebuff = true;
-                        partyDebuffPlayer = nextPlayer;
-                        break;
-                    end
-
-                    if (UnitExists("partypet" .. i) and
-                        btp_check_dist("partypet" .. i, 1)) then
-                        nextPlayer = "partypet" .. i;
-                        debuffName, debuffRank, debuffTexture,
-                        debuffApplications, debuffType, debuffDuration,
-                        debuffTimeLeft, debuffMine,
-                        debuffStealable = UnitDebuff(nextPlayer, j);
-
-                        if (debuffTexture and
-                            not (strfind(debuffTexture, "Cripple") or
-                            strfind(debuffTexture, "ShadowWordDomination")) and
-                            debuffType and strfind(debuffType, "Magic")) then
-                            partyHasMagicDebuff = true;
-                            partyDebuffPlayer = nextPlayer;
-                            break;
-                        end
-                    end
-                end
-            end
-        end
     end
 
     for i = 1, 40 do

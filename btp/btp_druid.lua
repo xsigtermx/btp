@@ -300,7 +300,7 @@ function druid_heal()
         -- Thorns check
         --
         hasThorns, myThorns,
-        numThorns = btp_check_buff("Thorns", nextPlayer);
+        numThorns, expThorns = btp_check_buff("Thorns", nextPlayer);
 
         --
         -- Bandage Debuff check
@@ -337,14 +337,14 @@ function druid_heal()
                 btp_cast_spell_on_target("Swiftmend", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
-        elseif (UnitAffectingCombat("player") and not hasThorns and
-                UnitHealth(playerName)/UnitHealthMax(playerName) > 
-                DR_THRESH + DR_SCALAR/2 and
-                UnitThreatSituation(playerName) ~= nil and
-                UnitThreatSituation(playerName) == 3 and
-                btp_cast_spell_on_target("Thorns", playerName)) then
-            FuckBlizzardTargetUnit("playertarget");
-            return true;
+        -- elseif (UnitAffectingCombat("player") and not hasThorns and
+        --         UnitHealth(playerName)/UnitHealthMax(playerName) > 
+        --         DR_THRESH + DR_SCALAR/2 and
+        --         UnitThreatSituation(playerName) ~= nil and
+        --         UnitThreatSituation(playerName) == 3 and
+        --         btp_cast_spell_on_target("Thorns", playerName)) then
+        --     FuckBlizzardTargetUnit("playertarget");
+        --     return true;
         elseif (UnitAffectingCombat("player") and not hasThorns and
                 UnitHealth(playerName)/UnitHealthMax(playerName) > 
                 DR_THRESH + DR_SCALAR/2 and pvpBot and
@@ -354,13 +354,13 @@ function druid_heal()
         elseif (not myRejuvenation and
                 (
                     (UnitThreatSituation(playerName) ~= nil and UnitThreatSituation(playerName) >= 1) or
-                    UnitHealth(playerName)/UnitHealthMax(playerName) <= DR_THRESH + DR_SCALAR/2 or
+                    UnitHealth(playerName)/UnitHealthMax(playerName) <= DR_THRESH + DR_SCALAR or
                     pvpBot
                 ) and btp_cast_spell_on_target("Rejuvenation", playerName)) then
             FuckBlizzardTargetUnit("playertarget");
             return true;
         elseif (UnitAffectingCombat("player") and not myRegrowth and
-               (UnitHealth(playerName)/UnitHealthMax(playerName) <= (DR_THRESH + DR_SCALAR/3)) and
+               (UnitHealth(playerName)/UnitHealthMax(playerName) <= (DR_THRESH + DR_SCALAR/2)) and
                 btp_cast_spell_on_target("Regrowth", playerName)) then
 
             if (not stopMoving and pvpBot) then
