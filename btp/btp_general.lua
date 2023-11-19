@@ -261,6 +261,9 @@ function btp_general_initialize()
     SLASH_GENB1 = "/printbuffs";
     SlashCmdList["BOT"] = btp_bot;
     SLASH_BOT1 = "/btpbot";
+    SlashCmdList["BOTNEW"] = btp_bot_new;
+    SLASH_BOTNEW1 = "/btpbotnew";
+
     SlashCmdList["BTPSTOP"] = BTP_Stop;
     SLASH_BTPSTOP1 = "/btpstop";
     SlashCmdList["BTPSTART"] = BTP_Start;
@@ -3449,7 +3452,7 @@ function btp_cast_spell_alt(sname)
 end
 
 function btp_cast_spell_on_target(sname, tname)
-    -- btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
+    btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
 
     if (not sname or not tname) then
         -- btp_frame_debug("NIL: " .. sname .. " or " .. tname);
@@ -3894,15 +3897,44 @@ end
 
 -- this is the begining of the new bot function
 function btp_bot_new()
+    btp_frame_debug("btp_bot_new")
 	-- first bind our keys
 	ProphetKeyBindings();
+    btp_frame_debug("keys bound")
 
     -- check our state
     btp_bot_init();
+    btp_frame_debug("init done")
+
+    -- check who to follow
+    local followPlayer = btp_pick_follow()
+    if followPlayer and btpFollow and not stopMoving then
+        FollowUnit(followPlayer)
+    end
 
     -- if we are in CONFIG_OPTS[DPS] is ann run
+    --[[
+
     if(btp_check_opt(DPS)) then
         if(btp_bot_dps()) then return ture; end
+    end
+    ]]
+
+    if (UnitClass("player") == "Priest") then
+        btp_priest_heal();
+        PriestBuff();
+    end
+
+end
+
+function btp_pick_follow()
+    for nextPlayer in btp_iterate_group_members() do
+        if (not btp_dont_follow(UnitName(nextPlayer)) and
+            UnitName(nextPlayer) ~= UnitName("player") and
+            btp_check_dist(nextPlayer, 1)) then
+            btp_frame_debug("FOLLOW: " .. UnitName(nextPlayer));
+            return nextPlayer;
+        end
     end
 end
 
@@ -6341,6 +6373,12 @@ function btp_is_guild_member(unit_name)
     end
 
     return false;
+end
+
+function GetNumPartyMembers()
+  local unit = (not forceParty and IsInRaid()) and 'raid' or 'party'
+  local numGroupMembers = unit == 'party' and GetNumSubgroupMembers() or GetNumGroupMembers()
+  return numGroupMembers;
 end
 
 function btp_iterate_group_members(reversed, forceParty)
