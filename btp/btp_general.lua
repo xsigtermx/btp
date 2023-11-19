@@ -3897,14 +3897,11 @@ end
 
 -- this is the begining of the new bot function
 function btp_bot_new()
-    btp_frame_debug("btp_bot_new")
 	-- first bind our keys
 	ProphetKeyBindings();
-    btp_frame_debug("keys bound")
 
     -- check our state
     btp_bot_init();
-    btp_frame_debug("init done")
 
     -- check who to follow
     local followPlayer = btp_pick_follow()
