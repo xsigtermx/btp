@@ -5,7 +5,7 @@
 ; non-robot conditions.  For instance, if you were using the warlock
 ; code you would want this to be false.  
 ; 
-botOn          := true
+botOn          := false
 
 ; The following are the keys you have bound to /cleanframe and /btpbot
 ; respectively.  If you use {home} or 9 in your normal opperations then

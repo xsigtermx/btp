@@ -3645,9 +3645,9 @@ function btp_health_status_quick()
             lowest_percent = cur_percent;
             lowest_target = nextPlayer;
             lowest_health = (cur_health_max - cur_health)
-        if (btp_heal_priority_check(lowest_target)) then
-            return lowest_percent, lowest_health, lowest_target;
-        end
+            if (btp_heal_priority_check(lowest_target)) then
+                return lowest_percent, lowest_health, lowest_target;
+            end
             -- btp_frame_debug("raid-name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
         end
     end
@@ -3929,7 +3929,7 @@ function btp_pick_follow()
         if (not btp_dont_follow(UnitName(nextPlayer)) and
             UnitName(nextPlayer) ~= UnitName("player") and
             btp_check_dist(nextPlayer, 1)) then
-            btp_frame_debug("FOLLOW: " .. UnitName(nextPlayer));
+            -- btp_frame_debug("FOLLOW: " .. UnitName(nextPlayer));
             return nextPlayer;
         end
     end
@@ -6392,4 +6392,29 @@ function btp_iterate_group_members(reversed, forceParty)
     i = i + (reversed and -1 or 1)
     return ret
   end
+end
+
+function _print_nearby_players()
+    for nextPlayer in btp_iterate_nearby_players() do
+        print("PLAYER: " .. UnitName(nextPlayer) .. " - " .. nextPlayer);
+    end
+end
+
+function btp_iterate_nearby_players()
+    local i = 1
+    return function()
+        local nextPlayer = "nameplate"..i
+        local name = UnitName(nextPlayer)
+        if name then
+            i = i + 1
+            return nextPlayer
+        end
+    end
+end
+
+function btp_unit_has_threat(unit)
+    if (UnitThreatSituation(unit) > 0) then
+        return true;
+    end
+    return false;
 end
