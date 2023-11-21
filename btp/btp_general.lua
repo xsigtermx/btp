@@ -3456,7 +3456,7 @@ function btp_cast_spell_alt(sname)
 end
 
 function btp_cast_spell_on_target(sname, tname)
-    btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
+    -- btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
 
     if (not sname or not tname) then
         -- btp_frame_debug("NIL: " .. sname .. " or " .. tname);
