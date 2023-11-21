@@ -6,7 +6,7 @@
 ; non-robot conditions.  For instance, if you were using the warlock
 ; code you would want this to be false.  
 ; 
-botOn          := "false"
+botOn          := "true"
 
 ;
 ;

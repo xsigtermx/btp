@@ -15,7 +15,7 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-WARRIOR_THRESH   = .45;
+WARRIOR_THRESH   = .30;
 W_RAGE_RETENTION = 0 + 5;
 
 -- stance types
@@ -128,7 +128,7 @@ function warrior_dps()
     --
 
     -- Battle Shout
-    hasShout, myShout, numShout, expShout = btp_check_buff(
+    hasBattleShout, myBattleShout, numBattleShout, expBattleShout = btp_check_buff(
         "Battle Shout",
         "player"
     );
@@ -136,6 +136,12 @@ function warrior_dps()
     --
     -- debuffs
     --
+
+    -- Demoralizing Shout
+    hasDemoShout, myDemoShout, numDemoShout, expDemoShout = btp_check_debuff(
+        "Demoralizing Shout",
+        "target"
+    );
 
     -- Rend
     hasRend, myRend, numRend, expRend = btp_check_debuff(
@@ -205,17 +211,25 @@ function warrior_dps()
     elseif (not mySunder and numSunder < 1 and btp_check_dist("target", 3) and
             btp_cast_spell("Sunder Armor")) then
         return true;
+    elseif (playerHealthRatio < .80 and
+            btp_cast_spell("Shield Block")) then
+        return true;
     elseif (btp_check_dist("target", 3) and
             btp_cast_spell("Shield Slam")) then
         return true;
-    elseif (btp_check_dist("target", 3) and btp_cast_spell("Bloodthirst")) then
+    elseif (btp_check_dist("target", 3) and
+            btp_cast_spell("Bloodthirst")) then
         return true;
-    elseif (btp_check_dist("target", 3) and btp_cast_spell("Revenge")) then
+    elseif (btp_check_dist("target", 3) and
+            btp_cast_spell("Revenge")) then
         return true;
     elseif (targetHealthRatio < .20 and not hasHamstring and
             btp_check_dist("target", 3) and btp_cast_spell("Hamstring")) then
         return true;
-    elseif (not hasShout and
+    elseif (not hasDemoShout and
+            btp_cast_spell("Demoralizing Shout")) then
+        return true;
+    elseif (not hasBattleShout and
             btp_cast_spell("Battle Shout")) then
         return true;
     elseif (not myClap and btp_check_dist("target", 3) and
