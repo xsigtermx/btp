@@ -261,6 +261,9 @@ function btp_general_initialize()
     SLASH_GENB1 = "/printbuffs";
     SlashCmdList["BOT"] = btp_bot;
     SLASH_BOT1 = "/btpbot";
+    SlashCmdList["BOTNEW"] = btp_bot_new;
+    SLASH_BOTNEW1 = "/btpbotnew";
+
     SlashCmdList["BTPSTOP"] = BTP_Stop;
     SLASH_BTPSTOP1 = "/btpstop";
     SlashCmdList["BTPSTART"] = BTP_Start;
@@ -3453,7 +3456,7 @@ function btp_cast_spell_alt(sname)
 end
 
 function btp_cast_spell_on_target(sname, tname)
-    -- btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
+    btp_frame_debug("CASTING: " .. sname .. " On: " .. tname);
 
     if (not sname or not tname) then
         -- btp_frame_debug("NIL: " .. sname .. " or " .. tname);
@@ -3646,9 +3649,9 @@ function btp_health_status_quick()
             lowest_percent = cur_percent;
             lowest_target = nextPlayer;
             lowest_health = (cur_health_max - cur_health)
-        if (btp_heal_priority_check(lowest_target)) then
-            return lowest_percent, lowest_health, lowest_target;
-        end
+            if (btp_heal_priority_check(lowest_target)) then
+                return lowest_percent, lowest_health, lowest_target;
+            end
             -- btp_frame_debug("raid-name: " .. UnitName(lowest_target) .. " % " .. lowest_percent);
         end
     end
@@ -3904,9 +3907,35 @@ function btp_bot_new()
     -- check our state
     btp_bot_init();
 
+    -- check who to follow
+    local followPlayer = btp_pick_follow()
+    if followPlayer and btpFollow and not stopMoving then
+        FollowUnit(followPlayer)
+    end
+
     -- if we are in CONFIG_OPTS[DPS] is ann run
+    --[[
+
     if(btp_check_opt(DPS)) then
         if(btp_bot_dps()) then return ture; end
+    end
+    ]]
+
+    if (UnitClass("player") == "Priest") then
+        btp_priest_heal();
+        PriestBuff();
+    end
+
+end
+
+function btp_pick_follow()
+    for nextPlayer in btp_iterate_group_members() do
+        if (not btp_dont_follow(UnitName(nextPlayer)) and
+            UnitName(nextPlayer) ~= UnitName("player") and
+            btp_check_dist(nextPlayer, 1)) then
+            -- btp_frame_debug("FOLLOW: " .. UnitName(nextPlayer));
+            return nextPlayer;
+        end
     end
 end
 
@@ -6347,6 +6376,12 @@ function btp_is_guild_member(unit_name)
     return false;
 end
 
+function GetNumPartyMembers()
+  local unit = (not forceParty and IsInRaid()) and 'raid' or 'party'
+  local numGroupMembers = unit == 'party' and GetNumSubgroupMembers() or GetNumGroupMembers()
+  return numGroupMembers;
+end
+
 function btp_iterate_group_members(reversed, forceParty)
   local unit = (not forceParty and IsInRaid()) and 'raid' or 'party'
   local numGroupMembers = unit == 'party' and GetNumSubgroupMembers() or GetNumGroupMembers()
@@ -6361,4 +6396,29 @@ function btp_iterate_group_members(reversed, forceParty)
     i = i + (reversed and -1 or 1)
     return ret
   end
+end
+
+function _print_nearby_players()
+    for nextPlayer in btp_iterate_nearby_players() do
+        print("PLAYER: " .. UnitName(nextPlayer) .. " - " .. nextPlayer);
+    end
+end
+
+function btp_iterate_nearby_players()
+    local i = 1
+    return function()
+        local nextPlayer = "nameplate"..i
+        local name = UnitName(nextPlayer)
+        if name then
+            i = i + 1
+            return nextPlayer
+        end
+    end
+end
+
+function btp_unit_has_threat(unit)
+    if (UnitThreatSituation(unit) > 0) then
+        return true;
+    end
+    return false;
 end

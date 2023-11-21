@@ -104,6 +104,10 @@ function rogue_dps()
     ProphetKeyBindings();
 
     --
+    -- buff checks
+    --
+
+    --
     -- Slice and Dice
     --
     hasSlice, mySlice, numSlice, expSlice = btp_check_buff(
@@ -111,13 +115,22 @@ function rogue_dps()
         "player"
     );
 
+
+    --
+    -- debuff checks
+    --
+
+    --
+    -- Expose Armor
+    --
+    hasExpose, myExpose, numExpose, expExpose = btp_check_debuff(
+        "Expose Armor",
+        "target"
+    );
+
     comboPoints = GetComboPoints("player", "target");
     playerHealthRatio =  UnitHealth("player")/UnitHealthMax("player");
     targetHealthRatio =  UnitHealth("target")/UnitHealthMax("target");
-
-    if ((btp_is_casting("target") or btp_is_channeling("target"))) then
-        btp_frame_debug("CASTING");
-    end
 
     if (SelfHeal(ROGUE_THRESH, 0)) then
         --
@@ -125,13 +138,23 @@ function rogue_dps()
         --
         return true;
     elseif ((btp_is_casting("target") or btp_is_channeling("target")) and
+            btp_cast_spell("Kick")) then
+        return true;
+    elseif ((btp_is_casting("target") or btp_is_channeling("target")) and
             btp_cast_spell("Gouge")) then
+        return true;
+    elseif (btp_check_dist("target", 3) and
+            UnitThreatSituation("player", "target") ~= nil and
+            UnitThreatSituation("player", "target") > 0 and
+            btp_cast_spell("Feint")) then
         return true;
     elseif (playerHealthRatio <= .75 and btp_cast_spell("Evasion")) then
         return true;
     elseif (playerHealthRatio > .80 and btp_cast_spell("Blood Fury")) then
         return true;
     elseif (playerHealthRatio < .70 and btp_cast_spell("Berserking")) then
+        return true;
+    elseif (IsStealthed() and btp_cast_spell("Garrote")) then
         return true;
     elseif (IsStealthed() and btp_cast_spell("Backstab")) then
         return true;
@@ -154,6 +177,9 @@ function rogue_dps()
         return true;
     elseif (comboPoints > 0 and not hasSlice and
             btp_cast_spell("Slice and Dice")) then
+        return true;
+    elseif (comboPoints > 0 and not myExpose and
+            btp_cast_spell("Expose Armor")) then
         return true;
     elseif (comboPoints < 5 and UnitPower("player", T_ENERGY) > 50 and
             btp_cast_spell("Sinister Strike")) then

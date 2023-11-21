@@ -17,6 +17,11 @@
 -- along with BTP.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
+function btp_dbg(msg)
+    DEFAULT_CHAT_FRAME:AddMessage(msg);
+    UIErrorsFrame:AddMessage(msg, 1.0,1.0, 0, 1, 10);
+end
+
 -- Moved a lot of stuff to btp_priest_old.lua
 function btp_priest_initialize()
     btp_frame_debug("Priest INIT");
@@ -28,7 +33,7 @@ function btp_priest_initialize()
     SlashCmdList["PRIESTDPS"] = btp_priest_dps;
     SLASH_PRIESTDPS1 = "/pdps";
     SlashCmdList["PRIESTDPS"] = btp_priest_dps_pve;
-    SLASH_PRIESTDPS1 = "/pdps_pve";
+    SLASH_PRIESTDPS2 = "/pdps_pve";
     SlashCmdList["PRIESTDPSPVP"] = btp_priest_dps_pvp;
     SLASH_PRIESTDPSPVP1 = "/pdps_pvp";
     SlashCmdList["DPSMODE"] = btp_dps_mode_toggle;
@@ -65,8 +70,92 @@ function btp_dps_mode_toggle()
     end
 end
 
-
 function PriestBuff()
+    ProphetKeyBindings();
+
+    -- only run when not in combat
+    if UnitAffectingCombat("player") then return false; end
+
+    -- only buff if we have extra mana
+    if (UnitPower("player")/UnitPowerMax("player") < .65) then return false; end
+
+    -- check self
+    if (btp_priest_buff("player")) then return true; end
+
+    -- check target
+    if (btp_priest_buff("target")) then return true; end
+
+    -- check group
+    for nextPlayer in btp_iterate_group_members() do
+        if (btp_priest_buff(nextPlayer)) then return true; end
+    end
+
+    -- buff nearby friendly players
+    --[[ I think this will work if we add nameplate# to keybindings
+    if (UnitPower("player")/UnitPowerMax("player") < .80) then return false; end
+    for nextPlayer in btp_iterate_nearby_players() do
+        if (UnitIsPlayer(nextPlayer)) then
+            print("CHECKING: " .. UnitName(nextPlayer) .. " - " .. nextPlayer)
+            TargetUnit(UnitName(nextPlayer));
+            btp_priest_buff("target")
+        end
+    end
+    ]]
+
+    return false;
+end
+
+function btp_priest_buff(unit)
+    if (not unit) then 
+        btp_frame_debug("btp_priest_buff - called without unit");
+        return false;
+    end
+
+    -- if the unit is "target" but no target is selected then return
+    if (unit == "target" and not UnitExists("target")) then
+        return false;
+    end
+
+    if (UnitIsUnit(unit, "player")) then return _btp_priest_buff(unit); end
+
+    -- can only buff players
+    if (not UnitIsPlayer(unit) or
+        not UnitIsFriend("player", unit)) then
+        return false;
+    end
+
+    -- can only buff if we are in distance
+    if (not btp_check_dist(unit, 1)) then return false; end
+
+    -- do the buff once everything checks out
+    _btp_priest_buff(unit);
+end
+
+function _btp_priest_buff(unit)
+    if (not unit) then 
+        btp_frame_debug("_btp_priest_buff - called without unit");
+        return false;
+    end
+
+    if(not btp_priest_is_fortitude (unit)) then
+        return btp_cast_spell_on_target("Power Word: Fortitude", unit);
+    end
+
+    -- These spells can only be cast on player
+    if (unit ~= "player" and unit ~= "playertarget") then return false; end
+    if(not btp_priest_is_innerwill("player") and not btp_priest_is_innerfire("player")) then
+        return btp_cast_spell("Inner Fire");
+    end
+
+    if(not btp_priest_is_touchofweakness ("player")) then
+        return btp_cast_spell("Touch of Weakness");
+    end
+
+end
+
+
+
+function PriestBuffOld()
     noFort = true;
     noInnerFire = true;
     noShadowProtection = true;
@@ -543,6 +632,7 @@ function btp_priest_dispell_buffs(unit)
 
     -- return if the target is friendly
     if (not UnitIsEnemy("player", unit)) then return false; end
+
     -- return if it is an npc
     if (not UnitIsPlayer(unit)) then return false; end
 
@@ -552,11 +642,11 @@ function btp_priest_dispell_buffs(unit)
         buffStealable = UnitBuff(unit, i);
 
 	if (buffTexture and buffTime and (
-	    strfind(buffTexture, "PowerWordShield") or
-	    strfind(buffTexture, "AntiShadow") or
-	    strfind(buffTexture, "PrayerofShadowProtection") or
-	    strfind(buffTexture, "Ice_Lament") or
-	    strfind(buffTexture, "FrostArmor02")
+	    strfind(buffTexture, "Power Word Shield") or
+	    strfind(buffTexture, "Anti Shadow") or
+	    strfind(buffTexture, "Prayer of Shadow Protection") or
+	    strfind(buffTexture, "Ice Lament") or
+	    strfind(buffTexture, "Frost Armor")
 	   )) then
             if (btp_cast_spell_on_target("Dispel Magic", debuffPlayer)) then return true; end
         end
@@ -646,16 +736,7 @@ function btp_priest_heal()
     -- Put any callback code here.
     --
 
-    if(pvpBot) then
-        return btp_priest_heal_pvp_quick();
-    end
-
-    if(btp_priest_heal_std()) then
-        return true;
-    -- else
-        --return btp_priest_resurrection();
-    end
-    return false;
+    return btp_priest_heal_pvp_quick();
 end
 
 function btp_priest_resurrection()
@@ -752,10 +833,9 @@ BTP_PRIEST_THRESH_MANA=.15
     -- local lowest_target = btp_health_status(.99);
     local lowest_percent, lowest_health, lowest_target = btp_health_status_quick();
 
-
+    -- if there is no longer anyone to heal, start moving again
     if(not lowest_percent or not lowest_health or not lowest_target 
        or lowest_target == false or lowest_target == nil) then
-        -- btp_frame_debug("nothing to heal 2");
         stopMoving = false;
         return false;
     end
@@ -766,7 +846,8 @@ BTP_PRIEST_THRESH_MANA=.15
     if(btp_priest_heal_medium(lowest_percent, lowest_health, lowest_target)) then return true; end;
 
     -- heal our self second
-    if(btp_priest_heal_self(lowest_percent, lowest_health, lowest_target)) then return true; end
+    if(btp_priest_heal_self()) then return true; end
+
 
     -- small heals after we heal ourself
     if(btp_priest_heal_small(lowest_percent, lowest_health, lowest_target)) then return true; end;
@@ -866,7 +947,8 @@ function btp_priest_heal_medium(cur_percent, cur_health, cur_player)
             if(btp_cast_spell_on_target("Renew", cur_player)) then return true; end
         end
 
-        if(not btp_priest_is_pws(cur_player)) then
+        -- only cast for medium damage if the unit is in combat and has high threat
+        if(not btp_priest_is_pws(cur_player) and btp_unit_has_threat()) then
             if(btp_cast_spell_on_target("Power Word: Shield", cur_player)) then return true; end
         end
 
@@ -900,7 +982,7 @@ function btp_priest_heal_small(cur_percent, cur_health, cur_player)
     -- if(btp_cast_spell_on_target("Heal", cur_player)) then return true; end
 end
 
-function btp_priest_heal_self(cur_percent, cur_health, cur_player)
+function btp_priest_heal_self()
     -- Check the player
     local my_health = UnitHealth("player");
     local my_health_max = UnitHealthMax("player");
@@ -911,8 +993,12 @@ function btp_priest_heal_self(cur_percent, cur_health, cur_player)
     if (btp_priest_heal_crit(my_percent, my_health, "player")) then return true; end
 
     -- try to fear people off of us
-    if(my_percent <= BTP_PRIEST_THRESH_SMALL and my_health > 2) then
-        if(btp_cast_spell("Psychic Scream")) then return true; end
+    if((my_percent <= BTP_PRIEST_THRESH_SMALL) and 
+       (my_health > 2) and 
+       UnitThreatSituation("player") ~= nil and
+       UnitThreatSituation("player") > 0) then
+            if(btp_cast_spell("Fade")) then return true; end
+        -- if(btp_cast_spell("Psychic Scream")) then return true; end
     end
 
     if (btp_priest_heal_large(my_percent, my_health, "player")) then return true; end
@@ -1252,6 +1338,9 @@ function btp_priest_bestheal(unit)
         if(btp_cast_spell_on_target("Greater Heal", unit)) then btp_stop_moving(); return true; end
     else
         if(btp_cast_spell_on_target("Flash Heal", unit)) then btp_stop_moving(); return true; end;
+        if(btp_cast_spell_on_target("Greater Heal", unit)) then btp_stop_moving(); return true; end;
+        if(btp_cast_spell_on_target("Heal", unit)) then btp_stop_moving(); return true; end;
+        if(btp_cast_spell_on_target("Lesser Heal", unit)) then btp_stop_moving(); return true; end;
     end
 
     -- might be low on mana so use old heal
@@ -1488,7 +1577,7 @@ end
 
 function btp_priest_is_pom(unit)
     if(not unit) then  unit = "player"; end
-    if(btp_check_buff("PrayerOfMending", unit)) then return true; end
+    if(btp_check_buff("Prayer Of Mending", unit)) then return true; end
     return false;
 end
 
@@ -1506,21 +1595,20 @@ end
 
 function btp_priest_is_fortitude(unit)
     if(not unit) then  unit = "player"; end
-    if(btp_check_buff("WordFortitude", unit)) then return true; end
-    if(btp_check_buff("PrayerOfFortitude", unit)) then return true; end
+    if(btp_check_buff("Power Word: Fortitude", unit)) then return true; end
+    if(btp_check_buff("Prayer Of Fortitude", unit)) then return true; end
     return false;
 end
 
 function btp_priest_is_innerfire(unit)
-    if(not unit) then  unit = "player"; end
-    if(btp_check_buff("InnerFire", unit)) then return true; end
+    if(btp_check_buff("Inner Fire")) then return true; end
     return false;
 end
 
 function btp_priest_is_divinespirit(unit)
     if(not unit) then  unit = "player"; end
-    if(btp_check_buff("DivineSpirit", unit)) then return true; end
-    if(btp_check_buff("PrayerofSpirit", unit)) then return true; end
+    if(btp_check_buff("Divine Spirit", unit)) then return true; end
+    if(btp_check_buff("Prayer of Spirit", unit)) then return true; end
     return false;
 end
 
@@ -1532,15 +1620,15 @@ end
 
 function btp_priest_is_shadowprotection(unit)
     if(not unit) then  unit = "player"; end
-    if(btp_check_buff("AntiShadow", unit)) then return true; end
-    if(btp_check_buff("PrayerofShadowProtection", unit)) then return true; end
+    if(btp_check_buff("Shadow Protection", unit)) then return true; end
+    if(btp_check_buff("Prayer of Shadow Protection", unit)) then return true; end
     return false;
 end
 
 
 function btp_priest_is_touchofweakness(unit)
     if(not unit) then  unit = "player"; end
-    if(btp_check_buff("DeadofNight", unit)) then return true; end
+    if(btp_check_buff("Touch of Weakness", unit)) then return true; end
     return false;
 end
 
@@ -1649,4 +1737,5 @@ end
 
 
 
+--    for nextPlayer in btp_iterate_group_members() do
 
