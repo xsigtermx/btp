@@ -299,6 +299,8 @@ function btp_general_initialize()
     SLASH_FEDEL1 = "/btpfedel";
     SlashCmdList["FELIST"] = btp_follow_exclusion_list;
     SLASH_FELIST1 = "/btpfelist";
+    SlashCmdList["DISTCHECK"] = DistCheck;
+    SLASH_DISTCHECK1 = "/btpdistcheck";
 
     SlashCmdList["HEALPRIORITYADD"] = function(pname)
         btp_heal_priority_add(pname)
@@ -2940,6 +2942,16 @@ function DecurseToggle()
     end
 end
 
+function DistCheck()
+   if (dontCheckDist) then
+        dontCheckDist = false;
+        btp_frame_debug("Distance Checking -- On.");
+   else
+        dontCheckDist = true;
+        btp_frame_debug("Distance Checking -- Off.");
+   end
+end
+
 function RaidHeal()
    if (btpRaidHeal) then
         btpRaidHeal = false;
@@ -3114,14 +3126,6 @@ function SelfHeal(healthThresh, manaThresh)
     if (hasHealthStone and UnitAffectingCombat("player") and
         UnitHealth("player")/UnitHealthMax("player") <= healthThresh) then
         FuckBlizUseContainerItem(healthStoneBag, healthStoneSlot);
-
-        if (GetNumRaidMembers() <= 0 and (GetTime() - lastSelfHeal) >= 5 and
-            UnitClass("player") ~= "Warlock") then
-            lastSelfHeal = GetTime();
-            SendChatMessage("Used my healthstone.  Can You drop another on me?",
-                            "PARTY", nil);
-        end
-
         return true;
     elseif (hasHealthPotion and
             UnitHealth("player")/UnitHealthMax("player") <= healthThresh and
